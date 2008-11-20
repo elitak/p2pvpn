@@ -17,35 +17,15 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.p2pvpn.jtuntap;
+package org.p2pvpn.tuntap;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-public class TunTap {
-	
-	static public void loadLibFromRecsource(String lib, String suffix) throws IOException {
-		File tmp = File.createTempFile("lib", suffix);
-		tmp.deleteOnExit();
-		InputStream in = TunTap.class.getClassLoader().getResourceAsStream(lib);
-		OutputStream out = new FileOutputStream(tmp);
-		
-		byte[] buffer = new byte[1024*8];
-		int len;
-		
-		while (0<(len = in.read(buffer))) {
-			out.write(buffer, 0, len);
-		}
-		in.close();
-		out.close();
-		System.out.println(tmp.getCanonicalPath());
-		
-		System.load(tmp.getCanonicalPath());
-	}
-	
+/**
+ *
+ * @author Wolfgang
+ */
+public class TunTapLinux extends TunTap {
     static {
 		try {
 			loadLibFromRecsource("lib/libcTunTap.so", ".so");
@@ -53,12 +33,12 @@ public class TunTap {
 			e.printStackTrace();
 		}
     }
-    
+
     private int fd;
-    private String dev;
-    
-    public TunTap() {
-        if (1==openTun()) throw new RuntimeException("Could not open tun");
+    private String dev;    
+
+    public TunTapLinux() throws Exception {
+        if (1==openTun()) throw new Exception("Could not open tun");
     }
     
     public String getDev() {
@@ -82,4 +62,5 @@ public class TunTap {
     		e.printStackTrace();
     	}
     }
+    
 }
