@@ -19,7 +19,7 @@
 
 package org.p2pvpn.network;
 
-import org.p2pvpn.jtuntap.TunTap;
+import org.p2pvpn.tuntap.TunTap;
 
 public class VPNConnector implements Runnable {
 	private ConnectionManager connectionManager;
@@ -52,9 +52,11 @@ public class VPNConnector implements Runnable {
 		while(true) {
 			int len = tuntap.read(buffer);
 			System.out.println("VPNConnector.read "+len);
-			byte[] packet = new byte[len];
-			System.arraycopy(buffer, 0, packet, 0, len);
-			router.send(packet);
+            if (len>=12) {
+                byte[] packet = new byte[len];
+                System.arraycopy(buffer, 0, packet, 0, len);
+                router.send(packet);
+            }
 		}
 	}
 }

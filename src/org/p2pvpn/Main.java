@@ -20,7 +20,7 @@ package org.p2pvpn;
 
 import org.p2pvpn.gui.PeerConfig;
 import javax.swing.UIManager;
-import org.p2pvpn.jtuntap.TunTap;
+import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
@@ -30,17 +30,21 @@ public class Main {
 
 	public static void main(String[] args) {
 		if (args.length == 5) {
-			AdvProperties netCfg = new AdvProperties(args[0]);
+            try {
+                AdvProperties netCfg = new AdvProperties(args[0]);
 
-			ConnectionManager cm = new ConnectionManager(Integer.parseInt(args[2]));
+                ConnectionManager cm = new ConnectionManager(Integer.parseInt(args[2]));
 
-			if (!args[3].equals("none")) {
-				cm.getRouter().setLocalPeerInfo("vpn.ip", args[3]);
-				TunTap tunTap = new TunTap();
-				tunTap.setIP(args[3], args[4]);
-				new VPNConnector(cm, tunTap, cm.getRouter());
-			}
-			cm.getRouter().setLocalPeerInfo("name", args[1]);
+                if (!args[3].equals("none")) {
+                    cm.getRouter().setLocalPeerInfo("vpn.ip", args[3]);
+                    TunTap tunTap = TunTap.createTunTap();
+                    tunTap.setIP(args[3], args[4]);
+                    new VPNConnector(cm, tunTap, cm.getRouter());
+                }
+                cm.getRouter().setLocalPeerInfo("name", args[1]);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
 		} else {
 			/*try {
 				UIManager.setLookAndFeel(

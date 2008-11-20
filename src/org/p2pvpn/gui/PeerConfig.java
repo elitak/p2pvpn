@@ -28,9 +28,11 @@ package org.p2pvpn.gui;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.p2pvpn.jtuntap.TunTap;
+import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
@@ -265,19 +267,24 @@ private void btnCreateNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
 // TODO add your handling code here:
-	AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
+try {
+        AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
 
-	ConnectionManager cm = new ConnectionManager((Integer)spnLocalPort.getModel().getValue());
+        ConnectionManager cm = new ConnectionManager((Integer) spnLocalPort.getModel().getValue());
 
-	if (chkVPN.isSelected()) {
-		cm.getRouter().setLocalPeerInfo("vpn.ip", txtPeerIP.getText());
-		TunTap tunTap = new TunTap();
-		tunTap.setIP(txtPeerIP.getText(), netCfg.getProperty("ip.subnet"));
-		new VPNConnector(cm, tunTap, cm.getRouter());
-	}
-	cm.getRouter().setLocalPeerInfo("name", txtPeerName.getText());
-	setVisible(false);
-	org.p2pvpn.gui.Main.open(cm);
+        if (chkVPN.isSelected()) {
+            cm.getRouter().setLocalPeerInfo("vpn.ip", txtPeerIP.getText());
+            TunTap tunTap = TunTap.createTunTap();
+            tunTap.setIP(txtPeerIP.getText(), netCfg.getProperty("ip.subnet"));
+            new VPNConnector(cm, tunTap, cm.getRouter());
+        }
+        cm.getRouter().setLocalPeerInfo("name", txtPeerName.getText());
+        setVisible(false);
+        org.p2pvpn.gui.Main.open(cm);
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }//GEN-LAST:event_btnOKActionPerformed
 
 
