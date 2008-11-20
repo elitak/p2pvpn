@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="P2PVpnTest" default="jar" basedir=".">
+
+	<property name="src" value="src"/>
+	<property name="build" value="build"/>
+	<property name="build.classes" value="build/classes"/>
+	<property name="lib" value="lib"/>
+	
+	<target name="init">
+		<mkdir dir="${build}"/>
+		<mkdir dir="${build.classes}"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="${src}" destdir="${build.classes}" target="1.5" debug="true" debuglevel="lines, vars, source"/>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="${build}/P2PVPNTest.jar">
+			<fileset dir="${build.classes}"/>
+			<fileset dir="${lib}"/>
+			<zipfileset dir="${lib}" prefix="lib"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.p2pvpn.Main"/>
+			</manifest>
+		</jar>
+	</target>
+	
+<!--
+	<target name="run" depends="compile">
+		<java classpath="${build.classes}" classname="Main"/>
+	</target>
+-->
+	
+</project>
