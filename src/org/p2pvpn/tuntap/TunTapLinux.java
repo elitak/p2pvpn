@@ -28,7 +28,7 @@ import java.io.IOException;
 public class TunTapLinux extends TunTap {
     static {
 		try {
-			loadLibFromRecsource("lib/libcTunTap.so", ".so");
+			loadLibFromRecsource("lib/libTunTapLinux.so", ".so");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
