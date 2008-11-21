@@ -40,7 +40,7 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="${build}/P2PVPNTest.jar">
+		<jar destfile="${build}/P2PVPN.jar">
 			<fileset dir="${build.classes}"/>
 			<fileset dir="${lib}"/>
 			<zipfileset dir="${lib}" prefix="lib"/>

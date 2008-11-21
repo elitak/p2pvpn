@@ -27,12 +27,12 @@ import java.io.IOException;
  */
 public class TunTapWindows extends TunTap {
     static {
-        System.load("C:\\Dokumente und Einstellungen\\Wolfgang\\Desktop\\sf\\tapWindows\\trunk\\dist\\Debug\\Cygwin-Windows\\libTunTapWindows.dll");
-		/*try {
-			loadLibFromRecsource("lib/libcTunTap.so", ".so"); TODO
+        //System.load("C:\\Dokumente und Einstellungen\\Wolfgang\\Desktop\\sf\\tapWindows\\trunk\\dist\\Debug\\Cygwin-Windows\\libTunTapWindows.dll");
+		try {
+			loadLibFromRecsource("lib/libTunTapWindows.dll", ".so");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}
     }
 
     private long cPtr;
@@ -53,17 +53,18 @@ public class TunTapWindows extends TunTap {
     public native void write(byte[] b, int len);
     
     public native int read(byte[] b);
-    
+
     public void setIP(String ip, String subnetmask) {
-        /*
     	try {
-    		Process p = Runtime.getRuntime().exec("ifconfig "+dev+" "+ip+" netmask "+subnetmask); TODO
+            String[] cmd = {
+                "netsh", "interface", "ip", "set", "address", dev, "static", ip, subnetmask
+            };
+    		Process p = Runtime.getRuntime().exec(cmd);
     		System.out.println("IP set successfully ("+p.waitFor()+")");
     	} catch (Exception e) {
     		System.out.println("Could not set IP!");
     		e.printStackTrace();
     	}
-         * */
     }
     
 }
