@@ -263,6 +263,26 @@ public class Router implements RoutungTableListener {
 		}
 	}
 	
+    private void dbChanged(PeerID a) {
+    	notifyListeners(false);
+        
+        // check for local IPs
+        if (!a.equals(connectionManager.getLocalAddr())) {
+            String port = peers.get(a).get("local.port");
+            String ips = peers.get(a).get("local.ips");
+            if (port!=null && ips!=null) {
+                StringTokenizer st = new StringTokenizer(ips);
+                while (st.hasMoreTokens()) {
+                    try {
+                        connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port));
+                    } catch (NumberFormatException numberFormatException) {
+                        numberFormatException.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+    
 	public synchronized String getPeerInfo(PeerID peer, String key) {
 		VersionizedMap<String, String> db = peers.get(peer);
 		if (db==null) return null;
@@ -355,7 +375,7 @@ public class Router implements RoutungTableListener {
 					VersionizedMap<String, String> db = peers.get(a);
 					if (db!=null) myVer = db.getVersion();
 					if (myVer < hisDB.getVersion()) peers.put(a, hisDB);
-					notifyListeners(false);
+                    dbChanged(a);
 					break;
 				}
 				default: throw new IOException("Bad packet type");	

@@ -268,6 +268,8 @@ private void btnCreateNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
 // TODO add your handling code here:
 try {
+        setVisible(false);
+
         AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
 
         ConnectionManager cm = new ConnectionManager((Integer) spnLocalPort.getModel().getValue());
@@ -279,11 +281,12 @@ try {
             new VPNConnector(cm, tunTap, cm.getRouter());
         }
         cm.getRouter().setLocalPeerInfo("name", txtPeerName.getText());
-        setVisible(false);
+        cm.findLocalIPs();
         org.p2pvpn.gui.Main.open(cm);
-    } catch (Exception e) {
+    } catch (Throwable e) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
     }
 }//GEN-LAST:event_btnOKActionPerformed
 

@@ -19,13 +19,18 @@
 
 package org.p2pvpn.network;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class ConnectionManager implements Runnable {
@@ -34,16 +39,44 @@ public class ConnectionManager implements Runnable {
 	private PeerID localAddr;
 	private ScheduledExecutorService scheduledExecutor;
 	private Router router;
-
+    private Connector connector;
+    
 	public ConnectionManager(int serverPort) {
 		this.serverPort = serverPort;
 		scheduledExecutor = Executors.newScheduledThreadPool(1);
 		localAddr = new PeerID();
 		router = new Router(this);
+        connector = new Connector(this);
 		
 		(new Thread(this)).start();
 	}
 
+    public void findLocalIPs() {
+        String ipList="";
+        router.setLocalPeerInfo("local.port", ""+serverPort);
+        try {
+            Enumeration<NetworkInterface> is = NetworkInterface.getNetworkInterfaces();
+            while (is.hasMoreElements()) {
+                NetworkInterface i = is.nextElement();
+                Enumeration<InetAddress> as = i.getInetAddresses();
+
+                System.out.print(i.getName() + ":");
+                while (as.hasMoreElements()) {
+                    InetAddress a = as.nextElement();
+                    String s = a.getHostAddress();
+                    System.out.print(" " + s);
+                    if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
+                        ipList = ipList + " " + s;
+                    }
+                }
+                System.out.println();
+            }
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        router.setLocalPeerInfo("local.ips", ipList.substring(1));
+    }
+    
 	public PeerID getLocalAddr() {
 		return localAddr;
 	}
@@ -82,6 +115,14 @@ public class ConnectionManager implements Runnable {
 	}
 
 	public void connectTo(String host, int port) {
+        try {
+            connectTo(InetAddress.getByName(host), port);
+        } catch (UnknownHostException ex) {
+            // TODO
+        }
+	}
+	
+	public void connectTo(InetAddress host, int port) {
 		new ConnectTask(host, port);
 	}
 	
@@ -105,10 +146,10 @@ public class ConnectionManager implements Runnable {
 	}
 	
 	private class ConnectTask implements Runnable {
-		private String host;
+		private InetAddress host;
 		private int port;
 
-		public ConnectTask(String host, int port) {
+		public ConnectTask(InetAddress host, int port) {
 			this.host = host;
 			this.port = port;
 			(new Thread(this)).start();
@@ -135,4 +176,8 @@ public class ConnectionManager implements Runnable {
 	public Router getRouter() {
 		return router;
 	}
+
+    public Connector getConnector() {
+        return connector;
+    }
 }

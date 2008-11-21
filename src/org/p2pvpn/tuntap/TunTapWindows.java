@@ -29,7 +29,7 @@ public class TunTapWindows extends TunTap {
     static {
         //System.load("C:\\Dokumente und Einstellungen\\Wolfgang\\Desktop\\sf\\tapWindows\\trunk\\dist\\Debug\\Cygwin-Windows\\libTunTapWindows.dll");
 		try {
-			loadLibFromRecsource("lib/libTunTapWindows.dll", ".so");
+			loadLibFromRecsource("lib/libTunTapWindows.dll", ".dll");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
