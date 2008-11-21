@@ -46,12 +46,12 @@ public class Main {
                 exception.printStackTrace();
             }
 		} else {
-			/*try {
+			try {
 				UIManager.setLookAndFeel(
 					UIManager.getSystemLookAndFeelClassName());
 			} catch (Exception ex) {
 			  System.out.println("Unable to load native look and feel");
-			}*/
+			}
 			new PeerConfig().setVisible(true);
 		}
 	}

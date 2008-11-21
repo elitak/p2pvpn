@@ -24,9 +24,11 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.p2pvpn.tools.AdvProperties;
 
 /**
  *
@@ -57,6 +59,22 @@ public class Connector {
             addIP(InetAddress.getByName(ip).getAddress(), port);
         } catch (UnknownHostException ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    public void addIPs(AdvProperties p) {
+        int i=0;
+        
+        while(p.containsKey("bootstrap.connectTo."+i)) {
+            try {
+                StringTokenizer st = new StringTokenizer(p.getProperty("bootstrap.connectTo." + i), ":");
+                String ip = st.nextToken();
+                int port = Integer.parseInt(st.nextToken());
+                addIP(ip, port);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+            i++;
         }
     }
     

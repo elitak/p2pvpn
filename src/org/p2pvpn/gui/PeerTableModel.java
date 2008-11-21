@@ -108,7 +108,7 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 0: return router.getPeerInfo(table[r], "name");
 		case 1: return table[r].toString(); 
 		case 2: 
-			if (table[r].equals(connectionManager.getLocalAddr())) return ""; 
+			if (table[r].equals(connectionManager.getLocalAddr())) return "it's me"; 
 			if (router.isConnectedTo(table[r])) return "direct";
 			return "indirect";
 		case 3: return router.getPeerInfo(table[r], "vpn.ip");

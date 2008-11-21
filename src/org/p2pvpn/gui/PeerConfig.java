@@ -138,7 +138,7 @@ public class PeerConfig extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnCreateNet)
                 .addContainerGap())
@@ -150,6 +150,7 @@ public class PeerConfig extends javax.swing.JFrame {
 
         jLabel2.setText("VPN IP-Address");
 
+        chkVPN.setSelected(true);
         chkVPN.setText("Create VPN");
         chkVPN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -175,9 +176,9 @@ public class PeerConfig extends javax.swing.JFrame {
                             .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtPeerIP, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                            .addComponent(txtPeerName, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                            .addComponent(spnLocalPort, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)))
+                            .addComponent(txtPeerIP, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addComponent(txtPeerName, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addComponent(spnLocalPort, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
                     .addComponent(chkVPN))
                 .addContainerGap())
         );
@@ -282,6 +283,7 @@ try {
         }
         cm.getRouter().setLocalPeerInfo("name", txtPeerName.getText());
         cm.findLocalIPs();
+        cm.getConnector().addIPs(netCfg);
         org.p2pvpn.gui.Main.open(cm);
     } catch (Throwable e) {
         e.printStackTrace();

@@ -18,12 +18,18 @@
 */
 
 package org.p2pvpn.network;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -34,6 +40,8 @@ import java.util.logging.Logger;
 
 
 public class ConnectionManager implements Runnable {
+    final static private String WHATISMYIP_URL = "http://whatismyip.com/automation/n09230945.asp";
+    
 	private ServerSocket server;
 	private int serverPort;
 	private PeerID localAddr;
@@ -52,6 +60,14 @@ public class ConnectionManager implements Runnable {
 	}
 
     public void findLocalIPs() {
+        (new Thread(new Runnable() {
+            public void run() {
+                findLocalIPsThread();
+            }
+        })).start();
+    }
+    
+    private void findLocalIPsThread() {
         String ipList="";
         router.setLocalPeerInfo("local.port", ""+serverPort);
         try {
@@ -63,15 +79,26 @@ public class ConnectionManager implements Runnable {
                 System.out.print(i.getName() + ":");
                 while (as.hasMoreElements()) {
                     InetAddress a = as.nextElement();
-                    String s = a.getHostAddress();
-                    System.out.print(" " + s);
-                    if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
-                        ipList = ipList + " " + s;
+                    if (a instanceof Inet4Address) {
+                        String s = a.getHostAddress();
+                        System.out.print(" " + s);
+                        if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
+                            ipList = ipList + " " + s;
+                        }
                     }
                 }
                 System.out.println();
             }
         } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        router.setLocalPeerInfo("local.ips", ipList.substring(1));
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    new URL(WHATISMYIP_URL).openConnection().getInputStream()));
+            InetAddress a = InetAddress.getByName(in.readLine());
+            if (a instanceof Inet4Address) ipList = ipList + " " + a.getHostAddress();
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
