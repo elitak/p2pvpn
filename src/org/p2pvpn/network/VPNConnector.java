@@ -37,7 +37,7 @@ public class VPNConnector implements Runnable {
 	}
 	
 	public void receive(byte[] packet) {
-		System.out.println("VPNConnector.write "+packet.length);
+		//System.out.println("VPNConnector.write "+packet.length);
 		tuntap.write(packet, packet.length);
 	}
 	
@@ -51,7 +51,7 @@ public class VPNConnector implements Runnable {
 		// TODO close?
 		while(true) {
 			int len = tuntap.read(buffer);
-			System.out.println("VPNConnector.read "+len);
+			//System.out.println("VPNConnector.read "+len);
             if (len>=12) {
                 byte[] packet = new byte[len];
                 System.arraycopy(buffer, 0, packet, 0, len);

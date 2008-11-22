@@ -138,11 +138,11 @@ public class Router implements RoutungTableListener {
 		if (maxDist == null) return new P2PConnection[0];
 		Collection<P2PConnection> result = new Vector<P2PConnection>();
 		
-		System.out.println("Routing: dist to "+dest+" = "+maxDist);
+		//System.out.println("Routing: dist to "+dest+" = "+maxDist);
 		for(PeerID a : connections.keySet()) {
 			Integer d = dist.get(a);
 			if (d!=null && d == maxDist - 1) {
-				System.out.println("  next peer: "+a);
+				//System.out.println("  next peer: "+a);
 				result.add(connections.get(a));
 			}
 		}
@@ -393,7 +393,7 @@ public class Router implements RoutungTableListener {
 		MacAddress dest = new MacAddress(packet, 0+1);
 		
 		if (dest.equals(myMAC)) {
-			System.out.println("Data-Packet from "+new MacAddress(packet, 6+1)+" for me");
+			//System.out.println("Data-Packet from "+new MacAddress(packet, 6+1)+" for me");
 			byte[] subPacket;
 
 			if (type==DATA_BROADCAST_PACKET) {
@@ -406,7 +406,7 @@ public class Router implements RoutungTableListener {
 
 			if (vpnConnector!=null) vpnConnector.receive(subPacket);
 		} else {
-			System.out.println("Data-Packet from "+new MacAddress(packet, 6+1)+" for "+dest);
+			//System.out.println("Data-Packet from "+new MacAddress(packet, 6+1)+" for "+dest);
 			sendInt(dest, packet);
 		}
 	}

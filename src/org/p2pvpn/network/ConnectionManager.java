@@ -146,6 +146,7 @@ public class ConnectionManager implements Runnable {
             connectTo(InetAddress.getByName(host), port);
         } catch (UnknownHostException ex) {
             // TODO
+			ex.printStackTrace();
         }
 	}
 	
@@ -154,11 +155,15 @@ public class ConnectionManager implements Runnable {
 	}
 	
 	public void connectTo(String addr) {
-		StringTokenizer st = new StringTokenizer(addr,":");
-		
-		String host = st.nextToken();
-		int port = Integer.parseInt(st.nextToken());
-		connectTo(host, port);
+		try {
+			StringTokenizer st = new StringTokenizer(addr, ":");
+			
+			String host = st.nextToken();
+			int port = Integer.parseInt(st.nextToken());
+			connectTo(host, port);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void close() {
