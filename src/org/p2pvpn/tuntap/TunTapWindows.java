@@ -60,11 +60,11 @@ public class TunTapWindows extends TunTap {
                 "netsh", "interface", "ip", "set", "address", dev, "static", ip, subnetmask
             };
     		Process p = Runtime.getRuntime().exec(cmd);
-    		System.out.println("IP set successfully ("+p.waitFor()+")");
+    		//System.out.println("IP set successfully ("+p.waitFor()+")");
+            // netsh takes a long time... don't wait for it
     	} catch (Exception e) {
     		System.out.println("Could not set IP!");
     		e.printStackTrace();
-    	}
+    	}        
     }
-    
 }

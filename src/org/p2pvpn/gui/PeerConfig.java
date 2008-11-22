@@ -110,6 +110,7 @@ public class PeerConfig extends javax.swing.JFrame {
         btnOK = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Peer Configuration");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Network"));
 
