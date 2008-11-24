@@ -25,6 +25,7 @@
 	<property name="build" value="build"/>
 	<property name="build.classes" value="build/classes"/>
 	<property name="lib" value="lib"/>
+	<property name="resources" value="resources"/>
 	
 	<target name="init">
 		<mkdir dir="${build}"/>
@@ -36,14 +37,14 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<javac srcdir="${src}" destdir="${build.classes}" target="1.5" debug="true" debuglevel="lines, vars, source"/>
+		<javac srcdir="${src}" destdir="${build.classes}" target="1.5" debug="true"/>
 	</target>
 
 	<target name="jar" depends="compile">
 		<jar destfile="${build}/P2PVPN.jar">
 			<fileset dir="${build.classes}"/>
-			<fileset dir="${lib}"/>
 			<zipfileset dir="${lib}" prefix="lib"/>
+			<zipfileset dir="${resources}" prefix="resources"/>
 			<manifest>
 				<attribute name="Main-Class" value="org.p2pvpn.Main"/>
 			</manifest>

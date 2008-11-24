@@ -25,8 +25,10 @@
 
 package org.p2pvpn.gui;
 
+import java.net.URL;
 import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.p2pvpn.network.PeerID;
@@ -53,6 +55,9 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 initComponents();
+				URL url = Main.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
+				System.out.println("url: "+url);
+				setIconImage(new ImageIcon(url).getImage());
 				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {
@@ -121,7 +126,7 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -158,15 +163,15 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
                 .addGroup(aPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(localInfo1, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                        .addComponent(localInfo1, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addComponent(connectBtn1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(hostConnectText1, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
+                        .addComponent(hostConnectText1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         aPanel1Layout.setVerticalGroup(
@@ -174,7 +179,7 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, aPanel1Layout.createSequentialGroup()
                 .addComponent(localInfo1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(aPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hostConnectText1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
