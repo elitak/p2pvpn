@@ -270,13 +270,18 @@ private void btnCreateNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
 // TODO add your handling code here:
 try {
-        setVisible(false);
-
         AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
+		
+		if (!netCfg.containsKey("ip.subnet")) {
+	        JOptionPane.showMessageDialog(null, "Please copy an invitation into the Network field", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
         ConnectionManager cm = new ConnectionManager((Integer) spnLocalPort.getModel().getValue());
 
-        if (chkVPN.isSelected()) {
+        setVisible(false);
+
+		if (chkVPN.isSelected()) {
             cm.getRouter().setLocalPeerInfo("vpn.ip", txtPeerIP.getText());
             TunTap tunTap = TunTap.createTunTap();
             tunTap.setIP(txtPeerIP.getText(), netCfg.getProperty("ip.subnet"));

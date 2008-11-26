@@ -39,7 +39,8 @@ public class TunTapWindows extends TunTap {
     private String dev;    
 
     public TunTapWindows() throws Exception {
-        if (1==openTun()) throw new Exception("Could not open tun");
+        if (1==openTun()) throw new Exception("Could not open Virtual Eternat Adapter!\n" +
+				"Make sure the TAP-Win32 driver ist installed.");
     }
     
     public String getDev() {

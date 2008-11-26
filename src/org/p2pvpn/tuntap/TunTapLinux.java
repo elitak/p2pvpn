@@ -38,7 +38,8 @@ public class TunTapLinux extends TunTap {
     private String dev;    
 
     public TunTapLinux() throws Exception {
-        if (1==openTun()) throw new Exception("Could not open tun");
+        if (1==openTun()) throw new Exception("Could not open '/dev/net/tun!'\n" +
+				"Please run this application as root.");
     }
     
     public String getDev() {
