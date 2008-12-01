@@ -18,6 +18,8 @@
 */
 package org.p2pvpn;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.p2pvpn.gui.PeerConfig;
 import javax.swing.UIManager;
 import org.p2pvpn.tuntap.TunTap;
@@ -43,14 +45,15 @@ public class Main {
                 }
                 cm.getRouter().setLocalPeerInfo("name", args[1]);
             } catch (Exception exception) {
-                exception.printStackTrace();
+				Logger.getLogger("").log(Level.SEVERE, "Error during Startup", exception);
+				System.exit(1);
             }
 		} else {
 			try {
 				UIManager.setLookAndFeel(
 					UIManager.getSystemLookAndFeelClassName());
 			} catch (Exception ex) {
-			  System.out.println("Unable to load native look and feel");
+				Logger.getLogger("").log(Level.INFO, "Unable to load native look and feel", ex);
 			}
 			new PeerConfig().setVisible(true);
 		}

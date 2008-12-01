@@ -28,6 +28,8 @@ package org.p2pvpn.gui;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -292,7 +294,7 @@ try {
         cm.getConnector().addIPs(netCfg);
         org.p2pvpn.gui.Main.open(cm);
     } catch (Throwable e) {
-        e.printStackTrace();
+		Logger.getLogger("").log(Level.SEVERE, "", e);
         JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         System.exit(0);
     }

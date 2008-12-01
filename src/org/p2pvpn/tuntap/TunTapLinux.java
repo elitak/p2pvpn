@@ -20,6 +20,8 @@
 package org.p2pvpn.tuntap;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -30,7 +32,7 @@ public class TunTapLinux extends TunTap {
 		try {
 			loadLibFromRecsource("lib/libTunTapLinux.so", ".so");
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
     }
 
@@ -57,10 +59,9 @@ public class TunTapLinux extends TunTap {
     public void setIP(String ip, String subnetmask) {
     	try {
     		Process p = Runtime.getRuntime().exec("ifconfig "+dev+" "+ip+" netmask "+subnetmask);
-    		System.out.println("IP set successfully ("+p.waitFor()+")");
+			Logger.getLogger("").log(Level.INFO, "IP set successfully ("+p.waitFor()+")");
     	} catch (Exception e) {
-    		System.out.println("Could not set IP!");
-    		e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "Could not set IP!", e);
     	}
     }
     

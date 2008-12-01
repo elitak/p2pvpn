@@ -58,7 +58,7 @@ public class Connector {
         try {
             addIP(InetAddress.getByName(ip).getAddress(), port);
         } catch (UnknownHostException ex) {
-            ex.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "unknown host "+ip, ex);
         }
     }
     
@@ -72,7 +72,7 @@ public class Connector {
                 int port = Integer.parseInt(st.nextToken());
                 addIP(ip, port);
             } catch (Throwable t) {
-                t.printStackTrace();
+				Logger.getLogger("").log(Level.WARNING, "", t);
             }
             i++;
         }

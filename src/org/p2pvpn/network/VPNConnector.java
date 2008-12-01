@@ -33,7 +33,7 @@ public class VPNConnector implements Runnable {
 		this.router = router;
 		router.setVpnConnector(this);
 		
-		new Thread(this).start();
+		new Thread(this, "VPNConnector").start();
 	}
 	
 	public void receive(byte[] packet) {

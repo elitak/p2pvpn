@@ -26,6 +26,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class TCPConnection implements Runnable {
@@ -52,14 +54,14 @@ public class TCPConnection implements Runnable {
 			in = socket.getInputStream();
 			out = new BufferedOutputStream(socket.getOutputStream());
 			this.connectionManager.newConnection(this);
-			(new Thread(this)).start();
+			(new Thread(this, "TCPConnection "+peer)).start();
 			(new Thread(new Runnable() {
 				public void run() {
 					sendThread();
 				}
-			})).start();
+			}, "TCPConnection.sendThread "+peer)).start();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
 
@@ -106,7 +108,7 @@ public class TCPConnection implements Runnable {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
 
@@ -157,8 +159,7 @@ public class TCPConnection implements Runnable {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
 

@@ -41,7 +41,6 @@ public abstract class TunTap {
 		}
 		in.close();
 		out.close();
-		System.out.println(tmp.getCanonicalPath());
 		
 		System.load(tmp.getCanonicalPath());
 	}

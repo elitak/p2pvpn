@@ -56,7 +56,6 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
             public void run() {
                 initComponents();
 				URL url = Main.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
-				System.out.println("url: "+url);
 				setIconImage(new ImageIcon(url).getImage());
 				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {

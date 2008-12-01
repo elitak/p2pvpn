@@ -33,6 +33,8 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class ConnectionManager implements Runnable {
@@ -52,7 +54,7 @@ public class ConnectionManager implements Runnable {
 		router = new Router(this);
         connector = new Connector(this);
 		
-		(new Thread(this)).start();
+		(new Thread(this, "ConnectionManager")).start();
 	}
 
     public void findLocalIPs() {
@@ -60,7 +62,7 @@ public class ConnectionManager implements Runnable {
             public void run() {
                 findLocalIPsThread();
             }
-        })).start();
+        }, "findLocalIPs")).start();
     }
     
     private void findLocalIPsThread() {
@@ -86,7 +88,7 @@ public class ConnectionManager implements Runnable {
                 System.out.println();
             }
         } catch (SocketException ex) {
-            ex.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", ex);
         }
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
         try {
@@ -95,7 +97,7 @@ public class ConnectionManager implements Runnable {
             InetAddress a = InetAddress.getByName(in.readLine());
             if (a instanceof Inet4Address) ipList = ipList + " " + a.getHostAddress();
         } catch (Exception ex) {
-            ex.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "can not determine external address", ex);
         }
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
     }
@@ -109,12 +111,12 @@ public class ConnectionManager implements Runnable {
 	}
 
 	public void newConnection(TCPConnection connection) {
-		System.out.println("new connection from/to: "+connection);
+		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
 		new P2PConnection(this, connection);
 	}
 
 	public void newP2PConnection(P2PConnection p2pConnection) {
-		System.out.println("new P2P connection from/to: "+p2pConnection.getRemoteAddr()
+		Logger.getLogger("").log(Level.INFO, "new P2P connection from/to: "+p2pConnection.getRemoteAddr()
 				+" ("+p2pConnection.getConnection()+")");
 		router.newP2PConnection(p2pConnection);
 	}
@@ -124,25 +126,23 @@ public class ConnectionManager implements Runnable {
 		try {
 			server = new ServerSocket(serverPort);
 			serverPort = server.getLocalPort();
-			System.out.println("listening on port "+server.getLocalPort());
+			Logger.getLogger("").log(Level.INFO, "listening on port "+server.getLocalPort());
 			
 			while (true) {
 				Socket s = server.accept();
 				new TCPConnection(this, s);
 			}
 		}
-		catch (SocketException se) {}
-		catch (IOException e) {e.printStackTrace();}
-		
-		System.out.println("Not listening on "+server.getLocalPort()+" anymore");
+		catch (Exception e) {
+			Logger.getLogger("").log(Level.SEVERE, "Not listening on "+server.getLocalPort()+" anymore", e);
+		}
 	}
 
 	public void connectTo(String host, int port) {
         try {
             connectTo(InetAddress.getByName(host), port);
         } catch (UnknownHostException ex) {
-            // TODO
-			ex.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", ex);
         }
 	}
 	
@@ -158,7 +158,7 @@ public class ConnectionManager implements Runnable {
 			int port = Integer.parseInt(st.nextToken());
 			connectTo(host, port);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
 	
@@ -169,7 +169,7 @@ public class ConnectionManager implements Runnable {
 			server.close();
 			//TODO close connections
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
 	
@@ -180,7 +180,7 @@ public class ConnectionManager implements Runnable {
 		public ConnectTask(InetAddress host, int port) {
 			this.host = host;
 			this.port = port;
-			(new Thread(this)).start();
+			(new Thread(this, "ConnectTask")).start();
 		}
 
 		@Override
@@ -190,9 +190,9 @@ public class ConnectionManager implements Runnable {
 				s = new Socket(host, port);
 				new TCPConnection(ConnectionManager.this, s);
 			} catch (UnknownHostException e) {
-				e.printStackTrace();
+				Logger.getLogger("").log(Level.WARNING, "", e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.getLogger("").log(Level.WARNING, "", e);
 			}
 		}
 	}

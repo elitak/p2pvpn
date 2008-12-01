@@ -20,6 +20,8 @@
 package org.p2pvpn.tuntap;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,7 +33,7 @@ public class TunTapWindows extends TunTap {
 		try {
 			loadLibFromRecsource("lib/libTunTapWindows.dll", ".dll");
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.SEVERE, "Could not load libTunTapWindows.dll", e);
 		}
     }
 
@@ -64,8 +66,7 @@ public class TunTapWindows extends TunTap {
     		//System.out.println("IP set successfully ("+p.waitFor()+")");
             // netsh takes a long time... don't wait for it
     	} catch (Exception e) {
-    		System.out.println("Could not set IP!");
-    		e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "Could not set IP!", e);
     	}        
     }
 }

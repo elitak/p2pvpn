@@ -35,6 +35,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.p2pvpn.tools.VersionizedMap;
 
 
@@ -259,7 +261,11 @@ public class Router implements RoutungTableListener {
 		updatePeers();
 		
 		for(RoutungTableListener l : tableListeners) {
-			l.tableChanged(this);
+			try {
+				l.tableChanged(this);
+			} catch (Exception e) {
+				Logger.getLogger("").log(Level.WARNING, "", e);
+			}
 		}
 	}
 	
@@ -276,7 +282,7 @@ public class Router implements RoutungTableListener {
                     try {
                         connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port));
                     } catch (NumberFormatException numberFormatException) {
-                        numberFormatException.printStackTrace();
+						Logger.getLogger("").log(Level.WARNING, "", numberFormatException);
                     }
                 }
             }
@@ -381,10 +387,10 @@ public class Router implements RoutungTableListener {
 				default: throw new IOException("Bad packet type");	
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "closing connection to "+connection.getRemoteAddr(), e);
 			connection.close();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.SEVERE, "Dying!", e);
 			System.exit(1);
 		}
 	}

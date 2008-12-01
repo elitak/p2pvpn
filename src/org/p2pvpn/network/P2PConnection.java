@@ -26,6 +26,8 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class P2PConnection {
@@ -61,7 +63,7 @@ public class P2PConnection {
 			public void run() {
 				timeout();
 			}
-		}, 5, TimeUnit.SECONDS);
+		}, 30, TimeUnit.SECONDS);
 	}
 
 	public TCPConnection getConnection() {
@@ -73,12 +75,12 @@ public class P2PConnection {
 	}
 
 	private void timeout() {
-		System.out.println("Timeout in handshake with "+connection.toString());
+		Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString());
 		connection.close();
 	}
 
 	public void connectionClosed() {
-		System.out.println("P2P connection to "+connection+" lost");
+		Logger.getLogger("").log(Level.INFO, "P2P connection to "+connection+" lost");
 		if (router!=null) router.connectionClosed(this);
 	}
 
@@ -97,7 +99,7 @@ public class P2PConnection {
 						outO.flush();
 						connection.send(outB.toByteArray());
 					} else {
-						System.out.println("P2PConnection: incorrect version");
+						Logger.getLogger("").log(Level.INFO, "P2PConnection: incorrect version");
 						schedTimeout.cancel(false);
 						connection.close();
 					}
@@ -116,10 +118,10 @@ public class P2PConnection {
 					break;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.WARNING, "closing connection to +"+remoteAddr, e);
 			connection.close();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			Logger.getLogger("").log(Level.SEVERE, "", e);
 			System.exit(1);
 		}
 	}
