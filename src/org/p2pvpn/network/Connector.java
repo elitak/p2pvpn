@@ -91,7 +91,7 @@ public class Connector {
     public void addIP(byte[] ip, int port, PeerID peerID, String info, boolean keep) {
         Endpoint e = new Endpoint(ip, port);
         synchronized (ips) {
-            if (!ips.containsKey(ip)) {
+            if (!ips.containsKey(e)) {
                 ips.put(e, new EndpointInfo(peerID, info, keep));
                 scheduleConnect(e, 1);
             } else {
