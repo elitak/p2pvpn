@@ -33,12 +33,14 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 public class ConnectionManager implements Runnable {
     final static private String WHATISMYIP_URL = "http://whatismyip.com/automation/n09230945.asp";
+	final static private long WHATISMYIP_REFRESH_S = 10*60;
     
 	private ServerSocket server;
 	private int serverPort;
@@ -47,27 +49,26 @@ public class ConnectionManager implements Runnable {
 	private Router router;
     private Connector connector;
     
+	private String whatIsMyIP;
+	
 	public ConnectionManager(int serverPort) {
 		this.serverPort = serverPort;
 		scheduledExecutor = Executors.newScheduledThreadPool(1);
 		localAddr = new PeerID();
 		router = new Router(this);
         connector = new Connector(this);
-		
+		whatIsMyIP = null;
+
 		(new Thread(this, "ConnectionManager")).start();
+		
+		scheduledExecutor.schedule(new Runnable() {
+			public void run() {checkWhaiIsMyIP();}
+		}, 1, TimeUnit.SECONDS);
 	}
 
-    public void findLocalIPs() {
-        (new Thread(new Runnable() {
-            public void run() {
-                findLocalIPsThread();
-            }
-        }, "findLocalIPs")).start();
-    }
-    
-    private void findLocalIPsThread() {
+	
+	public void updateLocalIPs() {
         String ipList="";
-        router.setLocalPeerInfo("local.port", ""+serverPort);
         try {
             Enumeration<NetworkInterface> is = NetworkInterface.getNetworkInterfaces();
             while (is.hasMoreElements()) {
@@ -90,16 +91,24 @@ public class ConnectionManager implements Runnable {
         } catch (SocketException ex) {
 			Logger.getLogger("").log(Level.WARNING, "", ex);
         }
+		if (whatIsMyIP!=null) ipList = ipList + " " + whatIsMyIP;
+        router.setLocalPeerInfo("local.port", ""+serverPort);
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
+	}
+    
+    private void checkWhaiIsMyIP() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     new URL(WHATISMYIP_URL).openConnection().getInputStream()));
             InetAddress a = InetAddress.getByName(in.readLine());
-            if (a instanceof Inet4Address) ipList = ipList + " " + a.getHostAddress();
+            if (a instanceof Inet4Address) whatIsMyIP = a.getHostAddress();
         } catch (Exception ex) {
 			Logger.getLogger("").log(Level.WARNING, "can not determine external address", ex);
         }
-        router.setLocalPeerInfo("local.ips", ipList.substring(1));
+        updateLocalIPs();
+		scheduledExecutor.schedule(new Runnable() {
+			public void run() {checkWhaiIsMyIP();}
+		}, WHATISMYIP_REFRESH_S, TimeUnit.SECONDS);		
     }
     
 	public PeerID getLocalAddr() {

@@ -22,9 +22,10 @@ package org.p2pvpn.network;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,27 +37,73 @@ import org.p2pvpn.tools.AdvProperties;
  */
 public class Connector {
     
+	private final static long RETRY_S = 5*60;
+	private final static long REMOVE_MS = 1*60*60*1000;
+	
     ConnectionManager connectionManager;
-    Set<Endpoint> ips;
+    Map<Endpoint, EndpointInfo> ips;
+	
+	Vector<ConnectorListener> listeners;
     
     public Connector(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        ips = new HashSet<Endpoint>();
+		listeners = new Vector<ConnectorListener>();
+        ips = new HashMap<Endpoint, EndpointInfo>();
     }    
     
-    public void addIP(byte[] ip, int port) {
+	public void addListener(ConnectorListener l) {
+		synchronized (listeners) {
+			listeners.add(l);
+		}
+	}
+	
+	public void removeListener(ConnectorListener l) {
+		synchronized (listeners) {
+			listeners.remove(l);
+		}
+	}
+	
+	private void notifyListeners() {
+		synchronized (listeners) {
+			for(ConnectorListener l : listeners) {
+				try {
+					l.ipListChanged(this);
+				}
+				catch (Throwable t) {
+					Logger.getLogger("").log(Level.WARNING, "", t);
+				}
+			}
+		}
+	}
+	
+	public Endpoint[] getIPs() {
+		synchronized (ips) {
+			return ips.keySet().toArray(new Endpoint[0]);
+		}
+	}
+	
+	public EndpointInfo getIpInfo(Endpoint e) {
+		synchronized (ips) {
+			return ips.get(e);
+		}
+	}
+	
+    public void addIP(byte[] ip, int port, PeerID peerID, String info, boolean keep) {
         Endpoint e = new Endpoint(ip, port);
         synchronized (ips) {
-            if (!ips.contains(ip)) {
-                ips.add(e);
+            if (!ips.containsKey(ip)) {
+                ips.put(e, new EndpointInfo(peerID, info, keep));
                 scheduleConnect(e, 1);
-            }
+            } else {
+				ips.get(e).update(peerID, info, keep);
+			}
         }
+		notifyListeners();
     }
 
-    public void addIP(String ip, int port) {
+    public void addIP(String ip, int port, PeerID peerID, String info, boolean keep) {
         try {
-            addIP(InetAddress.getByName(ip).getAddress(), port);
+            addIP(InetAddress.getByName(ip).getAddress(), port, peerID, info, keep);
         } catch (UnknownHostException ex) {
 			Logger.getLogger("").log(Level.WARNING, "unknown host "+ip, ex);
         }
@@ -70,7 +117,7 @@ public class Connector {
                 StringTokenizer st = new StringTokenizer(p.getProperty("bootstrap.connectTo." + i), ":");
                 String ip = st.nextToken();
                 int port = Integer.parseInt(st.nextToken());
-                addIP(ip, port);
+                addIP(ip, port, null, "bootstrap", true);
             } catch (Throwable t) {
 				Logger.getLogger("").log(Level.WARNING, "", t);
             }
@@ -90,17 +137,31 @@ public class Connector {
         }
 
         public void run() {
-            try {
-                connectionManager.connectTo(e.getInetAddress(), e.getPort());
-                scheduleConnect(e, 5 * 60);
-            } catch (UnknownHostException ex) {
-                // TODO
-            }
+			boolean notify = false;
+			synchronized (ips) {
+				EndpointInfo info = ips.get(e);
+				if (info==null) return;
+				
+				if (!connectionManager.getRouter().isConnectedTo(info.peerID)) {
+					try {
+						connectionManager.connectTo(e.getInetAddress(), e.getPort());
+					} catch (UnknownHostException ex) {
+					}
+				} else {
+					info.update();
+				}
+				if (System.currentTimeMillis()-REMOVE_MS > info.timeAdded) {
+					ips.remove(e);
+					notify=true;
+				}
+			}
+			scheduleConnect(e, RETRY_S);
+			notifyListeners();
         }
         
     }
     
-    private class Endpoint {
+    public class Endpoint {
         byte[] ip;
         int port;
 
@@ -146,5 +207,59 @@ public class Connector {
             hash = 59 * hash + this.port;
             return hash;
         }
+		
+		@Override
+		public String toString() {
+			try {
+				return InetAddress.getByAddress(ip).getHostAddress() + ":" + port;
+			} catch (UnknownHostException ex) {
+				return "unknown host";
+			}
+		}
     }
+	
+	public class EndpointInfo {
+		PeerID peerID;
+		long timeAdded;
+		String lastInfo;
+		boolean keepForEver;
+
+		EndpointInfo(PeerID peerID, String lastInfo, boolean keepForEver) {
+			this.peerID = peerID;
+			this.lastInfo = lastInfo;
+			this.keepForEver = keepForEver;
+			update();
+		}
+		
+		EndpointInfo() {
+			this(null, null, false);
+		}
+		
+		void update() {
+			timeAdded = System.currentTimeMillis();
+		}
+
+		void update(PeerID peerID, String lastInfo, boolean keepForEver) {
+			if (peerID!=null) this.peerID = peerID;
+			if (lastInfo!=null) this.lastInfo = lastInfo;
+			if (keepForEver) this.keepForEver = true;
+			timeAdded = System.currentTimeMillis();
+		}
+		
+		public boolean isKeepForEver() {
+			return keepForEver;
+		}
+
+		public String getLastInfo() {
+			return lastInfo;
+		}
+
+		public PeerID getPeerID() {
+			return peerID;
+		}
+
+		public long getTimeAdded() {
+			return timeAdded;
+		}
+	}
 }

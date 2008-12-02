@@ -280,7 +280,8 @@ public class Router implements RoutungTableListener {
                 StringTokenizer st = new StringTokenizer(ips);
                 while (st.hasMoreTokens()) {
                     try {
-                        connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port));
+                        connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port),
+								a, "peer exchange", false);
                     } catch (NumberFormatException numberFormatException) {
 						Logger.getLogger("").log(Level.WARNING, "", numberFormatException);
                     }
@@ -311,6 +312,7 @@ public class Router implements RoutungTableListener {
 	}
 	
 	public synchronized boolean isConnectedTo(PeerID id) {
+		if (id==null) return false;
 		return connections.containsKey(id);
 	}
 	

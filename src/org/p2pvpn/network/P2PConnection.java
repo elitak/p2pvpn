@@ -111,6 +111,7 @@ public class P2PConnection {
 					schedTimeout.cancel(false);
 					connectionManager.newP2PConnection(this);
 					state = P2PConnState.CONNECTED;
+					
 					break;
 				
 				case CONNECTED:

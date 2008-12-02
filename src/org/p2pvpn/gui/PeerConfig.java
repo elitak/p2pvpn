@@ -31,7 +31,6 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.p2pvpn.tuntap.TunTap;
@@ -290,7 +289,6 @@ try {
             new VPNConnector(cm, tunTap, cm.getRouter());
         }
         cm.getRouter().setLocalPeerInfo("name", txtPeerName.getText());
-        cm.findLocalIPs();
         cm.getConnector().addIPs(netCfg);
         org.p2pvpn.gui.Main.open(cm);
     } catch (Throwable e) {
