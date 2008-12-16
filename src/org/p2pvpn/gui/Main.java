@@ -35,12 +35,14 @@ import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
+import org.p2pvpn.network.UPnPPortForward;
+import org.p2pvpn.network.UPnPPortForwardListener;
 
 /**
  *
  * @author  wolfgang
  */
-public class Main extends javax.swing.JFrame implements RoutungTableListener {
+public class Main extends javax.swing.JFrame implements RoutungTableListener, UPnPPortForwardListener {
 	private static final long serialVersionUID = -7583281386025886297L;
 	
 	private ConnectionManager connectionManager;
@@ -49,14 +51,15 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
 	/** Creates new form Main */
     public Main(ConnectionManager cm) {
         this.connectionManager = cm;
-		connectionManager.getRouter().addTableListener(this);
     	setLocationByPlatform(true);
     	
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 initComponents();
-				URL url = Main.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
-				setIconImage(new ImageIcon(url).getImage());
+				try {
+					URL url = Main.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
+					setIconImage(new ImageIcon(url).getImage());
+				} catch(NullPointerException e) {}
 				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {
@@ -70,6 +73,8 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
             	setLocalInfo(
             			"ID: "+connectionManager.getLocalAddr()+
             			"  Port: "+connectionManager.getServerPort());
+				connectionManager.getRouter().addTableListener(Main.this);
+				connectionManager.getUPnPPortForward().addListener(Main.this);
             	setVisible(true);
             }
         });
@@ -100,6 +105,9 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         ipTable = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        upnpText = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("P2PVPN");
@@ -216,6 +224,29 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener {
 
         jTabbedPane1.addTab("Known IPs", jPanel1);
 
+        upnpText.setColumns(20);
+        upnpText.setRows(5);
+        jScrollPane2.setViewportView(upnpText);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("UPnP", jPanel3);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -280,6 +311,13 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		
 		peerInfo.setText(info.toString());
 	}
+
+	public void upnpChanged(UPnPPortForward upnp) {
+		upnpText.setText("Internet Gateway Device: "+upnp.getIgd().getIGDRootDevice().getModelName()+"\n"+
+				"External IP: "+upnp.getExternalIP()+"\n" +
+				"Port mapped: "+upnp.isMapped()+"\n" +
+				"Error: "+upnp.getError());
+	}
 	
 	// TODO remove & rename variables
 	
@@ -290,7 +328,9 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     private javax.swing.JTable ipTable;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
@@ -299,7 +339,9 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     private javax.swing.JTextArea peerInfo;
     private javax.swing.JTable peerTable1;
     private javax.swing.JButton quitBtn;
+    private javax.swing.JTextArea upnpText;
     // End of variables declaration//GEN-END:variables
+
 
     
 }

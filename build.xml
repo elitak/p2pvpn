@@ -47,6 +47,7 @@
 			<zipfileset dir="${resources}" prefix="resources"/>
 			<manifest>
 				<attribute name="Main-Class" value="org.p2pvpn.Main"/>
+				<attribute name="Class-Path" value="lib/commons-jxpath-1.1.jar lib/commons-logging.jar lib/sbbi-upnplib-1.0.4.jar"/>
 			</manifest>
 		</jar>
 	</target>

@@ -48,6 +48,7 @@ public class ConnectionManager implements Runnable {
 	private ScheduledExecutorService scheduledExecutor;
 	private Router router;
     private Connector connector;
+	private UPnPPortForward uPnPPortForward;
     
 	private String whatIsMyIP;
 	
@@ -57,6 +58,7 @@ public class ConnectionManager implements Runnable {
 		localAddr = new PeerID();
 		router = new Router(this);
         connector = new Connector(this);
+		uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
 
 		(new Thread(this, "ConnectionManager")).start();
@@ -75,18 +77,15 @@ public class ConnectionManager implements Runnable {
                 NetworkInterface i = is.nextElement();
                 Enumeration<InetAddress> as = i.getInetAddresses();
 
-                System.out.print(i.getName() + ":");
                 while (as.hasMoreElements()) {
                     InetAddress a = as.nextElement();
                     if (a instanceof Inet4Address) {
                         String s = a.getHostAddress();
-                        System.out.print(" " + s);
                         if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
                             ipList = ipList + " " + s;
                         }
                     }
                 }
-                System.out.println();
             }
         } catch (SocketException ex) {
 			Logger.getLogger("").log(Level.WARNING, "", ex);
@@ -217,4 +216,8 @@ public class ConnectionManager implements Runnable {
     public Connector getConnector() {
         return connector;
     }
+
+	public UPnPPortForward getUPnPPortForward() {
+		return uPnPPortForward;
+	}
 }
