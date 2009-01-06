@@ -24,7 +24,7 @@
 	<property name="src" value="src"/>
 	<property name="build" value="build"/>
 	<property name="build.classes" value="build/classes"/>
-	<property name="lib" value="lib"/>
+	<property name="clib" value="clib"/>
 	<property name="resources" value="resources"/>
 	
 	<target name="init">
@@ -37,17 +37,24 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<javac srcdir="${src}" destdir="${build.classes}" target="1.5" debug="true"/>
+		<javac
+			srcdir="${src}"
+			destdir="${build.classes}"
+			classpath="lib/commons-jxpath-1.1.jar;lib/commons-logging.jar;lib/sbbi-upnplib-1.0.4.jar"
+			target="1.5"
+			debug="true"/>
 	</target>
 
 	<target name="jar" depends="compile">
 		<jar destfile="${build}/P2PVPN.jar">
 			<fileset dir="${build.classes}"/>
-			<zipfileset dir="${lib}" prefix="lib"/>
+			<zipfileset dir="${clib}" prefix="clib"/>
 			<zipfileset dir="${resources}" prefix="resources"/>
+			<zipfileset src="lib/commons-jxpath-1.1.jar"/>
+			<zipfileset src="lib/commons-logging.jar"/>
+			<zipfileset src="lib/sbbi-upnplib-1.0.4.jar"/>
 			<manifest>
 				<attribute name="Main-Class" value="org.p2pvpn.Main"/>
-				<attribute name="Class-Path" value="lib/commons-jxpath-1.1.jar lib/commons-logging.jar lib/sbbi-upnplib-1.0.4.jar"/>
 			</manifest>
 		</jar>
 	</target>

@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public class TunTapLinux extends TunTap {
     static {
 		try {
-			loadLibFromRecsource("lib/libTunTapLinux.so", ".so");
+			loadLibFromRecsource("clib/libTunTapLinux.so", ".so");
 		} catch (IOException e) {
 			Logger.getLogger("").log(Level.WARNING, "", e);
 		}

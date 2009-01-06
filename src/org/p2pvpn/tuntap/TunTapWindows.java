@@ -31,7 +31,7 @@ public class TunTapWindows extends TunTap {
     static {
         //System.load("C:\\Dokumente und Einstellungen\\Wolfgang\\Desktop\\sf\\tapWindows\\trunk\\dist\\Debug\\Cygwin-Windows\\libTunTapWindows.dll");
 		try {
-			loadLibFromRecsource("lib/libTunTapWindows.dll", ".dll");
+			loadLibFromRecsource("clib/libTunTapWindows.dll", ".dll");
 		} catch (IOException e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load libTunTapWindows.dll", e);
 		}
