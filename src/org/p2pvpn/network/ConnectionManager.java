@@ -198,9 +198,9 @@ public class ConnectionManager implements Runnable {
 				s = new Socket(host, port);
 				new TCPConnection(ConnectionManager.this, s);
 			} catch (UnknownHostException e) {
-				Logger.getLogger("").log(Level.WARNING, "", e);
+				Logger.getLogger("").log(Level.WARNING, host+" "+port, e);
 			} catch (IOException e) {
-				Logger.getLogger("").log(Level.WARNING, "", e);
+				Logger.getLogger("").log(Level.WARNING, host+" "+port, e);
 			}
 		}
 	}
