@@ -46,6 +46,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import net.sbbi.upnp.impls.InternetGatewayDevice;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.Router;
@@ -355,10 +356,15 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 	}
 
 	public void upnpChanged(UPnPPortForward upnp) {
-		upnpText.setText("Internet Gateway Device: "+upnp.getIgd().getIGDRootDevice().getModelName()+"\n"+
-				"External IP: "+upnp.getExternalIP()+"\n" +
-				"Port mapped: "+upnp.isMapped()+"\n" +
-				"Error: "+upnp.getError());
+		InternetGatewayDevice igd = upnp.getIgd();
+		if (igd!=null) {
+			upnpText.setText("Internet Gateway Device: "+igd.getIGDRootDevice().getModelName()+"\n"+
+					"External IP: "+upnp.getExternalIP()+"\n" +
+					"Port mapped: "+upnp.isMapped()+"\n" +
+					"Error: "+upnp.getError());
+		} else {
+			upnpText.setText("Internet Gateway Device: not found");
+		}
 	}
 	
 	public void startLogging() {

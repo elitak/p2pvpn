@@ -30,6 +30,8 @@ import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -49,6 +51,13 @@ public class PeerConfig extends javax.swing.JFrame {
     /** Creates new form PeerConfig */
     public PeerConfig() {
         initComponents();
+		
+		Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+		txtNetwork.setText(prefs.get("network", ""));
+		txtPeerName.setText(prefs.get("name", ""));
+		txtPeerIP.setText(prefs.get("ip", ""));
+		spnLocalPort.getModel().setValue(prefs.getInt("port", 0));
+		chkVPN.setSelected(prefs.getBoolean("useVPN", true));
 		
 		txtNetwork.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -269,8 +278,20 @@ private void btnCreateNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_btnCreateNetActionPerformed
 
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-// TODO add your handling code here:
-try {
+	
+	Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+	prefs.put("network", txtNetwork.getText());
+	prefs.put("name", txtPeerName.getText());
+	prefs.put("ip", txtPeerIP.getText());
+	prefs.putInt("port", (Integer) spnLocalPort.getModel().getValue());
+	prefs.putBoolean("useVPN", chkVPN.isSelected());
+		try {
+			prefs.flush();
+		} catch (BackingStoreException ex) {
+			Logger.getLogger("").log(Level.WARNING, null, ex);
+		}
+	
+	try {
         AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
 		
 		if (!netCfg.containsKey("ip.subnet")) {

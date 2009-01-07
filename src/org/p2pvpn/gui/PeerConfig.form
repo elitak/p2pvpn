@@ -80,7 +80,7 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="jScrollPane1" pref="132" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="134" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="btnCreateNet" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -137,9 +137,9 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="txtPeerIP" alignment="0" pref="261" max="32767" attributes="0"/>
-                              <Component id="txtPeerName" alignment="0" pref="261" max="32767" attributes="0"/>
-                              <Component id="spnLocalPort" alignment="0" pref="261" max="32767" attributes="0"/>
+                              <Component id="txtPeerIP" alignment="0" pref="273" max="32767" attributes="0"/>
+                              <Component id="txtPeerName" alignment="0" pref="273" max="32767" attributes="0"/>
+                              <Component id="spnLocalPort" alignment="0" pref="273" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <Component id="chkVPN" alignment="0" min="-2" max="-2" attributes="0"/>
