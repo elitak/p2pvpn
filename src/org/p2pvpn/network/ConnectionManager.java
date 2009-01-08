@@ -58,7 +58,7 @@ public class ConnectionManager implements Runnable {
 		localAddr = new PeerID();
 		router = new Router(this);
         connector = new Connector(this);
-		uPnPPortForward = new UPnPPortForward(this);
+		//uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
 
 		(new Thread(this, "ConnectionManager")).start();

@@ -91,7 +91,8 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
             			"ID: "+connectionManager.getLocalAddr()+
             			"  Port: "+connectionManager.getServerPort());
 				connectionManager.getRouter().addTableListener(Main.this);
-				connectionManager.getUPnPPortForward().addListener(Main.this);
+				//connectionManager.getUPnPPortForward().addListener(Main.this);
+				upnpText.setText("disabled");
             	setVisible(true);
             }
         });
