@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 public class TCPConnection implements Runnable {
 	
 	private static final int MAX_QUEUE = 10;
+	private static final int MAX_PACKET_SIZE = 10 * 1024;
 	
 	private ConnectionManager connectionManager;
 	private Socket socket;
@@ -81,6 +82,8 @@ public class TCPConnection implements Runnable {
 		try {
 			while (true) {
 				int size = readInt();
+				
+				if (size>MAX_PACKET_SIZE) throw new IOException("Packet too large");
 				
 				int rest=size;
 				int off=0;

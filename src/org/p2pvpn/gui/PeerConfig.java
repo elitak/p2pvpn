@@ -273,7 +273,7 @@ private void btnCreateNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 	AdvProperties settings = nc.getSettings();
 	
 	if (settings!=null) {
-		txtNetwork.setText(nc.getSettings().toString(null, true));
+		txtNetwork.setText(nc.getSettings().toString(null, false, true));
 	}
 }//GEN-LAST:event_btnCreateNetActionPerformed
 

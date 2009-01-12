@@ -26,6 +26,7 @@ import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.CryptoUtils;
 
 
 public class Main {
