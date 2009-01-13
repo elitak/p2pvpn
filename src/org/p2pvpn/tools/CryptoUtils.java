@@ -24,12 +24,15 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,11 +82,27 @@ public class CryptoUtils {
 		}
 	}
 	
+	static public KeyPair createEncryptionKeyPair() {
+		return createSignatureKeyPair();		// also uses RSA
+	}
+	
 	static public PublicKey decodeRSAPublicKey(byte[] ekey) {
 		try {
 			X509EncodedKeySpec spec = new X509EncodedKeySpec(ekey);
 			KeyFactory factory = KeyFactory.getInstance("RSA", "BC");
 			return (RSAPublicKey) factory.generatePublic(spec);
+		} catch (Throwable t) {
+			Logger.getLogger("").log(Level.SEVERE, null, t);
+			assert false;
+			return null;
+		}
+	}
+
+	static public PrivateKey decodeRSAPrivateKey(byte[] ekey) {
+		try {
+			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(ekey);
+			KeyFactory factory = KeyFactory.getInstance("RSA", "BC");
+			return (RSAPrivateKey) factory.generatePrivate(spec);
 		} catch (Throwable t) {
 			Logger.getLogger("").log(Level.SEVERE, null, t);
 			assert false;

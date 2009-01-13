@@ -112,9 +112,9 @@ public class Connector {
     public void addIPs(AdvProperties p) {
         int i=0;
         
-        while(p.containsKey("bootstrap.connectTo."+i)) {
+        while(p.containsKey("network.bootstrap.connectTo."+i)) {
             try {
-                StringTokenizer st = new StringTokenizer(p.getProperty("bootstrap.connectTo." + i), ":");
+                StringTokenizer st = new StringTokenizer(p.getProperty("network.bootstrap.connectTo." + i), ":");
                 String ip = st.nextToken();
                 int port = Integer.parseInt(st.nextToken());
                 addIP(ip, port, null, "bootstrap", true);

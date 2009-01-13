@@ -25,7 +25,10 @@
 
 package org.p2pvpn.gui;
 
+import java.security.KeyPair;
+import java.util.StringTokenizer;
 import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.CryptoUtils;
 
 /**
  *
@@ -63,6 +66,8 @@ public class NetworkConfig extends javax.swing.JDialog {
         txtSubnetMask = new javax.swing.JTextField();
         btnCancel = new javax.swing.JButton();
         btnOK = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        txtConnectTo = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Network Configuration");
@@ -94,6 +99,8 @@ public class NetworkConfig extends javax.swing.JDialog {
             }
         });
 
+        jLabel4.setText("Bootstrap");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -101,20 +108,22 @@ public class NetworkConfig extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnOK)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancel))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel1))
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                             .addComponent(txtNetwork, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
-                            .addComponent(txtSubnetMask, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))))
+                            .addComponent(txtSubnetMask, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                            .addComponent(txtConnectTo, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnOK)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnCancel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -132,11 +141,15 @@ public class NetworkConfig extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtSubnetMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(txtConnectTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnOK))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -145,9 +158,23 @@ public class NetworkConfig extends javax.swing.JDialog {
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
 // TODO add your handling code here:
 	settings = new AdvProperties();
-	settings.setProperty("name", txtName.getText());
-	settings.setProperty("ip.network", txtNetwork.getText());
-	settings.setProperty("ip.subnet", txtSubnetMask.getText());
+	settings.setProperty("network.name", txtName.getText());
+	settings.setProperty("network.ip.network", txtNetwork.getText());
+	settings.setProperty("network.ip.subnet", txtSubnetMask.getText());
+	
+	StringTokenizer st = new StringTokenizer(txtConnectTo.getText(),";");
+	int i = 0;
+	while (st.hasMoreTokens()) {
+		settings.setProperty("network.bootstrap.connectTo."+i, st.nextToken());
+		i++;
+	}
+	
+	KeyPair netKey = CryptoUtils.createSignatureKeyPair();
+	
+	settings.setPropertySplitBytes("network.publicKey", netKey.getPublic().getEncoded());
+	settings.sign("network.signature", netKey.getPrivate());
+	settings.setPropertySplitBytes("secret.network.privateKey", netKey.getPrivate().getEncoded());
+	
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed
 
@@ -164,6 +191,8 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JTextField txtConnectTo;
     private javax.swing.JTextField txtName;
     private javax.swing.JTextField txtNetwork;
     private javax.swing.JTextField txtSubnetMask;

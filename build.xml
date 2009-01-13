@@ -82,10 +82,8 @@
 	</target>
 
 	
-<!--
-	<target name="run" depends="compile">
-		<java classpath="${build.classes}" classname="Main"/>
+	<target name="run" depends="jar">
+		<java fork="true" jar="${build}/P2PVPN.jar"/>
 	</target>
--->
 	
 </project>

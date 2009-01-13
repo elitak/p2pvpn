@@ -104,7 +104,7 @@ public class AdvProperties extends Properties {
 			int len = Math.min(bs.length - pos, SPLIT_LEN);
 			byte[] part = new byte[len];
 			System.arraycopy(bs, pos, part, 0, len);
-			setPropertyBytes(key+"."+rowI, part);
+			setPropertyBytes(key+"."+Integer.toString(rowI, 36), part);
 			
 			rowI++;
 			pos += len;
@@ -117,7 +117,7 @@ public class AdvProperties extends Properties {
 		byte[] row;
 		
 		do {
-			row = getPropertyBytes(key+"."+rowI, null);
+			row = getPropertyBytes(key+"."+Integer.toString(rowI, 36), null);
 			if (row==null && rowI==0) return def;
 			
 			if (row!=null) {
