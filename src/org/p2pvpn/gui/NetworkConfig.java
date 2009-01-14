@@ -171,9 +171,9 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 	
 	KeyPair netKey = CryptoUtils.createSignatureKeyPair();
 	
-	settings.setPropertySplitBytes("network.publicKey", netKey.getPublic().getEncoded());
+	settings.setPropertyBytes("network.publicKey", netKey.getPublic().getEncoded());
 	settings.sign("network.signature", netKey.getPrivate());
-	settings.setPropertySplitBytes("secret.network.privateKey", netKey.getPrivate().getEncoded());
+	settings.setPropertyBytes("secret.network.privateKey", netKey.getPrivate().getEncoded());
 	
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed

@@ -29,6 +29,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
@@ -36,6 +37,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.CryptoUtils;
 
 
 public class ConnectionManager implements Runnable {
@@ -52,15 +55,21 @@ public class ConnectionManager implements Runnable {
     
 	private String whatIsMyIP;
 	
-	public ConnectionManager(int serverPort) {
+	private AdvProperties accessCfg;
+	private byte[] networkKey;
+	
+	public ConnectionManager(AdvProperties accessCfg, int serverPort) {
 		this.serverPort = serverPort;
+		this.accessCfg = accessCfg;
 		scheduledExecutor = Executors.newScheduledThreadPool(1);
-		localAddr = new PeerID();
+		localAddr = new PeerID(accessCfg.getPropertyBytes("access.publicKey", null), true);
 		router = new Router(this);
         connector = new Connector(this);
 		//uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
 
+		calcNetworkKey();
+		
 		(new Thread(this, "ConnectionManager")).start();
 		
 		scheduledExecutor.schedule(new Runnable() {
@@ -68,6 +77,13 @@ public class ConnectionManager implements Runnable {
 		}, 1, TimeUnit.SECONDS);
 	}
 
+	private void calcNetworkKey() {
+		byte[] b = accessCfg.getPropertyBytes("network.publicKey", null);
+		MessageDigest md = CryptoUtils.getMessageDigest();
+		md.update("secretKey".getBytes());	// make shure the key differs from
+											// other hashes created from the publicKey
+		networkKey = md.digest(b);
+	}
 	
 	public void updateLocalIPs() {
         String ipList="";
@@ -119,6 +135,11 @@ public class ConnectionManager implements Runnable {
 	}
 
 	public void newConnection(TCPConnection connection) {
+		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
+		CryptoConnection cc = new CryptoConnection(this, connection, networkKey);
+	}
+
+	public void newCryptoConnection(CryptoConnection connection) {
 		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
 		new P2PConnection(this, connection);
 	}

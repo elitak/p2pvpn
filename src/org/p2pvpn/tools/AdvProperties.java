@@ -29,9 +29,11 @@ import java.security.Signature;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Base64;
 
 
 public class AdvProperties extends Properties {
@@ -48,7 +50,11 @@ public class AdvProperties extends Properties {
 	}
 
 	public AdvProperties(String s) {
-		ByteArrayInputStream in = new ByteArrayInputStream(s.getBytes());
+		this(s.getBytes());
+	}
+	
+	public AdvProperties(byte[] b) {
+		ByteArrayInputStream in = new ByteArrayInputStream(b);
 		try {
 			load(in);
 		} catch (IOException ex) {}
@@ -66,70 +72,34 @@ public class AdvProperties extends Properties {
 	}
 	
 	public void setPropertyBytes(String key, byte[] bs) {
-		StringBuffer v = new StringBuffer();
+		String val = new String(Base64.encodeBase64(bs, true));
+		StringTokenizer st = new  StringTokenizer(val, "\n");
 		
-		for(int i=0; i<bs.length; i++) {
-			int b = ((int)bs[i]) & 0xFF; 
-			if (b < 0x10) v.append('0');
-			v.append(Integer.toString(b, 16));
+		int row=0;
+		while (st.hasMoreTokens()) {
+			String line = st.nextToken();
+			line = line.substring(0, line.length()-1);		// remove the '\r'
+			setProperty(key+"."+Integer.toString(row, 36), line);
+			row++;
 		}
-		
-		setProperty(key, v.toString());
 	}
 	
 	public byte[] getPropertyBytes(String key, byte[] def) {
-		String s = getProperty(key);
-		if (s==null) return def;
-		if (s.length() % 2 != 0) return def;
+		StringBuffer val = new StringBuffer();
 		
-		int len = s.length() / 2;
-		byte[] result = new byte[len];
-		
-		try {
-			for (int i = 0; i < len; i++) {
-				result[i] = (byte) Integer.parseInt(s.substring(i * 2, i * 2 + 2), 16);
-			}
-		} catch (NumberFormatException numberFormatException) {
-			return def;
-		}
-		
-		return result;
-	}
-	
-	public void setPropertySplitBytes(String key, byte[] bs) {
-		int rowI=0;
-		int pos=0;
-		
+		int row=0;
+		String line;
 		do {
-			int len = Math.min(bs.length - pos, SPLIT_LEN);
-			byte[] part = new byte[len];
-			System.arraycopy(bs, pos, part, 0, len);
-			setPropertyBytes(key+"."+Integer.toString(rowI, 36), part);
+			line = getProperty(key+"."+Integer.toString(row, 36), null);
 			
-			rowI++;
-			pos += len;
-		} while (pos<bs.length);
-	}
-	
-	public byte[] getPropertySplitBytes(String key, byte[] def) {
-		byte[] result = new byte[0];
-		int rowI = 0;
-		byte[] row;
-		
-		do {
-			row = getPropertyBytes(key+"."+Integer.toString(rowI, 36), null);
-			if (row==null && rowI==0) return def;
-			
-			if (row!=null) {
-				byte [] newRes = new byte[result.length + row.length];
-				System.arraycopy(result, 0, newRes, 0, result.length);
-				System.arraycopy(row, 0, newRes, result.length, row.length);
-				result = newRes;
+			if (line!=null) {
+				val.append(line);
+				val.append("\n");
 			}
-			rowI++;
-		} while (row!=null);
+			row++;
+		} while(line!=null);
 		
-		return result;
+		return Base64.decodeBase64(val.toString().getBytes());
 	}
 	
 	@Override
@@ -187,9 +157,9 @@ public class AdvProperties extends Properties {
 		return result;
 	}
 	
-	private byte[] getData () {
+	public byte[] asBytes () {
 		try {
-			return toString(null, true, false).getBytes("UTF-8");
+			return toString(null, true, false).getBytes("ISO-8859-1");
 		} catch (UnsupportedEncodingException ex) {
 			assert false;
 			return null;
@@ -198,11 +168,11 @@ public class AdvProperties extends Properties {
 	
 	public void sign(String keyName, PrivateKey privateKey) {
 		try {
-			byte[] data = getData();
+			byte[] data = asBytes();
 			Signature signature = CryptoUtils.getSignature();
 			signature.initSign(privateKey, CryptoUtils.getSecureRandom());
 			signature.update(data);
-			setPropertySplitBytes(keyName, signature.sign());
+			setPropertyBytes(keyName, signature.sign());
 		} catch (Throwable ex) {
 			Logger.getLogger("").log(Level.SEVERE, null, ex);
 			assert false;
@@ -211,11 +181,11 @@ public class AdvProperties extends Properties {
 	
 	public boolean verify(String keyName, PublicKey publicKey) {
 		try {
-			byte[] data = filter(keyName, true).getData();
+			byte[] data = filter(keyName, true).asBytes();
 			Signature signature = CryptoUtils.getSignature();
 			signature.initVerify(publicKey);
 			signature.update(data);
-			return signature.verify(getPropertySplitBytes(keyName, null));
+			return signature.verify(getPropertyBytes(keyName, null));
 		} catch (Throwable ex) {
 			Logger.getLogger("").log(Level.SEVERE, null, ex);
 			return false;

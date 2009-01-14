@@ -22,8 +22,7 @@ package org.p2pvpn.tools;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -31,11 +30,13 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class CryptoUtils {
@@ -108,5 +109,33 @@ public class CryptoUtils {
 			assert false;
 			return null;
 		}
+	}
+	
+	static public MessageDigest getMessageDigest() {
+		try {
+			return MessageDigest.getInstance("SHA1");
+		} catch (Throwable t) {
+			Logger.getLogger("").log(Level.SEVERE, null, t);
+			assert false;
+			return null;
+		}		
+	}
+	
+	static public Cipher getSymmetricCipher() {
+		try {
+			return Cipher.getInstance("AES/CBC/ISO10126Padding");
+		} catch (Throwable t) {
+			Logger.getLogger("").log(Level.SEVERE, null, t);
+			assert false;
+			return null;
+		}			
+	}
+	
+	static public int getSymmetricKeyLength() {
+		return 128;
+	}
+	
+	static public SecretKey decodeSymmetricKey(byte[] b) {
+		return new SecretKeySpec(b, 0, 16, "AES");
 	}
 }

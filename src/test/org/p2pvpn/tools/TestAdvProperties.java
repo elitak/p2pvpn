@@ -52,10 +52,10 @@ public class TestAdvProperties {
 	
 	@Test public void testDecodeKey() {
 		KeyPair kp = CryptoUtils.createSignatureKeyPair();
-		p.setPropertySplitBytes("publicKey", kp.getPublic().getEncoded());
+		p.setPropertyBytes("publicKey", kp.getPublic().getEncoded());
 		p.sign("signature", kp.getPrivate());
 		
-		PublicKey key = CryptoUtils.decodeRSAPublicKey(p.getPropertySplitBytes("publicKey", null));
+		PublicKey key = CryptoUtils.decodeRSAPublicKey(p.getPropertyBytes("publicKey", null));
 		assertTrue(p.verify("signature", key));
 	}
 	

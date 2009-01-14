@@ -36,7 +36,7 @@ public class Main {
             try {
                 AdvProperties netCfg = new AdvProperties(args[0]);
 
-                ConnectionManager cm = new ConnectionManager(Integer.parseInt(args[2]));
+                ConnectionManager cm = new ConnectionManager(netCfg, Integer.parseInt(args[2]));
 
                 if (!args[3].equals("none")) {
                     cm.getRouter().setLocalPeerInfo("vpn.ip", args[3]);

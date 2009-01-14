@@ -19,57 +19,61 @@
 
 package org.p2pvpn.network;
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import org.apache.commons.codec.binary.Base64;
+import org.p2pvpn.tools.CryptoUtils;
 
 public class PeerID implements Comparable<PeerID>, Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	private int address;
+	private byte[] id;
 
-	public PeerID(int address) {
-		this.address = address;
+	public PeerID(byte[] b, boolean hash) {
+		if (hash) {
+			MessageDigest md = CryptoUtils.getMessageDigest();
+			id = md.digest(b);
+		} else {
+			id = b;
+		}
 	}
 
 	public PeerID(String addrStr) {
-		this.address = Integer.parseInt(addrStr);
-	}
-
-	public PeerID() {
-		this((int)(Math.random()*(1<<30)));
-	}
-	
-	public int getAddress() {
-		return address;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + address;
-		return result;
+		id = Base64.decodeBase64(addrStr.getBytes());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
-		PeerID other = (PeerID) obj;
-		if (address != other.address)
+		}
+		final PeerID other = (PeerID) obj;
+		if (this.id != other.id && (this.id == null || !Arrays.equals(id, other.id))) {
 			return false;
+		}
 		return true;
 	}
 
 	@Override
-	public int compareTo(PeerID o) {
-		return address - o.address;
+	public int hashCode() {
+		return Arrays.hashCode(id);
 	}
 
+	public int compareTo(PeerID o) {
+		int d = id.length - o.id.length;
+		if (d!=0) return d;
+		for(int i=0; i<id.length; i++) {
+			d = id[i] - o.id[i];
+			if (d!=0) return d;
+		}
+		return 0;
+	}
+	
 	@Override
 	public String toString() {
-		return ""+address;
+		return new String(Base64.encodeBase64(id, false));
 	}
 }

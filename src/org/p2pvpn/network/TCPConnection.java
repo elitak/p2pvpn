@@ -40,7 +40,7 @@ public class TCPConnection implements Runnable {
 	private InputStream in;
 	private BufferedOutputStream out;
 	private SocketAddress peer;
-	private P2PConnection listener;
+	private CryptoConnection listener;
 	
 	private Queue<byte[]> sendQueue;
 	private boolean closed;
@@ -78,7 +78,7 @@ public class TCPConnection implements Runnable {
 	
 	@Override
 	public void run() {
-		byte[] buffer = new byte[2048];
+		byte[] buffer = new byte[MAX_PACKET_SIZE];
 		try {
 			while (true) {
 				int size = readInt();
@@ -99,7 +99,7 @@ public class TCPConnection implements Runnable {
 				System.arraycopy(buffer, 0, packet, 0, size);
 				handlePacket(packet);
 			}
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			//e.printStackTrace();
 		}
 		
@@ -145,7 +145,7 @@ public class TCPConnection implements Runnable {
 		if (listener!=null) listener.receive(packet);
 	}
 	
-	public void setListener(P2PConnection listener) {
+	public void setListener(CryptoConnection listener) {
 		this.listener = listener;
 	}
 	

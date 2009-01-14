@@ -334,7 +334,7 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 			return;
 		}
 
-        ConnectionManager cm = new ConnectionManager((Integer) spnLocalPort.getModel().getValue());
+        ConnectionManager cm = new ConnectionManager(accessCfg, (Integer) spnLocalPort.getModel().getValue());
 
         setVisible(false);
 
@@ -358,16 +358,16 @@ private void btnCreateAccessActionPerformed(java.awt.event.ActionEvent evt) {//G
 // TODO add your handling code here:
 	AdvProperties netCfg = new AdvProperties(txtNetwork.getText());
 	PrivateKey netPriv = CryptoUtils.decodeRSAPrivateKey(
-			netCfg.getPropertySplitBytes("secret.network.privateKey", null));
+			netCfg.getPropertyBytes("secret.network.privateKey", null));
 
 	KeyPair accessKp = CryptoUtils.createEncryptionKeyPair();
 	
 	AdvProperties accessCfg = new AdvProperties();
 	accessCfg.setProperty("access.name", "none");
 	accessCfg.setProperty("access.expiryDate", "none");
-	accessCfg.setPropertySplitBytes("access.publicKey", accessKp.getPublic().getEncoded());
+	accessCfg.setPropertyBytes("access.publicKey", accessKp.getPublic().getEncoded());
 	accessCfg.sign("access.signature", netPriv);
-	accessCfg.setPropertySplitBytes("secret.access.privateKey", accessKp.getPrivate().getEncoded());
+	accessCfg.setPropertyBytes("secret.access.privateKey", accessKp.getPrivate().getEncoded());
 	
 	accessCfg.putAll(netCfg.filter("secret", true));
 	
