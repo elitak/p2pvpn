@@ -317,6 +317,8 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
 
 	private void eventQuit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventQuit
 		System.exit(0);
+		//connectionManager.close();
+		//setVisible(false);
 	}//GEN-LAST:event_eventQuit
 
 private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventConnectTo

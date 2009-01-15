@@ -25,6 +25,7 @@ public class VPNConnector implements Runnable {
 	private ConnectionManager connectionManager;
 	private TunTap tuntap;
 	private Router router;
+	private Thread myThread;
 	
 	public VPNConnector(ConnectionManager connectionManager, TunTap tuntap,
 			Router router) {
@@ -33,7 +34,8 @@ public class VPNConnector implements Runnable {
 		this.router = router;
 		router.setVpnConnector(this);
 		
-		new Thread(this, "VPNConnector").start();
+		myThread = new Thread(this, "VPNConnector");
+		myThread.start();
 	}
 	
 	public void receive(byte[] packet) {
@@ -43,6 +45,7 @@ public class VPNConnector implements Runnable {
 	
 	public void close() {
 		tuntap.close();
+		myThread.interrupt();
 	}
 
 	@Override

@@ -83,6 +83,16 @@ public class CryptoUtils {
 		}
 	}
 	
+	static public Cipher getAsymmetricCipher() {
+		try {
+			return Cipher.getInstance("RSA/NONE/PKCS1Padding", "BC");
+		} catch (Throwable t) {
+			Logger.getLogger("").log(Level.SEVERE, null, t);
+			assert false;
+			return null;
+		}
+	}
+	
 	static public KeyPair createEncryptionKeyPair() {
 		return createSignatureKeyPair();		// also uses RSA
 	}
@@ -123,7 +133,7 @@ public class CryptoUtils {
 	
 	static public Cipher getSymmetricCipher() {
 		try {
-			return Cipher.getInstance("AES/CBC/ISO10126Padding");
+			return Cipher.getInstance("AES/CBC/ISO10126Padding", "BC");
 		} catch (Throwable t) {
 			Logger.getLogger("").log(Level.SEVERE, null, t);
 			assert false;
@@ -132,7 +142,7 @@ public class CryptoUtils {
 	}
 	
 	static public int getSymmetricKeyLength() {
-		return 128;
+		return 16;
 	}
 	
 	static public SecretKey decodeSymmetricKey(byte[] b) {

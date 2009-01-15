@@ -18,30 +18,32 @@
 */
 
 package org.p2pvpn.network;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.CryptoUtils;
 
 
 public class P2PConnection {
 	
-	static final String VERSION = "test1";
-	
-	private enum P2PConnState {WAITING_FOR_VERSION, WAITING_FOR_ADDRESS, CONNECTED};
+	private enum P2PConnState {WAIT_FOR_ACCESS, WAIT_FOR_RND, WAIT_FOR_ENC_RND,
+		WAIT_FOR_KEY, CONNECTED};
 	
 	private P2PConnState state;
+	
+	private byte[] myKeyPart;
 	
 	private ConnectionManager connectionManager;
 	private CryptoConnection connection;
 	private ScheduledFuture<?> schedTimeout;
 	private PeerID remoteAddr;
+	private AdvProperties remoteAccess;
 	private Router router;
 	
 	public P2PConnection(ConnectionManager connectionManager,
@@ -52,11 +54,12 @@ public class P2PConnection {
 
 		remoteAddr = null;
 		
-		state = P2PConnState.WAITING_FOR_VERSION;
 		
 		connection.setListener(this);
 		
-		connection.send(VERSION.getBytes());
+		AdvProperties access = connectionManager.getAccessCfg().filter("access", false);
+		connection.send(access.asBytes());
+		state = P2PConnState.WAIT_FOR_ACCESS;
 
 		schedTimeout = 
 			connectionManager.getScheduledExecutor().schedule(new Runnable() {
@@ -85,46 +88,62 @@ public class P2PConnection {
 	}
 
 	public void receive(byte[] packet) {
-		ByteArrayInputStream inB = new ByteArrayInputStream(packet);
+		//ByteArrayInputStream inB = new ByteArrayInputStream(packet); TODO
 		
 		try {
 			switch (state) {
-				case WAITING_FOR_VERSION:
-					if (Arrays.equals(VERSION.getBytes(), packet)) {
-						state = P2PConnState.WAITING_FOR_ADDRESS;
+				case WAIT_FOR_ACCESS: {
+					remoteAccess = new AdvProperties(packet);
+					remoteAddr = new PeerID(remoteAccess.getPropertyBytes("access.publicKey", null), true);
+					PublicKey netKey = CryptoUtils.decodeRSAPublicKey(
+							connectionManager.getAccessCfg().getPropertyBytes("network.publicKey", null));
+					if (remoteAccess.verify("access.signature", netKey)) {
+						SecureRandom rnd = CryptoUtils.getSecureRandom();
+						myKeyPart = new byte[CryptoUtils.getSymmetricKeyLength()];
+						rnd.nextBytes(myKeyPart);
+
+						PublicKey remoteKey = CryptoUtils.decodeRSAPublicKey(
+								remoteAccess.getPropertyBytes("access.publicKey", null));
 						
-						ByteArrayOutputStream outB = new ByteArrayOutputStream();
-						ObjectOutputStream outO = new ObjectOutputStream(outB);
-						outO.writeObject(connectionManager.getLocalAddr());
-						outO.flush();
-						connection.send(outB.toByteArray());
+						Cipher c = CryptoUtils.getAsymmetricCipher();
+						c.init(Cipher.ENCRYPT_MODE, remoteKey, rnd);
+						
+						connection.send(c.doFinal(myKeyPart));
+						
+						state = P2PConnState.WAIT_FOR_KEY;
 					} else {
-						Logger.getLogger("").log(Level.INFO, "P2PConnection: incorrect version");
-						schedTimeout.cancel(false);
-						connection.close();
+						Logger.getLogger("").log(Level.WARNING, remoteAddr+" has no valid access!");
+						close();
 					}
 					break;
-				
-				case WAITING_FOR_ADDRESS:
-					ObjectInputStream inO = new ObjectInputStream(inB);
-					remoteAddr = (PeerID)inO.readObject();
+				}
+				case WAIT_FOR_KEY: {
+					PrivateKey myKey = CryptoUtils.decodeRSAPrivateKey(
+							connectionManager.getAccessCfg().getPropertyBytes("secret.access.privateKey", null));
+					Cipher c = CryptoUtils.getAsymmetricCipher();
+					c.init(Cipher.DECRYPT_MODE, myKey);
+					byte[] remoteKeyPart = c.doFinal(packet);
+					byte[] key = new byte[myKeyPart.length];
+					
+					for(int i=0; i<key.length; i++) {
+						key[i] = (byte)(myKeyPart[i] ^ remoteKeyPart[i]);
+					}
+					myKeyPart = null;
+					connection.changeKey(key);
+					
+					state = P2PConnState.CONNECTED;
 					schedTimeout.cancel(false);
 					connectionManager.newP2PConnection(this);
-					state = P2PConnState.CONNECTED;
-					
 					break;
-				
+				}
 				case CONNECTED:
 					router.receive(this, packet);
 					break;
 			}
-		} catch (IOException e) {
-			Logger.getLogger("").log(Level.WARNING, "closing connection to +"+remoteAddr, e);
+		} catch (Throwable t) {
+			Logger.getLogger("").log(Level.WARNING, "closing connection to +"+remoteAddr, t);
 			connection.close();
-		} catch (ClassNotFoundException e) {
-			Logger.getLogger("").log(Level.SEVERE, "", e);
-			System.exit(1);
-		}
+		} 
 	}
 
 	public void send(byte[] packet) {

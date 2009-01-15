@@ -129,6 +129,10 @@ public class ConnectionManager implements Runnable {
 	public PeerID getLocalAddr() {
 		return localAddr;
 	}
+
+	public AdvProperties getAccessCfg() {
+		return accessCfg;
+	}
 	
 	public ScheduledExecutorService getScheduledExecutor() {
 		return scheduledExecutor;

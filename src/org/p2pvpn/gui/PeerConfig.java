@@ -59,7 +59,7 @@ public class PeerConfig extends javax.swing.JFrame {
 		txtNetwork.setText(prefs.get("network", ""));
 		txtAccess.setText(prefs.get("access", ""));
 		txtPeerIP.setText(prefs.get("ip", ""));
-		spnLocalPort.getModel().setValue(prefs.getInt("port", 0));
+		spnLocalPort.getModel().setValue(prefs.getInt("port", 57335));
 		chkVPN.setSelected(prefs.getBoolean("useVPN", true));
 		
 		txtAccess.getDocument().addDocumentListener(new DocumentListener() {
@@ -117,6 +117,8 @@ public class PeerConfig extends javax.swing.JFrame {
         chkVPN = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
         spnLocalPort = new javax.swing.JSpinner();
+        jLabel1 = new javax.swing.JLabel();
+        txtName = new javax.swing.JTextField();
         btnCancel = new javax.swing.JButton();
         btnOK = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -137,7 +139,7 @@ public class PeerConfig extends javax.swing.JFrame {
         });
 
         txtNetwork.setColumns(20);
-        txtNetwork.setFont(new java.awt.Font("DejaVu Sans", 0, 8)); // NOI18N
+        txtNetwork.setFont(new java.awt.Font("DejaVu Sans", 0, 8));
         txtNetwork.setRows(5);
         jScrollPane1.setViewportView(txtNetwork);
 
@@ -155,7 +157,7 @@ public class PeerConfig extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCreateNet)
                 .addContainerGap())
@@ -167,15 +169,12 @@ public class PeerConfig extends javax.swing.JFrame {
 
         chkVPN.setSelected(true);
         chkVPN.setText("Create VPN");
-        chkVPN.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chkVPNActionPerformed(evt);
-            }
-        });
 
         jLabel3.setText("Local Port");
 
         spnLocalPort.setModel(new javax.swing.SpinnerNumberModel(0, 0, 65535, 1));
+
+        jLabel1.setText("Name");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -184,6 +183,10 @@ public class PeerConfig extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(72, 72, 72)
+                        .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -198,6 +201,10 @@ public class PeerConfig extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(txtPeerIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -227,7 +234,7 @@ public class PeerConfig extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Access"));
 
         txtAccess.setColumns(20);
-        txtAccess.setFont(new java.awt.Font("DejaVu Sans", 0, 8)); // NOI18N
+        txtAccess.setFont(new java.awt.Font("DejaVu Sans", 0, 8));
         txtAccess.setRows(5);
         jScrollPane2.setViewportView(txtAccess);
 
@@ -252,7 +259,7 @@ public class PeerConfig extends javax.swing.JFrame {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCreateAccess)
                 .addContainerGap())
@@ -271,7 +278,7 @@ public class PeerConfig extends javax.swing.JFrame {
                         .addComponent(btnOK)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCancel))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -292,10 +299,6 @@ public class PeerConfig extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-private void chkVPNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkVPNActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_chkVPNActionPerformed
 
 private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
 	System.exit(0);
@@ -344,7 +347,7 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             tunTap.setIP(txtPeerIP.getText(), accessCfg.getProperty("network.ip.subnet"));
             new VPNConnector(cm, tunTap, cm.getRouter());
         }
-        cm.getRouter().setLocalPeerInfo("name", accessCfg.getProperty("access.name", "none"));
+        cm.getRouter().setLocalPeerInfo("name", txtName.getText());
         cm.getConnector().addIPs(accessCfg);
         org.p2pvpn.gui.Main.open(cm);
     } catch (Throwable e) {
@@ -363,7 +366,6 @@ private void btnCreateAccessActionPerformed(java.awt.event.ActionEvent evt) {//G
 	KeyPair accessKp = CryptoUtils.createEncryptionKeyPair();
 	
 	AdvProperties accessCfg = new AdvProperties();
-	accessCfg.setProperty("access.name", "none");
 	accessCfg.setProperty("access.expiryDate", "none");
 	accessCfg.setPropertyBytes("access.publicKey", accessKp.getPublic().getEncoded());
 	accessCfg.sign("access.signature", netPriv);
@@ -381,6 +383,7 @@ private void btnCreateAccessActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JButton btnCreateNet;
     private javax.swing.JButton btnOK;
     private javax.swing.JCheckBox chkVPN;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
@@ -390,6 +393,7 @@ private void btnCreateAccessActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSpinner spnLocalPort;
     private javax.swing.JTextArea txtAccess;
+    private javax.swing.JTextField txtName;
     private javax.swing.JTextArea txtNetwork;
     private javax.swing.JTextField txtPeerIP;
     // End of variables declaration//GEN-END:variables
