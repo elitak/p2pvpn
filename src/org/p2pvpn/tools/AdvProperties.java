@@ -162,7 +162,9 @@ public class AdvProperties extends Properties {
 	
 	public byte[] asBytes () {
 		try {
-			return toString(null, true, false).getBytes("ISO-8859-1");
+            String s = toString(null, true, false);
+            s = s.replaceAll("\r", "");
+			return s.getBytes("ISO-8859-1");
 		} catch (UnsupportedEncodingException ex) {
 			assert false;
 			return null;
