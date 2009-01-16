@@ -6,19 +6,25 @@
 
 package org.p2pvpn.gui;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.p2pvpn.tools.AdvProperties;
-import org.p2pvpn.tools.CryptoUtils;
 
 public class InviteWindow extends javax.swing.JDialog {
 
 	MainControl mainControl;
+	JFileChooser fileChooser;
 	
     /** Creates new form InviteWindow */
     public InviteWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         initComponents();
+		fileChooser = new JFileChooser();
 		this.mainControl = mainControl;
     }
 
@@ -36,6 +42,7 @@ public class InviteWindow extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtInvitation = new javax.swing.JTextArea();
+        btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
 
         setTitle("Generate Invitation");
@@ -56,15 +63,28 @@ public class InviteWindow extends javax.swing.JDialog {
         txtInvitation.setRows(5);
         jScrollPane1.setViewportView(txtInvitation);
 
+        btnSave.setText("Save to a File...");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btnSave)
+                .addContainerGap())
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSave))
         );
 
         btnClose.setText("Close");
@@ -123,15 +143,32 @@ private void btnGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 	}
 }//GEN-LAST:event_btnGenerateActionPerformed
 
-
+private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+// TODO add your handling code here:
+	if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(this)) {
+		try {
+			File file = fileChooser.getSelectedFile();
+			FileOutputStream out = new FileOutputStream(file);
+			
+			AdvProperties p = new AdvProperties(txtInvitation.getText());
+			p.store(out, null);
+			txtInvitation.setText(p.toString(null, true, true));
+		} catch (IOException iOException) {
+			Logger.getLogger("").log(Level.WARNING, null, iOException);
+			JOptionPane.showMessageDialog(null, iOException.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}	
+}//GEN-LAST:event_btnSaveActionPerformed
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnGenerate;
+    private javax.swing.JButton btnSave;
     private javax.swing.JCheckBox chkNetwork;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea txtInvitation;
     // End of variables declaration//GEN-END:variables
+
 
 }

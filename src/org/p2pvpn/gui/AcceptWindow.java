@@ -6,18 +6,33 @@
 
 package org.p2pvpn.gui;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.CryptoUtils;
 
 
-public class AcceptWindow extends javax.swing.JDialog {
+public class AcceptWindow extends javax.swing.JDialog implements DocumentListener {
 
 	MainControl mainControl;
+	JFileChooser fileChooser;
 	
     /** Creates new form AcceptWindow */
     public AcceptWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         initComponents();
 		this.mainControl = mainControl;
+		fileChooser = new JFileChooser();
+		txtInvitation.getDocument().addDocumentListener(this);
+		btnOK.setEnabled(false);
     }
 
     /** This method is called from within the constructor to
@@ -34,6 +49,7 @@ public class AcceptWindow extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         scrollInvitation = new javax.swing.JScrollPane();
         txtInvitation = new javax.swing.JTextArea();
+        btnLoad = new javax.swing.JButton();
 
         setTitle("Accept an Invitation");
 
@@ -58,15 +74,28 @@ public class AcceptWindow extends javax.swing.JDialog {
         txtInvitation.setRows(5);
         scrollInvitation.setViewportView(txtInvitation);
 
+        btnLoad.setText("Load from File...");
+        btnLoad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLoadActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btnLoad)
+                .addContainerGap())
             .addComponent(scrollInvitation, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrollInvitation, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btnLoad)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scrollInvitation, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -118,10 +147,52 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed
 
+private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadActionPerformed
+// TODO add your handling code here:
+	if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
+		try {
+			File file = fileChooser.getSelectedFile();
+			FileInputStream in = new FileInputStream(file);
+			
+			AdvProperties p = new AdvProperties();
+			p.load(in);
+			txtInvitation.setText(p.toString(null, true, true));
+		} catch (IOException iOException) {
+			Logger.getLogger("").log(Level.WARNING, null, iOException);
+			JOptionPane.showMessageDialog(null, iOException.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+}//GEN-LAST:event_btnLoadActionPerformed
+
+	private void invChanged() {
+		try {
+			AdvProperties p = new AdvProperties(txtInvitation.getText());
+			AdvProperties net = p.filter("network", false);
+			
+			PublicKey netKey = CryptoUtils.decodeRSAPublicKey(p.getPropertyBytes("network.publicKey", null));
+			btnOK.setEnabled(net.verify("network.signature", netKey));
+		} catch (NullPointerException e) {
+			btnOK.setEnabled(false);
+		}
+	}
+
+	public void insertUpdate(DocumentEvent e) {
+		invChanged();
+	}
+
+	public void removeUpdate(DocumentEvent e) {
+		invChanged();
+	}
+
+	public void changedUpdate(DocumentEvent e) {
+		invChanged();
+	}
+
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnLoad;
     private javax.swing.JButton btnOK;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane scrollInvitation;

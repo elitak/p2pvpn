@@ -78,6 +78,7 @@ public class AdvProperties extends Properties {
 		int row=0;
 		while (st.hasMoreTokens()) {
 			String line = st.nextToken();
+			assert line.indexOf('\r')==line.length()-1;
 			line = line.substring(0, line.length()-1);		// remove the '\r'
 			setProperty(key+"."+Integer.toString(row, 36), line);
 			row++;
@@ -96,7 +97,7 @@ public class AdvProperties extends Properties {
 			
 			if (line!=null) {
 				val.append(line);
-				val.append("\n");
+				//val.append("\n");
 			}
 			row++;
 		} while(line!=null);
