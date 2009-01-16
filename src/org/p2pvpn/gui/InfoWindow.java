@@ -58,14 +58,14 @@ import org.p2pvpn.network.UPnPPortForwardListener;
  *
  * @author  wolfgang
  */
-public class Main extends javax.swing.JFrame implements RoutungTableListener, UPnPPortForwardListener {
+public class InfoWindow extends javax.swing.JFrame implements RoutungTableListener, UPnPPortForwardListener {
 	private static final long serialVersionUID = -7583281386025886297L;
 	
 	private ConnectionManager connectionManager;
 	private PeerID addrShown = null;
 	
 	/** Creates new form Main */
-    public Main(ConnectionManager cm) {
+    public InfoWindow(ConnectionManager cm) {
         this.connectionManager = cm;
     	setLocationByPlatform(true);
     	
@@ -74,7 +74,7 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
                 initComponents();
 				startLogging();
 				try {
-					URL url = Main.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
+					URL url = InfoWindow.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
 					setIconImage(new ImageIcon(url).getImage());
 				} catch(NullPointerException e) {}
 				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -90,7 +90,7 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
             	setLocalInfo(
             			"ID: "+connectionManager.getLocalAddr()+
             			"  Port: "+connectionManager.getServerPort());
-				connectionManager.getRouter().addTableListener(Main.this);
+				connectionManager.getRouter().addTableListener(InfoWindow.this);
 				//connectionManager.getUPnPPortForward().addListener(Main.this);
 				upnpText.setText("disabled");
             	setVisible(true);
@@ -108,7 +108,6 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        quitBtn = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
@@ -130,15 +129,8 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
         jScrollPane5 = new javax.swing.JScrollPane();
         logText = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("P2PVPN");
-
-        quitBtn.setText("Quit");
-        quitBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                eventQuit(evt);
-            }
-        });
 
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -297,9 +289,7 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(quitBtn, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -307,19 +297,11 @@ public class Main extends javax.swing.JFrame implements RoutungTableListener, UP
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(quitBtn)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-	private void eventQuit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventQuit
-		System.exit(0);
-		//connectionManager.close();
-		//setVisible(false);
-	}//GEN-LAST:event_eventQuit
 
 private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventConnectTo
 	connectionManager.connectTo(hostConnectText1.getText());
@@ -339,7 +321,7 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 	}
 	
     public static void open(ConnectionManager cm) {
-    	new Main(cm);
+    	new InfoWindow(cm);
     }
 
 	public void tableChanged(Router router) {
@@ -428,7 +410,6 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     private javax.swing.JTextArea logText;
     private javax.swing.JTextArea peerInfo;
     private javax.swing.JTable peerTable1;
-    private javax.swing.JButton quitBtn;
     private javax.swing.JTextArea upnpText;
     // End of variables declaration//GEN-END:variables
 

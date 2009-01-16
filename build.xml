@@ -59,9 +59,9 @@
 			<fileset dir="${build.classes}">
 				<exclude name="test/**"/>
 			</fileset>
-			<!--<zipfileset dir="${clib}" prefix="clib"/>
+			<zipfileset dir="${clib}" prefix="clib"/>
 			<zipfileset dir="${resources}" prefix="resources"/>
-			<zipfileset src="lib/commons-jxpath-1.1.jar"/>
+			<!--<zipfileset src="lib/commons-jxpath-1.1.jar"/>
 			<zipfileset src="lib/commons-logging.jar"/>
 			<zipfileset src="lib/sbbi-upnplib-1.0.4.jar"/>
 			<zipfileset src="lib/bcprov-jdk16-141.jar">

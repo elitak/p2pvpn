@@ -343,13 +343,13 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 
 		if (chkVPN.isSelected()) {
             cm.getRouter().setLocalPeerInfo("vpn.ip", txtPeerIP.getText());
-            TunTap tunTap = TunTap.createTunTap();
-            tunTap.setIP(txtPeerIP.getText(), accessCfg.getProperty("network.ip.subnet"));
-            new VPNConnector(cm, tunTap, cm.getRouter());
+			VPNConnector vpnc = VPNConnector.getVPNConnector();
+			vpnc.setRouter(cm.getRouter());
+			vpnc.getTunTap().setIP(txtPeerIP.getText(), accessCfg.getProperty("network.ip.subnet"));
         }
         cm.getRouter().setLocalPeerInfo("name", txtName.getText());
         cm.getConnector().addIPs(accessCfg);
-        org.p2pvpn.gui.Main.open(cm);
+        org.p2pvpn.gui.InfoWindow.open(cm);
     } catch (Throwable e) {
 		Logger.getLogger("").log(Level.SEVERE, "", e);
         JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

@@ -92,6 +92,8 @@ public class AdvProperties extends Properties {
 		do {
 			line = getProperty(key+"."+Integer.toString(row, 36), null);
 			
+			if (line==null && row==0) return def;
+			
 			if (line!=null) {
 				val.append(line);
 				val.append("\n");

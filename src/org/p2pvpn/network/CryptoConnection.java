@@ -124,4 +124,11 @@ public class CryptoConnection {
 	public void connectionClosed() {
 		if (listener!=null) listener.connectionClosed();
 	}
+
+	@Override
+	public String toString() {
+		return tcpConnection.toString();
+	}
+	
+	
 }

@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.p2pvpn.gui.PeerConfig;
 import javax.swing.UIManager;
+import org.p2pvpn.gui.MainWindow;
 import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.VPNConnector;
@@ -40,9 +41,9 @@ public class Main {
 
                 if (!args[3].equals("none")) {
                     cm.getRouter().setLocalPeerInfo("vpn.ip", args[3]);
-                    TunTap tunTap = TunTap.createTunTap();
-                    tunTap.setIP(args[3], args[4]);
-                    new VPNConnector(cm, tunTap, cm.getRouter());
+					VPNConnector vpnc = VPNConnector.getVPNConnector();
+					vpnc.setRouter(cm.getRouter());
+					vpnc.getTunTap().setIP(args[3], args[4]);
                 }
                 cm.getRouter().setLocalPeerInfo("name", args[1]);
             } catch (Exception exception) {
@@ -56,7 +57,8 @@ public class Main {
 			} catch (Exception ex) {
 				Logger.getLogger("").log(Level.INFO, "Unable to load native look and feel", ex);
 			}
-			new PeerConfig().setVisible(true);
+			//new PeerConfig().setVisible(true);
+			new MainWindow().setVisible(true);
 		}
 	}
 	

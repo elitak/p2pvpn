@@ -22,20 +22,32 @@ package org.p2pvpn.network;
 import org.p2pvpn.tuntap.TunTap;
 
 public class VPNConnector implements Runnable {
-	private ConnectionManager connectionManager;
 	private TunTap tuntap;
 	private Router router;
 	private Thread myThread;
 	
-	public VPNConnector(ConnectionManager connectionManager, TunTap tuntap,
-			Router router) {
-		this.connectionManager = connectionManager;
-		this.tuntap = tuntap;
-		this.router = router;
-		router.setVpnConnector(this);
-		
+	private static VPNConnector vpnConnector = null;
+	
+	private VPNConnector() throws Exception {
+		tuntap = TunTap.createTunTap();
+		router = null;
+
 		myThread = new Thread(this, "VPNConnector");
 		myThread.start();
+	}
+
+	public static VPNConnector getVPNConnector() throws Exception {
+		if (vpnConnector == null) vpnConnector = new VPNConnector();
+		return vpnConnector;
+	}
+	
+	public void setRouter(Router router) {
+		this.router = router;
+		if (router!=null) router.setVpnConnector(this);
+	}
+
+	public TunTap getTunTap() {
+		return tuntap;
 	}
 	
 	public void receive(byte[] packet) {
@@ -43,10 +55,10 @@ public class VPNConnector implements Runnable {
 		tuntap.write(packet, packet.length);
 	}
 	
-	public void close() {
+	/*public void close() {
 		tuntap.close();
 		myThread.interrupt();
-	}
+	}*/
 
 	@Override
 	public void run() {
@@ -58,7 +70,7 @@ public class VPNConnector implements Runnable {
             if (len>=12) {
                 byte[] packet = new byte[len];
                 System.arraycopy(buffer, 0, packet, 0, len);
-                router.send(packet);
+                if (router!=null) router.send(packet);
             }
 		}
 	}

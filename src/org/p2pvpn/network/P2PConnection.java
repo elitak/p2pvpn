@@ -78,7 +78,8 @@ public class P2PConnection {
 	}
 
 	private void timeout() {
-		Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString());
+		Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString()+
+				" in state: "+state);
 		connection.close();
 	}
 
