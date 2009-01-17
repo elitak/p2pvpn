@@ -359,7 +359,7 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		Logger.getLogger("").addHandler(lt);
 	}
 	
-	private class LoggingWriter extends Handler {
+	class LoggingWriter extends Handler {
 
 		public LoggingWriter() {
 			super();

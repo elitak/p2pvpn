@@ -18,16 +18,14 @@
 */
 package org.p2pvpn;
 
+import java.io.FileInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.p2pvpn.gui.PeerConfig;
 import javax.swing.UIManager;
 import org.p2pvpn.gui.MainWindow;
-import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
-import org.p2pvpn.tools.CryptoUtils;
 
 
 public class Main {
@@ -35,9 +33,10 @@ public class Main {
 	public static void main(String[] args) {
 		if (args.length == 5) {
             try {
-                AdvProperties netCfg = new AdvProperties(args[0]);
+                AdvProperties accessCfg = new AdvProperties();
+				accessCfg.load(new FileInputStream(args[0]));
 
-                ConnectionManager cm = new ConnectionManager(netCfg, Integer.parseInt(args[2]));
+                ConnectionManager cm = new ConnectionManager(accessCfg, Integer.parseInt(args[2]));
 
                 if (!args[3].equals("none")) {
                     cm.getRouter().setLocalPeerInfo("vpn.ip", args[3]);
@@ -46,6 +45,7 @@ public class Main {
 					vpnc.getTunTap().setIP(args[3], args[4]);
                 }
                 cm.getRouter().setLocalPeerInfo("name", args[1]);
+				cm.getConnector().addIPs(accessCfg);
             } catch (Exception exception) {
 				Logger.getLogger("").log(Level.SEVERE, "Error during Startup", exception);
 				System.exit(1);
