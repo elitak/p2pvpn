@@ -141,7 +141,7 @@ public class MainControl {
 		if (connectionManager.getRouter().isConnectedTo(peer)) {
 			result.append("<br>direct connection");
 		} else {
-			if (connectionManager.getLocalAddr().equals(peer)) {
+			if (!connectionManager.getLocalAddr().equals(peer)) {
 				result.append("<br>indirect connection");
 			}
 		}
