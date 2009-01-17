@@ -68,8 +68,8 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 
         jToolBar1 = new javax.swing.JToolBar();
         btnNewNet = new javax.swing.JButton();
-        btnInvite = new javax.swing.JButton();
         btnAccept = new javax.swing.JButton();
+        btnInvite = new javax.swing.JButton();
         btnOptions = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         lblName = new javax.swing.JLabel();
@@ -96,18 +96,6 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
         });
         jToolBar1.add(btnNewNet);
 
-        btnInvite.setText("I");
-        btnInvite.setToolTipText("Invite someone...");
-        btnInvite.setFocusable(false);
-        btnInvite.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnInvite.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        btnInvite.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnInviteActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(btnInvite);
-
         btnAccept.setText("A");
         btnAccept.setToolTipText("Accept Invitation...");
         btnAccept.setFocusable(false);
@@ -119,6 +107,18 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
             }
         });
         jToolBar1.add(btnAccept);
+
+        btnInvite.setText("I");
+        btnInvite.setToolTipText("Invite someone...");
+        btnInvite.setFocusable(false);
+        btnInvite.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnInvite.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnInvite.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInviteActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnInvite);
 
         btnOptions.setText("O");
         btnOptions.setToolTipText("Options...");
