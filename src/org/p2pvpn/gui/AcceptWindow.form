@@ -86,7 +86,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="btnLoad" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="scrollInvitation" pref="189" max="32767" attributes="0"/>
+                  <Component id="scrollInvitation" pref="187" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

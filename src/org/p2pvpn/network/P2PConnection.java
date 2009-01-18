@@ -40,20 +40,19 @@ public class P2PConnection {
 	private byte[] myKeyPart;
 	
 	private ConnectionManager connectionManager;
-	private CryptoConnection connection;
+	private TCPConnection connection;
 	private ScheduledFuture<?> schedTimeout;
 	private PeerID remoteAddr;
 	private AdvProperties remoteAccess;
 	private Router router;
 	
 	public P2PConnection(ConnectionManager connectionManager,
-			CryptoConnection connection) {
+			TCPConnection connection) {
 		
 		this.connectionManager = connectionManager;
 		this.connection = connection;
 
 		remoteAddr = null;
-		
 		
 		connection.setListener(this);
 		
@@ -69,7 +68,7 @@ public class P2PConnection {
 		}, 30, TimeUnit.SECONDS);
 	}
 
-	public CryptoConnection getConnection() {
+	public TCPConnection getConnection() {
 		return connection;
 	}
 

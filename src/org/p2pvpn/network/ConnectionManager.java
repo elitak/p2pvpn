@@ -140,11 +140,6 @@ public class ConnectionManager implements Runnable {
 
 	public void newConnection(TCPConnection connection) {
 		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
-		CryptoConnection cc = new CryptoConnection(this, connection, networkKey);
-	}
-
-	public void newCryptoConnection(CryptoConnection connection) {
-		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
 		new P2PConnection(this, connection);
 	}
 
@@ -163,7 +158,7 @@ public class ConnectionManager implements Runnable {
 			
 			while (true) {
 				Socket s = server.accept();
-				new TCPConnection(this, s);
+				new TCPConnection(this, s, networkKey);
 			}
 		}
 		catch (Exception e) {
@@ -221,7 +216,7 @@ public class ConnectionManager implements Runnable {
 			Socket s;
 			try {
 				s = new Socket(host, port);
-				new TCPConnection(ConnectionManager.this, s);
+				new TCPConnection(ConnectionManager.this, s, networkKey);
 			} catch (UnknownHostException e) {
 				Logger.getLogger("").log(Level.WARNING, host+" "+port, e);
 			} catch (IOException e) {

@@ -24,36 +24,52 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.security.InvalidKeyException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import org.p2pvpn.tools.CryptoUtils;
 
 
 public class TCPConnection implements Runnable {
 	
 	private static final int MAX_QUEUE = 10;
 	private static final int MAX_PACKET_SIZE = 10 * 1024;
+
+	private enum CCState {WAIT_FOR_IV, WAIT_FOR_DATA};
+	
+	private Cipher cIn, cOut;
+	private SecretKey key;
+	private CCState state;	
 	
 	private ConnectionManager connectionManager;
 	private Socket socket;
 	private InputStream in;
 	private BufferedOutputStream out;
 	private SocketAddress peer;
-	private CryptoConnection listener;
+	private P2PConnection listener;
 	
 	private Queue<byte[]> sendQueue;
 	private boolean closed;
 
-	public TCPConnection(ConnectionManager connectionManager, Socket socket) {
+	public TCPConnection(ConnectionManager connectionManager, Socket socket, byte[] keyBytes) {
 		this.connectionManager = connectionManager;
 		this.socket = socket;
 		peer = socket.getRemoteSocketAddress();
 		sendQueue = new LinkedList<byte[]>();
 		closed = false;
+		cIn = null;
+		cOut = null;
+		state = CCState.WAIT_FOR_DATA;
+		
 		try {
 			in = socket.getInputStream();
 			out = new BufferedOutputStream(socket.getOutputStream());
+			changeKey(keyBytes);
 			this.connectionManager.newConnection(this);
 			(new Thread(this, "TCPConnection "+peer)).start();
 			(new Thread(new Runnable() {
@@ -66,6 +82,22 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
+	public synchronized void changeKey(byte[] keyBytes) {
+		state = CCState.WAIT_FOR_IV;
+
+		key = CryptoUtils.decodeSymmetricKey(keyBytes);
+		Cipher newOut = CryptoUtils.getSymmetricCipher();
+		try {
+			newOut.init(Cipher.ENCRYPT_MODE, key);
+		} catch (InvalidKeyException ex) {
+			Logger.getLogger("").log(Level.SEVERE, null, ex);
+			close();
+		}
+		sendEncypted(newOut.getIV(), true);
+		
+		cOut = newOut;
+	}
+	
 	private int readInt() throws IOException {
 		int result, high, low;
 		high = in.read();
@@ -97,7 +129,7 @@ public class TCPConnection implements Runnable {
 				
 				byte[] packet = new byte[size];
 				System.arraycopy(buffer, 0, packet, 0, size);
-				handlePacket(packet);
+				handleEncryptedPacket(packet);
 			}
 		} catch (Throwable e) {
 			//e.printStackTrace();
@@ -128,24 +160,73 @@ public class TCPConnection implements Runnable {
 						} catch (InterruptedException ex) {
 						}
 					} else {
-						int high = (packet.length & 0xFF00) >> 8;
-						int low = packet.length & 0xFF;
-						out.write(high);
-						out.write(low);
-						out.write(packet);
+						sendEncypted(packet, false);
 					}
 				}
 			}
 		} catch (IOException iOException) {
+			Logger.getLogger("").log(Level.SEVERE, null, iOException);
 			close();
 		}
 	}
+
+	private void sendEncypted(byte[] packet, boolean flush) {
+		if (cOut==null) {
+			sendToSocket(packet, flush);
+		} else {
+			try {
+				sendToSocket(cOut.doFinal(packet), flush);
+			} catch (Throwable t) {
+				Logger.getLogger("").log(Level.SEVERE, null, t);
+				close();
+			} 
+		}
+	}	
 	
-	private void handlePacket(byte[] packet) {
-		if (listener!=null) listener.receive(packet);
+	private void sendToSocket(byte[] packet, boolean flush) {
+		try {
+			int high = (packet.length & 0xFF00) >> 8;
+			int low = packet.length & 0xFF;
+			out.write(high);
+			out.write(low);
+			out.write(packet);
+			if (flush) out.flush();
+		} catch (IOException iOException) {
+			close();
+		}
 	}
+
+	public void handleEncryptedPacket(byte[] packet) {
+		byte[] ct;
+		if (cIn==null) {
+			ct = packet;
+		} else {
+			try {
+				ct = cIn.doFinal(packet);
+			} catch (Throwable t) {
+				Logger.getLogger("").log(Level.SEVERE, null, t);
+				close();
+				return;
+			} 
+		}
+		switch (state) {
+			case WAIT_FOR_IV:
+				cIn = CryptoUtils.getSymmetricCipher();
+				try {
+					cIn.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ct));
+				} catch (Throwable t) {
+					Logger.getLogger("").log(Level.SEVERE, null, t);
+					close();
+				} 
+				state = CCState.WAIT_FOR_DATA;
+				break;
+			case WAIT_FOR_DATA:
+				if (listener!=null) listener.receive(ct);
+				break;
+		}
+	}	
 	
-	public void setListener(CryptoConnection listener) {
+	public void setListener(P2PConnection listener) {
 		this.listener = listener;
 	}
 	
