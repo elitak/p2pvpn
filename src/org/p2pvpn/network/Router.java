@@ -47,6 +47,9 @@ public class Router implements RoutungTableListener {
 	static final byte DATA_BROADCAST_PACKET = 1;
 	static final byte ASK_DB = 2;
 	static final byte SEND_DB = 3;
+	static final byte INTERNAL_PACKET = 4;
+
+	static final byte INTERNAL_PORT_CHAT = -1;
 	
 	private ConnectionManager connectionManager;
 	private Map<PeerID, P2PConnection> connections;
@@ -58,11 +61,14 @@ public class Router implements RoutungTableListener {
 	
 	private MacAddress myMAC;
 
+	private Map<Byte, InternalPacketListener> internalListeners;
+
 	public Router(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
 		tableListeners = new Vector<RoutungTableListener>();
 		connections = new HashMap<PeerID, P2PConnection>();
 		routeCache = new HashMap<MacAddress, P2PConnection[]>();
+		internalListeners = new HashMap<Byte, InternalPacketListener>();
 		peers = new HashMap<PeerID, VersionizedMap<String, String>>();
 		peers.put(connectionManager.getLocalAddr(), new VersionizedMap<String, String>());
 		myMAC = null;
@@ -386,6 +392,9 @@ public class Router implements RoutungTableListener {
                     dbChanged(a);
 					break;
 				}
+				case INTERNAL_PACKET: {
+					handleInternalPacket(packet);
+				}
 				default: throw new IOException("Bad packet type");	
 			}
 		} catch (IOException e) {
@@ -418,7 +427,7 @@ public class Router implements RoutungTableListener {
 			sendInt(dest, packet);
 		}
 	}
-	
+
 	private void sendInt(MacAddress dest, byte[] packet) {
 		P2PConnection[] cs = findRoute(dest);
 		if (cs.length>0) {
@@ -452,7 +461,42 @@ public class Router implements RoutungTableListener {
 			sendInt(mac, parentPacket);
 		}
 	}
-	
+
+	public void addInternalPacketListener(byte internalPort, InternalPacketListener l) {
+		internalListeners.put(internalPort, l);
+	}
+
+	private void handleInternalPacket(byte[] packet) {
+		MacAddress dest = new MacAddress(packet, 0+2);
+
+		if (dest.equals(myMAC)) {
+			byte intPort = packet[1];
+			byte[] data = new byte[packet.length-2];
+			System.arraycopy(packet, 2, data, 0, data.length);
+
+			InternalPacketListener l = internalListeners.get(intPort);
+			if (l!=null) l.receiveInternalPacket(this, intPort, data);
+		} else {
+			sendInt(dest, packet);
+		}
+	}
+
+	public synchronized void sendInternalPacket(MacAddress to, byte internalPort, byte[] data) {
+		if (to==null) {
+			Collection<MacAddress> macs = getKnownMACs(false);
+			for(MacAddress d : macs) {
+				sendInternalPacket(d, internalPort, data);
+			}
+		} else {
+			byte[] packet = new byte[1 + 1 + 6 + data.length];
+			packet[0] = INTERNAL_PACKET;
+			packet[1] = internalPort;
+			System.arraycopy(to.getAddress(), 0, packet, 2, 6);
+			System.arraycopy(data, 0, packet, 1+1+6, data.length);
+			sendInt(to, packet);
+		}
+	}
+
 	@Override
 	public void tableChanged(Router router) {
 		printTable();

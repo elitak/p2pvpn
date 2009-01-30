@@ -25,28 +25,18 @@
 
 package org.p2pvpn.gui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.Writer;
 import java.net.URL;
 import java.util.Map;
 
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import net.sbbi.upnp.impls.InternetGatewayDevice;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.Router;
@@ -341,6 +331,7 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 	}
 
 	public void upnpChanged(UPnPPortForward upnp) {
+		/*
 		InternetGatewayDevice igd = upnp.getIgd();
 		if (igd!=null) {
 			upnpText.setText("Internet Gateway Device: "+igd.getIGDRootDevice().getModelName()+"\n"+
@@ -350,6 +341,7 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		} else {
 			upnpText.setText("Internet Gateway Device: not found");
 		}
+		*/
 	}
 	
 	public void startLogging() {

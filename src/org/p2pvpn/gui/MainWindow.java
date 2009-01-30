@@ -84,6 +84,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
         btnAccept = new javax.swing.JButton();
         btnInvite = new javax.swing.JButton();
         btnOptions = new javax.swing.JButton();
+        btnChat = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         lblName = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -144,6 +145,12 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
             }
         });
         jToolBar1.add(btnOptions);
+
+        btnChat.setText("C");
+        btnChat.setFocusable(false);
+        btnChat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnChat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(btnChat);
         jToolBar1.add(jSeparator1);
 
         lblName.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
@@ -167,12 +174,12 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(txtNetwork)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
                 .addComponent(btnInfo))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -249,6 +256,7 @@ private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAccept;
+    private javax.swing.JButton btnChat;
     private javax.swing.JButton btnInfo;
     private javax.swing.JButton btnInvite;
     private javax.swing.JButton btnNewNet;

@@ -19,6 +19,11 @@
 
 package org.p2pvpn.network;
 
+public class UPnPPortForward {
+
+}
+
+/*
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -33,6 +38,7 @@ import net.sbbi.upnp.impls.InternetGatewayDevice;
 
 
 public class UPnPPortForward implements Runnable {
+	
 	private static final long UPDATE_S = 10*60;
 	private static final int LEASEDURATION_S = 0;
 	private static final int DISCOVERY_TIMEOUT_MS = 5 * 1000;
@@ -152,3 +158,4 @@ public class UPnPPortForward implements Runnable {
 
 
 }
+*/

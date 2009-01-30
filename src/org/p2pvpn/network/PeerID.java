@@ -26,7 +26,9 @@ import org.p2pvpn.tools.CryptoUtils;
 
 public class PeerID implements Comparable<PeerID>, Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
+	private static int idLen = CryptoUtils.getMessageDigest().getDigestLength();
+
 	private byte[] id;
 
 	public PeerID(byte[] b, boolean hash) {
@@ -40,6 +42,14 @@ public class PeerID implements Comparable<PeerID>, Serializable {
 
 	public PeerID(String addrStr) {
 		id = Base64.decodeBase64(addrStr.getBytes());
+	}
+
+	public static int getIdLen() {
+		return idLen;
+	}
+
+	public byte[] getId() {
+		return id;
 	}
 
 	@Override

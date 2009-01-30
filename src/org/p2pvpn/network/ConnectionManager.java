@@ -52,6 +52,7 @@ public class ConnectionManager implements Runnable {
 	private Router router;
     private Connector connector;
 	private UPnPPortForward uPnPPortForward;
+	private BitTorrentTracker bitTorrentTracker;
     
 	private String whatIsMyIP;
 	
@@ -65,6 +66,7 @@ public class ConnectionManager implements Runnable {
 		localAddr = new PeerID(accessCfg.getPropertyBytes("access.publicKey", null), true);
 		router = new Router(this);
         connector = new Connector(this);
+		bitTorrentTracker = new BitTorrentTracker(this, "http://tracker.thepiratebay.org:80/announce");
 		//uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
 
