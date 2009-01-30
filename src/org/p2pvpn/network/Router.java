@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -60,6 +61,7 @@ public class Router implements RoutungTableListener {
 	private Map<MacAddress, P2PConnection[]> routeCache;
 	
 	private MacAddress myMAC;
+	private boolean gotMacFromTun;
 
 	private Map<Byte, InternalPacketListener> internalListeners;
 
@@ -71,7 +73,8 @@ public class Router implements RoutungTableListener {
 		internalListeners = new HashMap<Byte, InternalPacketListener>();
 		peers = new HashMap<PeerID, VersionizedMap<String, String>>();
 		peers.put(connectionManager.getLocalAddr(), new VersionizedMap<String, String>());
-		myMAC = null;
+		setRandomMac();
+		gotMacFromTun = false;
 		
 		connectionManager.getScheduledExecutor().schedule(new Runnable() {
 			public void run() {
@@ -394,6 +397,7 @@ public class Router implements RoutungTableListener {
 				}
 				case INTERNAL_PACKET: {
 					handleInternalPacket(packet);
+					break;
 				}
 				default: throw new IOException("Bad packet type");	
 			}
@@ -435,12 +439,24 @@ public class Router implements RoutungTableListener {
 			cs[(int)(Math.random()*cs.length)].send(packet);
 		}
 	}
-	
+
+	private  void setMac(MacAddress mac) {
+		myMAC = mac;
+		peers.get(connectionManager.getLocalAddr()).put("vpn.mac", myMAC.toString());
+	}
+
+	private void setRandomMac() {
+		Random rnd = new Random();
+		byte[] mac = new byte[6];
+		rnd.nextBytes(mac);
+		setMac(new MacAddress(mac));
+	}
+
 	public synchronized void send(byte[] packet) {
 		
-		if (myMAC==null) {
-			myMAC = new MacAddress(packet, 6);
-			peers.get(connectionManager.getLocalAddr()).put("vpn.mac", myMAC.toString());
+		if (!gotMacFromTun) {
+			setMac(new MacAddress(packet, 6));
+			gotMacFromTun = true;
 		}
 		
 		MacAddress mac = new MacAddress(packet, 0);
@@ -471,8 +487,8 @@ public class Router implements RoutungTableListener {
 
 		if (dest.equals(myMAC)) {
 			byte intPort = packet[1];
-			byte[] data = new byte[packet.length-2];
-			System.arraycopy(packet, 2, data, 0, data.length);
+			byte[] data = new byte[packet.length-2-6];
+			System.arraycopy(packet, 2+6, data, 0, data.length);
 
 			InternalPacketListener l = internalListeners.get(intPort);
 			if (l!=null) l.receiveInternalPacket(this, intPort, data);

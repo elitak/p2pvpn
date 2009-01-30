@@ -28,6 +28,9 @@ import org.p2pvpn.network.RoutungTableListener;
 
 public class MainWindow extends javax.swing.JFrame implements RoutungTableListener {
 
+	private static final String CHAT_IMG = "resources/images/chat.png";
+	private static final String CHAT_BLA_IMG = "resources/images/chat_bla.png";
+
 	private MainControl mainControl;
 	private NewNetwork newNetwork;
 	private OptionWindow optionWindow;
@@ -53,6 +56,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		setButtonIcon(btnAccept, "resources/images/accept.png");
 		setButtonIcon(btnOptions, "resources/images/options.png");
 		setButtonIcon(btnInfo, "resources/images/info.png");
+		setButtonIcon(btnChat, CHAT_IMG);
 		
 		mainControl = new MainControl(this);
 		newNetwork = new NewNetwork(this, mainControl);
@@ -62,6 +66,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		chatWindow = new ChatWindow(this, mainControl);
 		
 		mainControl.start();
+		chatWindow.start();
     }
 
 	private void setButtonIcon(JButton btn, String path) {
@@ -240,8 +245,12 @@ private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChatActionPerformed
 	// add your handling code here:
 	chatWindow.setVisible(true);
+	setButtonIcon(btnChat, CHAT_IMG);
 }//GEN-LAST:event_btnChatActionPerformed
 
+	void setChatBla() {
+		setButtonIcon(btnChat, CHAT_BLA_IMG);
+	}
 
 	public void setNodeName(String name) {
 		lblName.setText(name);

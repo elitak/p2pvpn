@@ -89,16 +89,10 @@ public class Connector {
 	}
 	
     public void addIP(byte[] ip, int port, PeerID peerID, String info, boolean keep) {
-        Endpoint e = new Endpoint(ip, port);
-        synchronized (ips) {
-            if (!ips.containsKey(e)) {
-                ips.put(e, new EndpointInfo(peerID, info, keep));
-                scheduleConnect(e, 1);
-            } else {
-				ips.get(e).update(peerID, info, keep);
-			}
-        }
-		notifyListeners();
+        Endpoint endpoint = new Endpoint(ip, port);
+		EndpointInfo endpointInfo = new EndpointInfo(peerID, info, keep);
+		connectionManager.getScheduledExecutor().schedule(
+				new AddIPLater(endpoint, endpointInfo), 0, TimeUnit.SECONDS);
     }
 
     public void addIP(String ip, int port, PeerID peerID, String info, boolean keep) {
@@ -128,7 +122,30 @@ public class Connector {
     private void scheduleConnect(Endpoint e, long delay) {
         connectionManager.getScheduledExecutor().schedule(new ConnectRunnable(e), delay, TimeUnit.SECONDS);
     }
-    
+
+	private class AddIPLater implements Runnable {
+		private Endpoint endpoint;
+		private EndpointInfo endpointInfo;
+
+		public AddIPLater(Endpoint endpoint, EndpointInfo endpointInfo) {
+			this.endpoint = endpoint;
+			this.endpointInfo = endpointInfo;
+		}
+
+		public void run() {
+			synchronized (ips) {
+				if (!ips.containsKey(endpoint)) {
+					ips.put(endpoint, endpointInfo);
+					scheduleConnect(endpoint, 1);
+				} else {
+					ips.get(endpoint).update(endpointInfo.peerID,
+							endpointInfo.getLastInfo(), endpointInfo.isKeepForEver());
+				}
+			}
+			notifyListeners();
+		}
+	}
+
     private class ConnectRunnable implements Runnable {
         Endpoint e;
 

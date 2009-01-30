@@ -13,7 +13,6 @@ package org.p2pvpn.gui;
 
 import java.awt.event.KeyEvent;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -42,6 +41,11 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		txtSend.requestFocus();
     }
 
+	void start() {
+		mainControl.getConnectionManager().getRouter()
+				.addInternalPacketListener(Router.INTERNAL_PORT_CHAT, this);
+	}
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -54,6 +58,8 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
         jScrollPane1 = new javax.swing.JScrollPane();
         txtMessages = new javax.swing.JTextArea();
         txtSend = new javax.swing.JTextField();
+
+        setTitle("Chat");
 
         txtMessages.setColumns(20);
         txtMessages.setRows(5);
@@ -94,12 +100,6 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 	private void sendMessage() {
 		String msg = txtSend.getText();
 		txtSend.setText("");
-		writeMessage(mainControl.nameForPeer(mainControl.getConnectionManager().getLocalAddr()), msg);
-	}
-
-	private void writeMessage(String name, String msg) {
-		String date = DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
-		String line = date+" "+name+": "+msg+"\n";
 		try {
 			byte[] fromb = mainControl.getConnectionManager().getLocalAddr().getId();
 			byte[] msgb = msg.getBytes("UTF-8");
@@ -109,18 +109,31 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 
 			mainControl.getConnectionManager().getRouter()
 					.sendInternalPacket(null, Router.INTERNAL_PORT_CHAT, packet);
-
-			txtMessages.getDocument().insertString(txtMessages.getDocument().getLength(), line, null);
-		} catch (BadLocationException ex) {
-			Logger.getLogger("").log(Level.SEVERE, null, ex);
+			writeMessage(mainControl.nameForPeer(mainControl.getConnectionManager().getLocalAddr()), msg);
 		} catch (UnsupportedEncodingException ex) {
 				Logger.getLogger(ChatWindow.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void writeMessage(String name, String msg) {
+		String date = DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
+		String line = date+" "+name+": "+msg+"\n";
+		if (!isVisible()) {
+			mainWindow.setChatBla();
+		}
+		try {
+			txtMessages.getDocument().insertString(txtMessages.getDocument().getLength(), line, null);
+			txtMessages.setCaretPosition(txtMessages.getDocument().getLength());
+		} catch (BadLocationException ex) {
+			Logger.getLogger("").log(Level.SEVERE, null, ex);
 		}
 	}
 
 	public void receiveInternalPacket(Router router, byte internalPort, byte[] data) {
 		byte[] fromb = new byte[PeerID.getIdLen()];
 		byte[] msgb = new byte[data.length - PeerID.getIdLen()];
+		System.arraycopy(data, 0, fromb, 0, fromb.length);
+		System.arraycopy(data, fromb.length, msgb, 0, msgb.length);
 
 		PeerID from = new PeerID(fromb, false);
 		String msg;
