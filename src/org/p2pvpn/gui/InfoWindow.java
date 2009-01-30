@@ -33,6 +33,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -315,6 +316,14 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     }
 
 	public void tableChanged(Router router) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				tableChangedSave();
+			}
+		});
+	}
+
+	public void tableChangedSave() {
 		StringBuffer info = new StringBuffer();
 		info.append("Info for "+addrShown+"\n\n");
 		Map<String, String> map = connectionManager.getRouter().getPeerInfo(addrShown);
@@ -322,11 +331,11 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 			peerInfo.setText("");
 			return;
 		}
-		
+
 		for(Map.Entry<String, String> e : map.entrySet()) {
 			info.append(e.getKey()+"="+e.getValue()+"\n");
 		}
-		
+
 		peerInfo.setText(info.toString());
 	}
 

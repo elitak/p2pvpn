@@ -11,15 +11,35 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.event.KeyEvent;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import org.p2pvpn.network.InternalPacketListener;
+import org.p2pvpn.network.PeerID;
+import org.p2pvpn.network.Router;
+
 /**
  *
  * @author wolfgang
  */
-public class ChatWindow extends javax.swing.JFrame {
+public class ChatWindow extends javax.swing.JFrame implements InternalPacketListener {
+
+	private MainWindow mainWindow;
+	private MainControl mainControl;
 
     /** Creates new form ChatWindow */
-    public ChatWindow() {
+    public ChatWindow(MainWindow mainWindow, MainControl mainControl) {
+		this.mainControl = mainControl;
+		this.mainWindow = mainWindow;
         initComponents();
+		txtMessages.setEditable(false);
+		txtSend.requestFocus();
     }
 
     /** This method is called from within the constructor to
@@ -32,22 +52,24 @@ public class ChatWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jTextField1 = new javax.swing.JTextField();
+        txtMessages = new javax.swing.JTextArea();
+        txtSend = new javax.swing.JTextField();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        txtMessages.setColumns(20);
+        txtMessages.setRows(5);
+        jScrollPane1.setViewportView(txtMessages);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        jTextField1.setText("jTextField1");
+        txtSend.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtSendKeyPressed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(txtSend, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -55,27 +77,79 @@ public class ChatWindow extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(txtSend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ChatWindow().setVisible(true);
-            }
-        });
-    }
+	private void txtSendKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSendKeyPressed
+		// add your handling code here:
+		if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+			sendMessage();
+		}
+	}//GEN-LAST:event_txtSendKeyPressed
+
+
+	private void sendMessage() {
+		String msg = txtSend.getText();
+		txtSend.setText("");
+		writeMessage(mainControl.nameForPeer(mainControl.getConnectionManager().getLocalAddr()), msg);
+	}
+
+	private void writeMessage(String name, String msg) {
+		String date = DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
+		String line = date+" "+name+": "+msg+"\n";
+		try {
+			byte[] fromb = mainControl.getConnectionManager().getLocalAddr().getId();
+			byte[] msgb = msg.getBytes("UTF-8");
+			byte[] packet = new byte[fromb.length + msgb.length];
+			System.arraycopy(fromb, 0, packet, 0, fromb.length);
+			System.arraycopy(msgb, 0, packet, fromb.length, msgb.length);
+
+			mainControl.getConnectionManager().getRouter()
+					.sendInternalPacket(null, Router.INTERNAL_PORT_CHAT, packet);
+
+			txtMessages.getDocument().insertString(txtMessages.getDocument().getLength(), line, null);
+		} catch (BadLocationException ex) {
+			Logger.getLogger("").log(Level.SEVERE, null, ex);
+		} catch (UnsupportedEncodingException ex) {
+				Logger.getLogger(ChatWindow.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void receiveInternalPacket(Router router, byte internalPort, byte[] data) {
+		byte[] fromb = new byte[PeerID.getIdLen()];
+		byte[] msgb = new byte[data.length - PeerID.getIdLen()];
+
+		PeerID from = new PeerID(fromb, false);
+		String msg;
+		try {
+			msg = new String(msgb, "UTF-8");
+			SwingUtilities.invokeLater(new SecureWriteMessage(mainControl.nameForPeer(from), msg));
+		} catch (UnsupportedEncodingException ex) {
+			Logger.getLogger("").log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private class SecureWriteMessage implements Runnable {
+		private String name;
+		private String msg;
+
+		public SecureWriteMessage(String name, String msg) {
+			this.name = name;
+			this.msg = msg;
+		}
+
+		public void run() {
+			writeMessage(name, msg);
+		}
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextArea txtMessages;
+    private javax.swing.JTextField txtSend;
     // End of variables declaration//GEN-END:variables
 
 }

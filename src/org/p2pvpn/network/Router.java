@@ -41,15 +41,15 @@ import org.p2pvpn.tools.VersionizedMap;
 
 
 public class Router implements RoutungTableListener {
-	static final long SYNC_TIME = 5; // seconds
+	private static final long SYNC_TIME = 5; // seconds
 	
-	static final byte DATA_PACKET = 0;
-	static final byte DATA_BROADCAST_PACKET = 1;
-	static final byte ASK_DB = 2;
-	static final byte SEND_DB = 3;
-	static final byte INTERNAL_PACKET = 4;
+	private static final byte DATA_PACKET = 0;
+	private static final byte DATA_BROADCAST_PACKET = 1;
+	private static final byte ASK_DB = 2;
+	private static final byte SEND_DB = 3;
+	private static final byte INTERNAL_PACKET = 4;
 
-	static final byte INTERNAL_PORT_CHAT = -1;
+	public static final byte INTERNAL_PORT_CHAT = -1;
 	
 	private ConnectionManager connectionManager;
 	private Map<PeerID, P2PConnection> connections;
@@ -485,7 +485,7 @@ public class Router implements RoutungTableListener {
 		if (to==null) {
 			Collection<MacAddress> macs = getKnownMACs(false);
 			for(MacAddress d : macs) {
-				sendInternalPacket(d, internalPort, data);
+				if (!d.equals(myMAC)) sendInternalPacket(d, internalPort, data);
 			}
 		} else {
 			byte[] packet = new byte[1 + 1 + 6 + data.length];

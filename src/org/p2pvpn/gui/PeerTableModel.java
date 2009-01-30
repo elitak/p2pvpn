@@ -20,6 +20,7 @@
 package org.p2pvpn.gui;
 
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -58,6 +59,14 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 	@Override
 	public void tableChanged(Router router) {
 		table = router.getPeers();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				notifyListeners();
+			}
+		});
+	}
+
+	private void notifyListeners() {
 		for(TableModelListener l : listeners) {
 			l.tableChanged(new TableModelEvent(this));
 		}

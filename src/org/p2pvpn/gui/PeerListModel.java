@@ -21,6 +21,7 @@ package org.p2pvpn.gui;
 
 import java.util.Vector;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.p2pvpn.network.ConnectionManager;
@@ -49,7 +50,15 @@ public class PeerListModel implements RoutungTableListener, ListModel {
 				list.add(peer);
 			}
 		}
-		
+
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				notifyListeners();
+			}
+		});
+	}
+
+	public void notifyListeners() {
 		for (ListDataListener l : listeners) {
 			l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, list.size()));
 		}

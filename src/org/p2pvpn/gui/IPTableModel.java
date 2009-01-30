@@ -21,14 +21,13 @@ package org.p2pvpn.gui;
 
 import java.util.Date;
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.ConnectorListener;
-import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Connector;
-import org.p2pvpn.network.RoutungTableListener;
 
 /**
  *
@@ -56,6 +55,14 @@ public class IPTableModel implements ConnectorListener, TableModel {
 	@Override
 	public void ipListChanged(Connector connector) {
 		table = connector.getIPs();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				notifyListeners();
+			}
+		});
+	}
+
+	private void notifyListeners() {
 		for(TableModelListener l : listeners) {
 			l.tableChanged(new TableModelEvent(this));
 		}

@@ -22,6 +22,7 @@ package org.p2pvpn.gui;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
@@ -32,6 +33,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 	private OptionWindow optionWindow;
 	private InviteWindow inviteWindow;
 	private AcceptWindow acceptWindow;
+	private ChatWindow chatWindow;
 
 	private PeerListModel peerListModel;
 	private PeerListCellRenderer peerListCellRenderer;
@@ -57,6 +59,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		optionWindow = new OptionWindow(this);
 		inviteWindow = new InviteWindow(this, mainControl);
 		acceptWindow = new AcceptWindow(this, mainControl);
+		chatWindow = new ChatWindow(this, mainControl);
 		
 		mainControl.start();
     }
@@ -150,6 +153,11 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
         btnChat.setFocusable(false);
         btnChat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnChat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChatActionPerformed(evt);
+            }
+        });
         jToolBar1.add(btnChat);
         jToolBar1.add(jSeparator1);
 
@@ -229,6 +237,11 @@ private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 	acceptWindow.setVisible(true);
 }//GEN-LAST:event_btnAcceptActionPerformed
 
+private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChatActionPerformed
+	// add your handling code here:
+	chatWindow.setVisible(true);
+}//GEN-LAST:event_btnChatActionPerformed
+
 
 	public void setNodeName(String name) {
 		lblName.setText(name);
@@ -251,8 +264,17 @@ private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 	}
 	
 	public void tableChanged(Router router) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				tableChangedSave();
+			}
+		});
+	}
+
+	public void tableChangedSave() {
 		lblName.setToolTipText(mainControl.descriptionForPeer(mainControl.getConnectionManager().getLocalAddr()));
 	}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAccept;

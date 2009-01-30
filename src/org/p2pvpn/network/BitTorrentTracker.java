@@ -63,7 +63,7 @@ public class BitTorrentTracker implements Runnable {
 	private byte[] networkHash(int maxLen) {
 		byte[] b = connectionManager.getAccessCfg().getPropertyBytes("network.publicKey", null);
 		MessageDigest md = CryptoUtils.getMessageDigest();
-		md.update("BitTorrent".getBytes());	// make shure the key differs from
+		md.update("BitTorrent".getBytes());	// make sure the key differs from
 											// other hashes created from the publicKey
 		byte[] hash = md.digest(b);
 		byte[] result = new byte[Math.min(maxLen, hash.length)];
