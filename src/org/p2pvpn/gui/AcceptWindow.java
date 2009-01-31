@@ -22,9 +22,11 @@ package org.p2pvpn.gui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
@@ -42,6 +44,10 @@ public class AcceptWindow extends javax.swing.JDialog implements DocumentListene
     public AcceptWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         initComponents();
+		try {
+			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/accept.png");
+			setIconImage(new ImageIcon(url).getImage());
+		} catch(NullPointerException e) {}
 		this.mainControl = mainControl;
 		fileChooser = new JFileChooser();
 		txtInvitation.getDocument().addDocumentListener(this);

@@ -22,8 +22,10 @@ package org.p2pvpn.gui;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.p2pvpn.tools.AdvProperties;
@@ -37,6 +39,10 @@ public class InviteWindow extends javax.swing.JDialog {
     public InviteWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         initComponents();
+		try {
+			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/invite.png");
+			setIconImage(new ImageIcon(url).getImage());
+		} catch(NullPointerException e) {}
 		fileChooser = new JFileChooser();
 		this.mainControl = mainControl;
     }

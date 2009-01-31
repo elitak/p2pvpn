@@ -155,6 +155,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
         jToolBar1.add(btnOptions);
 
         btnChat.setText("C");
+        btnChat.setToolTipText("Chat...");
         btnChat.setFocusable(false);
         btnChat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnChat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

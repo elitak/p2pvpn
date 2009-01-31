@@ -115,7 +115,7 @@ public class MainControl {
 					JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				}
 				connectionManager.getRouter().setLocalPeerInfo("name", name);
-				connectionManager.getConnector().addIPs(accessCfg);
+				connectionManager.addIPs(accessCfg);
 				
 				prefs.put("access", accessCfg.toString());
 				if (networkCfg==null) {

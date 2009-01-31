@@ -38,7 +38,7 @@ import org.p2pvpn.tools.AdvProperties;
 public class Connector {
     
 	private final static long RETRY_S = 5*60;
-	private final static long REMOVE_MS = 1*60*60*1000;
+	private final static long REMOVE_MS = 16*60*1000;
 	
     ConnectionManager connectionManager;
     Map<Endpoint, EndpointInfo> ips;

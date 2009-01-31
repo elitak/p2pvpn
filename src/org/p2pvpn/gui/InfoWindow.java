@@ -63,11 +63,11 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 initComponents();
-				startLogging();
 				try {
-					URL url = InfoWindow.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
+					URL url = InfoWindow.class.getClassLoader().getResource("resources/images/info.png");
 					setIconImage(new ImageIcon(url).getImage());
 				} catch(NullPointerException e) {}
+				startLogging();
 				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {

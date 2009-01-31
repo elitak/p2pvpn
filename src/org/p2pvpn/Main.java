@@ -45,7 +45,7 @@ public class Main {
 					vpnc.getTunTap().setIP(args[3], args[4]);
                 }
                 cm.getRouter().setLocalPeerInfo("name", args[1]);
-				cm.getConnector().addIPs(accessCfg);
+				cm.addIPs(accessCfg);
             } catch (Exception exception) {
 				Logger.getLogger("").log(Level.SEVERE, "Error during Startup", exception);
 				System.exit(1);

@@ -13,10 +13,12 @@ package org.p2pvpn.gui;
 
 import java.awt.event.KeyEvent;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.p2pvpn.network.InternalPacketListener;
@@ -37,6 +39,10 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		this.mainControl = mainControl;
 		this.mainWindow = mainWindow;
         initComponents();
+		try {
+			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/chat.png");
+			setIconImage(new ImageIcon(url).getImage());
+		} catch(NullPointerException e) {}
 		txtMessages.setEditable(false);
 		txtSend.requestFocus();
     }

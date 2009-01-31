@@ -82,7 +82,7 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
-	public synchronized void changeKey(byte[] keyBytes) {
+	public void changeKey(byte[] keyBytes) {
 		state = CCState.WAIT_FOR_IV;
 
 		key = CryptoUtils.decodeSymmetricKey(keyBytes);
@@ -230,9 +230,9 @@ public class TCPConnection implements Runnable {
 		this.listener = listener;
 	}
 	
-	public void send(byte[] packet) {
+	public void send(byte[] packet, boolean highPriority) {
 		synchronized (sendQueue) {
-			if (sendQueue.size()<MAX_QUEUE) {
+			if (highPriority || sendQueue.size()<MAX_QUEUE) {
 				sendQueue.offer(packet);
 				sendQueue.notify();
 			}

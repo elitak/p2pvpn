@@ -19,6 +19,9 @@
 
 package org.p2pvpn.gui;
 
+import java.net.URL;
+import javax.swing.ImageIcon;
+
 /**
  *
  * @author  wolfgang
@@ -31,6 +34,10 @@ public class OptionWindow extends javax.swing.JDialog {
     public OptionWindow(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
+		try {
+			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/options.png");
+			setIconImage(new ImageIcon(url).getImage());
+		} catch(NullPointerException e) {}
 		addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				ok = false;
@@ -68,7 +75,7 @@ public class OptionWindow extends javax.swing.JDialog {
 
         jLabel2.setText("Listen on Port");
 
-        spnPort.setModel(new javax.swing.SpinnerNumberModel(0, 0, 65525, 1));
+        spnPort.setModel(new javax.swing.SpinnerNumberModel(56483, 0, 65525, 1));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

@@ -66,7 +66,7 @@ public class ConnectionManager implements Runnable {
 		localAddr = new PeerID(accessCfg.getPropertyBytes("access.publicKey", null), true);
 		router = new Router(this);
         connector = new Connector(this);
-		bitTorrentTracker = new BitTorrentTracker(this, "http://tracker.thepiratebay.org:80/announce");
+		bitTorrentTracker = null;
 		//uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
 
@@ -166,6 +166,12 @@ public class ConnectionManager implements Runnable {
 		catch (Exception e) {
 			Logger.getLogger("").log(Level.SEVERE, "Not listening on "+server.getLocalPort()+" anymore", e);
 		}
+	}
+
+	public void addIPs(AdvProperties accessCfg) {
+		connector.addIPs(accessCfg);
+		String tracker = accessCfg.getProperty("network.bootstrap.tracker");
+		if (tracker!=null) bitTorrentTracker = new BitTorrentTracker(this, tracker);
 	}
 
 	public void connectTo(String host, int port) {

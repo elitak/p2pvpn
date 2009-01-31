@@ -57,7 +57,7 @@ public class P2PConnection {
 		connection.setListener(this);
 		
 		AdvProperties access = connectionManager.getAccessCfg().filter("access", false);
-		connection.send(access.asBytes());
+		connection.send(access.asBytes(), true);
 		state = P2PConnState.WAIT_FOR_ACCESS;
 
 		schedTimeout = 
@@ -108,7 +108,7 @@ public class P2PConnection {
 						Cipher c = CryptoUtils.getAsymmetricCipher();
 						c.init(Cipher.ENCRYPT_MODE, remoteKey, rnd);
 						
-						connection.send(c.doFinal(myKeyPart));
+						connection.send(c.doFinal(myKeyPart), true);
 						
 						state = P2PConnState.WAIT_FOR_KEY;
 					} else {
@@ -146,9 +146,9 @@ public class P2PConnection {
 		} 
 	}
 
-	public void send(byte[] packet) {
+	public void send(byte[] packet, boolean highPriority) {
 		assert state == P2PConnState.CONNECTED;
-		connection.send(packet);
+		connection.send(packet, highPriority);
 	}
 	
 	public void setRouter(Router router) {

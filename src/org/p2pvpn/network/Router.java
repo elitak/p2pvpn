@@ -53,15 +53,16 @@ public class Router implements RoutungTableListener {
 	public static final byte INTERNAL_PORT_CHAT = -1;
 	
 	private ConnectionManager connectionManager;
-	private Map<PeerID, P2PConnection> connections;
-	private Map<PeerID, VersionizedMap<String, String>> peers;
-	private Vector<RoutungTableListener> tableListeners;
 	private VPNConnector vpnConnector;
 
+	private Map<PeerID, P2PConnection> connections;
+	private Map<PeerID, VersionizedMap<String, String>> peers;
 	private Map<MacAddress, P2PConnection[]> routeCache;
-	
+
 	private MacAddress myMAC;
 	private boolean gotMacFromTun;
+
+	private Vector<RoutungTableListener> tableListeners;
 
 	private Map<Byte, InternalPacketListener> internalListeners;
 
@@ -91,9 +92,8 @@ public class Router implements RoutungTableListener {
 		return peers.keySet().toArray(new PeerID[0]);
 	}
 	
-	private Set<MacAddress> getKnownMACs(boolean withLocalMac) {
+	private synchronized Set<MacAddress> getKnownMACs(boolean withLocalMac) {
 		Set<MacAddress> result = new HashSet<MacAddress>();
-		
 		for(Map.Entry<PeerID, VersionizedMap<String, String>> e : peers.entrySet()) {
 			if (withLocalMac || !e.getKey().equals(connectionManager.getLocalAddr())) {
 				String mac = e.getValue().get("vpn.mac");
@@ -102,7 +102,6 @@ public class Router implements RoutungTableListener {
 				}
 			}
 		}
-		
 		return result;
 	}
 
@@ -148,29 +147,35 @@ public class Router implements RoutungTableListener {
 		Integer maxDist = dist.get(connectionManager.getLocalAddr());
 		if (maxDist == null) return new P2PConnection[0];
 		Collection<P2PConnection> result = new Vector<P2PConnection>();
-		
-		//System.out.println("Routing: dist to "+dest+" = "+maxDist);
-		for(PeerID a : connections.keySet()) {
-			Integer d = dist.get(a);
-			if (d!=null && d == maxDist - 1) {
-				//System.out.println("  next peer: "+a);
-				result.add(connections.get(a));
+
+		synchronized (this) {
+			//System.out.println("Routing: dist to "+dest+" = "+maxDist);
+			for(PeerID a : connections.keySet()) {
+				Integer d = dist.get(a);
+				if (d!=null && d == maxDist - 1) {
+					//System.out.println("  next peer: "+a);
+					result.add(connections.get(a));
+				}
 			}
 		}
-
 		return result.toArray(new P2PConnection[0]);
 	}
 	
 	private P2PConnection[] findRoute(MacAddress macDest) {
-		P2PConnection[] result = routeCache.get(macDest);
+		P2PConnection[] result;
+		synchronized (this) {
+			result = routeCache.get(macDest);
+		}
 		
 		if (result==null) result = findRouteInt(macDest);
 
-		routeCache.put(macDest, result);
+		synchronized (this) {
+			routeCache.put(macDest, result);
+		}
 		return result;
 	}
 	
-	private void addReachablePeer(Set<PeerID> reachable, PeerID a) {
+	private void _addReachablePeer(Set<PeerID> reachable, PeerID a) {
 		if (reachable.contains(a)) return;
 		
 		reachable.add(a);
@@ -181,18 +186,18 @@ public class Router implements RoutungTableListener {
 				StringTokenizer st = new StringTokenizer(conn);
 				
 				while(st.hasMoreTokens())  {
-					addReachablePeer(reachable, new PeerID(st.nextToken()));
+					_addReachablePeer(reachable, new PeerID(st.nextToken()));
 				}
 			}
 		}
 	}
 
-	private void updatePeers() {
+	private synchronized void updatePeers() {
 		Set<PeerID> reachable = new HashSet<PeerID>();
-		
+
 		routeCache.clear();
 		
-		addReachablePeer(reachable, connectionManager.getLocalAddr());
+		_addReachablePeer(reachable, connectionManager.getLocalAddr());
 		
 		Iterator<PeerID> as = peers.keySet().iterator();
 		
@@ -214,24 +219,35 @@ public class Router implements RoutungTableListener {
 			outB.write(SEND_DB);
 			ObjectOutputStream outO = new ObjectOutputStream(outB);
 			outO.writeObject(a);
-			outO.writeObject(peers.get(a));
+			synchronized (this) {
+				outO.writeObject(peers.get(a));
+			}
 			outO.flush();
-			connection.send(outB.toByteArray());
+			connection.send(outB.toByteArray(), true);
 		} catch (IOException ex) {
 		}
 	}
 	
-	private synchronized void syncDB() {
+	private void syncDB() {
 		P2PConnection[] cs = getConnections();
-		
-		for(PeerID a : peers.keySet()) {
+		Set<PeerID> peerSet;
+
+		synchronized (this) {
+			peerSet = peers.keySet();
+		}
+
+		for(PeerID a : peerSet) {
 			P2PConnection c = null;
 			
 			if (!a.equals(connectionManager.getLocalAddr())) {
-				if (connections.containsKey(a)) {
-					c = connections.get(a);
-				} else {
-					c = cs[(int)(Math.random()*cs.length)];
+				long version;
+				synchronized (this) {
+					if (connections.containsKey(a)) {
+						c = connections.get(a);
+					} else {
+						c = cs[(int)(Math.random()*cs.length)];
+					}
+					version = peers.get(a).getVersion();
 				}
 
 				try {
@@ -239,9 +255,9 @@ public class Router implements RoutungTableListener {
 					outB.write(ASK_DB);
 					ObjectOutputStream outO = new ObjectOutputStream(outB);
 					outO.writeObject(a);
-					outO.writeLong(peers.get(a).getVersion());
+					outO.writeLong(version);
 					outO.flush();
-					c.send(outB.toByteArray());
+					c.send(outB.toByteArray(), true);
 				} catch (IOException ex) {
 				}
 			}
@@ -257,24 +273,27 @@ public class Router implements RoutungTableListener {
 	private void notifyListeners(boolean connectionsChanged) {
 		
 		if (connectionsChanged) {
-			StringBuffer cs = new StringBuffer();
-			boolean first = true;
-			for(P2PConnection c : connections.values()) {
-				if (!first) cs.append(" ");
-				cs.append(c.getRemoteAddr());
-				first = false;
+			synchronized (this) {
+				StringBuffer cs = new StringBuffer();
+				boolean first = true;
+				for(P2PConnection c : connections.values()) {
+					if (!first) cs.append(" ");
+					cs.append(c.getRemoteAddr());
+					first = false;
+				}
+				peers.get(connectionManager.getLocalAddr()).put("connectedTo", cs.toString());
 			}
-			peers.get(connectionManager.getLocalAddr()).put("connectedTo", cs.toString());
 		}
 
 		updatePeers();
-		
-		for(RoutungTableListener l : tableListeners) {
-			try {
+
+		RoutungTableListener[] ls;
+		synchronized (this) {
+			ls = tableListeners.toArray(new RoutungTableListener[0]);
+		}
+
+		for(RoutungTableListener l : ls) {
 				l.tableChanged(this);
-			} catch (Exception e) {
-				Logger.getLogger("").log(Level.WARNING, "", e);
-			}
 		}
 	}
 	
@@ -283,8 +302,12 @@ public class Router implements RoutungTableListener {
         
         // check for local IPs
         if (!a.equals(connectionManager.getLocalAddr())) {
-            String port = peers.get(a).get("local.port");
-            String ips = peers.get(a).get("local.ips");
+			String port;
+			String ips;
+			synchronized (this) {
+				port = peers.get(a).get("local.port");
+				ips = peers.get(a).get("local.ips");
+			}
             if (port!=null && ips!=null) {
                 StringTokenizer st = new StringTokenizer(ips);
                 while (st.hasMoreTokens()) {
@@ -311,8 +334,10 @@ public class Router implements RoutungTableListener {
 		return new TreeMap<String, String>(db);
 	}
 	
-	public synchronized void setLocalPeerInfo(String key, String val) {
-		peers.get(connectionManager.getLocalAddr()).put(key, val);
+	public void setLocalPeerInfo(String key, String val) {
+		synchronized (this) {
+			peers.get(connectionManager.getLocalAddr()).put(key, val);
+		}
 		notifyListeners(false);
 	}
 	
@@ -325,24 +350,32 @@ public class Router implements RoutungTableListener {
 		return connections.containsKey(id);
 	}
 	
-	public synchronized void newP2PConnection(P2PConnection connection) {
-		if (connections.containsKey(connection.getRemoteAddr())
-				|| connectionManager.getLocalAddr().equals(connection.getRemoteAddr())) {
-			connection.close();
-			return;
+	public void newP2PConnection(P2PConnection connection) {
+		synchronized (this) {
+			if (connections.containsKey(connection.getRemoteAddr())
+					|| connectionManager.getLocalAddr().equals(connection.getRemoteAddr())) {
+				connection.close();
+				return;
+			}
+			connections.put(connection.getRemoteAddr(), connection);
 		}
-		connections.put(connection.getRemoteAddr(), connection);
 		connection.setRouter(this);
 		notifyListeners(true);
 	}
 
-	public synchronized void connectionClosed(P2PConnection connection) {
-		connections.remove(connection.getRemoteAddr());
+	public void connectionClosed(P2PConnection connection) {
+		synchronized (this) {
+			connections.remove(connection.getRemoteAddr());
+		}
 		notifyListeners(true);
 	}
 	
-	public synchronized void close() {
-		for(P2PConnection c : connections.values()) {
+	public void close() {
+		P2PConnection[] cs;
+		synchronized (this) {
+			cs = connections.values().toArray(new P2PConnection[0]);
+		}
+		for(P2PConnection c : cs) {
 			c.close();
 		}
 	}
@@ -350,17 +383,19 @@ public class Router implements RoutungTableListener {
 	public void printTable() {
 		System.out.println("Routing Table (this is: "+connectionManager.getLocalAddr()+")");
 		System.out.println("=============");
-		
-		for(P2PConnection c : connections.values()) {
-			System.out.println(
-					c.getRemoteAddr()+"\t"+
-					c.getConnection());
+
+		synchronized (this) {
+			for(P2PConnection c : connections.values()) {
+				System.out.println(
+						c.getRemoteAddr()+"\t"+
+						c.getConnection());
+			}
 		}
 		
 		System.out.println();
 	}
 
-	public synchronized void receive(P2PConnection connection, byte[] packet) {
+	public void receive(P2PConnection connection, byte[] packet) {
 		ByteArrayInputStream inB = new ByteArrayInputStream(packet);
 		
 		try {
@@ -377,11 +412,13 @@ public class Router implements RoutungTableListener {
 					PeerID a = (PeerID)inO.readObject();
 					long hisVer = inO.readLong();
 					long myVer = 0;
-					VersionizedMap<String, String> db = peers.get(a);
-					if (db!=null) {
-						myVer = db.getVersion();
-						if (myVer>hisVer) sendDBPacket(connection, a);
+					synchronized (this) {
+						VersionizedMap<String, String> db = peers.get(a);
+						if (db!=null) {
+							myVer = db.getVersion();
+						}
 					}
+					if (myVer>hisVer) sendDBPacket(connection, a);
 					break;
 				}
 				case SEND_DB: {
@@ -389,9 +426,11 @@ public class Router implements RoutungTableListener {
 					PeerID a = (PeerID)inO.readObject();
 					VersionizedMap<String, String> hisDB = (VersionizedMap<String, String>)inO.readObject();
 					long myVer = 0;
-					VersionizedMap<String, String> db = peers.get(a);
-					if (db!=null) myVer = db.getVersion();
-					if (myVer < hisDB.getVersion()) peers.put(a, hisDB);
+					synchronized (this) {
+						VersionizedMap<String, String> db = peers.get(a);
+						if (db!=null) myVer = db.getVersion();
+						if (myVer < hisDB.getVersion()) peers.put(a, hisDB);
+					}
                     dbChanged(a);
 					break;
 				}
@@ -428,19 +467,19 @@ public class Router implements RoutungTableListener {
 			if (vpnConnector!=null) vpnConnector.receive(subPacket);
 		} else {
 			//System.out.println("Data-Packet from "+new MacAddress(packet, 6+1)+" for "+dest);
-			sendInt(dest, packet);
+			sendInt(dest, packet, false);
 		}
 	}
 
-	private void sendInt(MacAddress dest, byte[] packet) {
+	private void sendInt(MacAddress dest, byte[] packet, boolean highPriority) {
 		P2PConnection[] cs = findRoute(dest);
 		if (cs.length>0) {
 			// TODO something more intelligent then random
-			cs[(int)(Math.random()*cs.length)].send(packet);
+			cs[(int)(Math.random()*cs.length)].send(packet, highPriority);
 		}
 	}
 
-	private  void setMac(MacAddress mac) {
+	private synchronized void setMac(MacAddress mac) {
 		myMAC = mac;
 		peers.get(connectionManager.getLocalAddr()).put("vpn.mac", myMAC.toString());
 	}
@@ -452,7 +491,7 @@ public class Router implements RoutungTableListener {
 		setMac(new MacAddress(mac));
 	}
 
-	public synchronized void send(byte[] packet) {
+	public void send(byte[] packet) {
 		
 		if (!gotMacFromTun) {
 			setMac(new MacAddress(packet, 6));
@@ -468,36 +507,39 @@ public class Router implements RoutungTableListener {
 				parentPacket[0] = DATA_BROADCAST_PACKET;
 				System.arraycopy(packet, 0, parentPacket, 1+6, packet.length);
 				System.arraycopy(d.getAddress(), 0, parentPacket, 1, 6);	// change destination
-				sendInt(d, parentPacket);
+				sendInt(d, parentPacket, false);
 			}
 		} else {
 			byte[] parentPacket = new byte[packet.length+1];
 			parentPacket[0] = DATA_PACKET;
 			System.arraycopy(packet, 0, parentPacket, 1, packet.length);
-			sendInt(mac, parentPacket);
+			sendInt(mac, parentPacket, false);
 		}
 	}
 
-	public void addInternalPacketListener(byte internalPort, InternalPacketListener l) {
+	public synchronized void addInternalPacketListener(byte internalPort, InternalPacketListener l) {
 		internalListeners.put(internalPort, l);
 	}
 
 	private void handleInternalPacket(byte[] packet) {
 		MacAddress dest = new MacAddress(packet, 0+2);
+		byte intPort = packet[1];
 
 		if (dest.equals(myMAC)) {
-			byte intPort = packet[1];
 			byte[] data = new byte[packet.length-2-6];
 			System.arraycopy(packet, 2+6, data, 0, data.length);
 
-			InternalPacketListener l = internalListeners.get(intPort);
+			InternalPacketListener l;
+			synchronized (this) {
+				l = internalListeners.get(intPort);
+			}
 			if (l!=null) l.receiveInternalPacket(this, intPort, data);
 		} else {
-			sendInt(dest, packet);
+			sendInt(dest, packet, intPort<0);
 		}
 	}
 
-	public synchronized void sendInternalPacket(MacAddress to, byte internalPort, byte[] data) {
+	public void sendInternalPacket(MacAddress to, byte internalPort, byte[] data) {
 		if (to==null) {
 			Collection<MacAddress> macs = getKnownMACs(false);
 			for(MacAddress d : macs) {
@@ -509,7 +551,7 @@ public class Router implements RoutungTableListener {
 			packet[1] = internalPort;
 			System.arraycopy(to.getAddress(), 0, packet, 2, 6);
 			System.arraycopy(data, 0, packet, 1+1+6, data.length);
-			sendInt(to, packet);
+			sendInt(to, packet, internalPort<0);
 		}
 	}
 
@@ -518,7 +560,7 @@ public class Router implements RoutungTableListener {
 		printTable();
 	}
 
-	public synchronized void setVpnConnector(VPNConnector vpnConnector) {
+	public void setVpnConnector(VPNConnector vpnConnector) {
 		this.vpnConnector = vpnConnector;
 	}
 }
