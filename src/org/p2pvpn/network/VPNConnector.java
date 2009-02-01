@@ -64,14 +64,25 @@ public class VPNConnector implements Runnable {
 		myThread.interrupt();
 	}*/
 
+	/*
 	private void forceIP (byte[] packet) {
 		if (packet.length>= 14+20) {
 			if (packet[12]==IPV4_HIGH && packet[13]==IPV4_LOW) { // is this IPv4?
 				byte[] ip = tuntap.getIPBytes();
+
+				int cOff = (0xFF&packet[26]) << 8 + (0xFF&packet[27]);
+				cOff += (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
 				System.arraycopy(ip, 0, packet, 26, 4);		// replace the source ip
+				cOff -= (0xFF&packet[26]) << 8 + (0xFF&packet[27]);
+				cOff -= (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
+
+				cOff += (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
+
+
 			}
 		}
 	}
+	*/
 
 	@Override
 	public void run() {
@@ -83,7 +94,6 @@ public class VPNConnector implements Runnable {
             if (len>=12) {
                 byte[] packet = new byte[len];
                 System.arraycopy(buffer, 0, packet, 0, len);
-				forceIP(packet);
                 if (router!=null) router.send(packet);
             }
 		}
