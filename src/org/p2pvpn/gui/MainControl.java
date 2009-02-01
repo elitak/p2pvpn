@@ -24,19 +24,22 @@ import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import org.p2pvpn.network.ConnectionManager;
+import org.p2pvpn.network.Connector;
+import org.p2pvpn.network.ConnectorListener;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tuntap.TunTap;
 
-public class MainControl {
+public class MainControl implements ConnectorListener {
 	private AdvProperties networkCfg;
 	private AdvProperties accessCfg;
 	
@@ -116,6 +119,9 @@ public class MainControl {
 				}
 				connectionManager.getRouter().setLocalPeerInfo("name", name);
 				connectionManager.addIPs(accessCfg);
+
+				connectionManager.getConnector().addListener(this);
+				addStoredIPs();
 				
 				prefs.put("access", accessCfg.toString());
 				if (networkCfg==null) {
@@ -133,6 +139,41 @@ public class MainControl {
 		}
 		mainWindow.networkHasChanged();
 	}
+
+	private void addStoredIPs() {
+		String ipStr = prefs.get("knownIPs", "");
+		StringTokenizer ips = new StringTokenizer(ipStr, ";");
+
+		while (ips.hasMoreTokens()) {
+			try {
+				StringTokenizer st = new StringTokenizer(ips.nextToken(), ":");
+				String ip = st.nextToken();
+				int port = Integer.parseInt(st.nextToken());
+				System.out.println("add "+ip+":"+port);
+				connectionManager.getConnector().addIP(ip, port, null, "stored", false);
+			} catch (NumberFormatException numberFormatException) {
+			}
+		}
+	}
+
+	public void ipListChanged(Connector c) {
+		try {
+			Connector.Endpoint[] es = c.getIPs();
+			String ips = "";
+			for (int i = 0; i < es.length; i++) {
+				if (i > 0) {
+					ips = ips + ";";
+				}
+				ips = ips + es[i].toString();
+			}
+			prefs.put("knownIPs", ips);
+			prefs.flush();
+		} catch (BackingStoreException ex) {
+			Logger.getLogger("").log(Level.SEVERE, null, ex);
+		}
+	}
+
+
 
 	public String nameForPeer(PeerID peer) {
 		if (connectionManager==null) return "";
