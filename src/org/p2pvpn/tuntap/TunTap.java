@@ -24,9 +24,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class TunTap {
-	
+
+	private byte[] ip = null;
+
 	static void loadLibFromRecsource(String lib, String suffix) throws IOException {
 		File tmp = File.createTempFile("lib", suffix);
 		tmp.deleteOnExit();
@@ -65,5 +71,15 @@ public abstract class TunTap {
     
     abstract public int read(byte[] b);
     
-    abstract public void setIP(String ip, String subnetmask);
+    public void setIP(String ip, String subnetmask) {
+		try {
+			this.ip = InetAddress.getByName(ip).getAddress();
+		} catch (UnknownHostException ex) {
+		}
+	}
+
+	public byte[] getIPBytes() {
+		return ip;
+	}
+
 }

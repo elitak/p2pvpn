@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.InternalPacketListener;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
@@ -47,10 +48,17 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		txtSend.requestFocus();
     }
 
-	void start() {
-		mainControl.getConnectionManager().getRouter()
-				.addInternalPacketListener(Router.INTERNAL_PORT_CHAT, this);
+	void networkHasChanged() {
+		ConnectionManager cm = mainControl.getConnectionManager();
+		if (cm!=null) {
+			Router r = cm.getRouter();
+			if (r!=null) {
+				r.addInternalPacketListener(Router.INTERNAL_PORT_CHAT, this);
+			}
+		}
+
 	}
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -113,8 +121,14 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 			System.arraycopy(fromb, 0, packet, 0, fromb.length);
 			System.arraycopy(msgb, 0, packet, fromb.length, msgb.length);
 
-			mainControl.getConnectionManager().getRouter()
-					.sendInternalPacket(null, Router.INTERNAL_PORT_CHAT, packet);
+			ConnectionManager cm = mainControl.getConnectionManager();
+			if (cm!=null) {
+				Router r = cm.getRouter();
+				if (r!=null) {
+					r.sendInternalPacket(null, Router.INTERNAL_PORT_CHAT, packet);
+				}
+			}
+
 			writeMessage(mainControl.nameForPeer(mainControl.getConnectionManager().getLocalAddr()), msg);
 		} catch (UnsupportedEncodingException ex) {
 				Logger.getLogger(ChatWindow.class.getName()).log(Level.SEVERE, null, ex);

@@ -22,6 +22,10 @@ package org.p2pvpn.network;
 import org.p2pvpn.tuntap.TunTap;
 
 public class VPNConnector implements Runnable {
+
+	private final static byte IPV4_HIGH = 0x08;
+	private final static byte IPV4_LOW = 0x00;
+
 	private TunTap tuntap;
 	private Router router;
 	private Thread myThread;
@@ -60,6 +64,15 @@ public class VPNConnector implements Runnable {
 		myThread.interrupt();
 	}*/
 
+	private void forceIP (byte[] packet) {
+		if (packet.length>= 14+20) {
+			if (packet[12]==IPV4_HIGH && packet[13]==IPV4_LOW) { // is this IPv4?
+				byte[] ip = tuntap.getIPBytes();
+				System.arraycopy(ip, 0, packet, 26, 4);		// replace the source ip
+			}
+		}
+	}
+
 	@Override
 	public void run() {
 		byte[] buffer = new byte[2048];
@@ -70,6 +83,7 @@ public class VPNConnector implements Runnable {
             if (len>=12) {
                 byte[] packet = new byte[len];
                 System.arraycopy(buffer, 0, packet, 0, len);
+				forceIP(packet);
                 if (router!=null) router.send(packet);
             }
 		}

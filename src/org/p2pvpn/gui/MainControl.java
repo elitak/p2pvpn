@@ -176,6 +176,7 @@ public class MainControl {
 
 	public void setIp(String ip) {
 		this.ip = ip;
+
 		if (tuntap!=null) {
 			tuntap.setIP(ip, accessCfg.getProperty("network.ip.subnet"));
 			if (connectionManager!=null) {

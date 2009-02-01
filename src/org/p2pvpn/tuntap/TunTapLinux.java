@@ -57,6 +57,7 @@ public class TunTapLinux extends TunTap {
     public native int read(byte[] b);
     
     public void setIP(String ip, String subnetmask) {
+		super.setIP(ip, subnetmask);
     	try {
     		Process p = Runtime.getRuntime().exec("ifconfig "+dev+" "+ip+" netmask "+subnetmask);
 			Logger.getLogger("").log(Level.INFO, "IP set successfully ("+p.waitFor()+")");

@@ -58,6 +58,7 @@ public class TunTapWindows extends TunTap {
     public native int read(byte[] b);
 
     public void setIP(String ip, String subnetmask) {
+		super.setIP(ip, subnetmask);
     	try {
             String[] cmd = {
                 "netsh", "interface", "ip", "set", "address", dev, "static", ip, subnetmask

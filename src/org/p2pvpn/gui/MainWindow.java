@@ -66,7 +66,6 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		chatWindow = new ChatWindow(this, mainControl);
 		
 		mainControl.start();
-		chatWindow.start();
     }
 
 	private void setButtonIcon(JButton btn, String path) {
@@ -271,6 +270,7 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 		} else {
 			txtNetwork.setText(mainControl.getAccessCfg().getProperty("network.name", ""));
 		}
+		chatWindow.networkHasChanged();
 	}
 	
 	public void tableChanged(Router router) {
