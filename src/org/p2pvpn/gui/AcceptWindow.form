@@ -23,7 +23,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="297" max="32767" attributes="0"/>
+              <EmptySpace pref="304" max="32767" attributes="0"/>
               <Component id="btnOK" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="btnCancel" min="-2" max="-2" attributes="0"/>
@@ -87,7 +87,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="btnLoad" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="scrollInvitation" pref="185" max="32767" attributes="0"/>
+                  <Component id="scrollInvitation" pref="186" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

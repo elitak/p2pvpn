@@ -19,15 +19,28 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
 public class MainWindow extends javax.swing.JFrame implements RoutungTableListener {
 
+	private static final String P2PVPN_IMG = "resources/images/P2PVPN-32.png";
 	private static final String CHAT_IMG = "resources/images/chat.png";
 	private static final String CHAT_BLA_IMG = "resources/images/chat_bla.png";
 
@@ -37,17 +50,21 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 	private InviteWindow inviteWindow;
 	private AcceptWindow acceptWindow;
 	private ChatWindow chatWindow;
+    private InfoWindow infoWindow;
 
 	private PeerListModel peerListModel;
 	private PeerListCellRenderer peerListCellRenderer;
+
+    private TrayIcon trayIcon;
 	
     /** Creates new form MainWindow */
     public MainWindow() {
+        setLocationByPlatform(true);
 		peerListModel = new PeerListModel();
 		peerListCellRenderer = new PeerListCellRenderer();
         initComponents();
 		try {
-			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/P2PVPN-32.png");
+			URL url = InfoWindow.class.getClassLoader().getResource(P2PVPN_IMG);
 			setIconImage(new ImageIcon(url).getImage());
 		} catch(NullPointerException e) {}
 		
@@ -64,6 +81,54 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		inviteWindow = new InviteWindow(this, mainControl);
 		acceptWindow = new AcceptWindow(this, mainControl);
 		chatWindow = new ChatWindow(this, mainControl);
+        infoWindow = new InfoWindow(mainControl);
+
+        try {
+            PopupMenu popupMenu = new PopupMenu();
+
+            MenuItem show = new MenuItem("Show");
+			show.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					setVisible(true);
+				}
+			});
+			popupMenu.add(show);
+
+            MenuItem hide = new MenuItem("Hide");
+			hide.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					setVisible(false);
+				}
+			});
+			popupMenu.add(hide);
+			popupMenu.addSeparator();
+
+            MenuItem quit = new MenuItem("Quit");
+			quit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					System.exit(0);
+				}
+			});
+			popupMenu.add(quit);
+
+			trayIcon = new TrayIcon(
+                    Toolkit.getDefaultToolkit().getImage(InfoWindow.class.getClassLoader().getResource(P2PVPN_IMG)),
+					"P2PVPN", popupMenu);
+            trayIcon.setImageAutoSize(true);
+
+			trayIcon.addMouseListener(new MouseAdapter() {
+				@Override public void mouseClicked(MouseEvent e) {
+					if (e.getButton() == MouseEvent.BUTTON1) {
+						setVisible(!isVisible());
+					}
+				}
+			});
+
+            SystemTray.getSystemTray().add(trayIcon);
+            setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        } catch (Throwable t) {
+            Logger.getLogger("").log(Level.INFO, "Coult not create Tray-Icon", t);
+        }
 		
 		mainControl.start();
     }
@@ -216,7 +281,7 @@ private void btnNewNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
 private void btnInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInfoActionPerformed
 // TODO add your handling code here:
-	InfoWindow.open(mainControl.getConnectionManager());
+    infoWindow.setVisible(true);
 }//GEN-LAST:event_btnInfoActionPerformed
 
 private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptionsActionPerformed
@@ -246,10 +311,16 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 	// add your handling code here:
 	chatWindow.setVisible(true);
 	setButtonIcon(btnChat, CHAT_IMG);
+		if (trayIcon!=null) {
+			trayIcon.setImage(Toolkit.getDefaultToolkit().getImage(InfoWindow.class.getClassLoader().getResource(P2PVPN_IMG)));
+		}
 }//GEN-LAST:event_btnChatActionPerformed
 
 	void setChatBla() {
 		setButtonIcon(btnChat, CHAT_BLA_IMG);
+		if (trayIcon!=null) {
+			trayIcon.setImage(Toolkit.getDefaultToolkit().getImage(InfoWindow.class.getClassLoader().getResource(CHAT_BLA_IMG)));
+		}
 	}
 
 	public void setNodeName(String name) {
@@ -271,6 +342,7 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 			txtNetwork.setText(mainControl.getAccessCfg().getProperty("network.name", ""));
 		}
 		chatWindow.networkHasChanged();
+        infoWindow.networkHasChanged();
 	}
 	
 	public void tableChanged(Router router) {

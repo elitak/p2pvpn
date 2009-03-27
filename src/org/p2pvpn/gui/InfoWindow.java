@@ -53,41 +53,45 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 	private static final long serialVersionUID = -7583281386025886297L;
 	
 	private ConnectionManager connectionManager;
+    private MainControl mainControl;
 	private PeerID addrShown = null;
 	
 	/** Creates new form Main */
-    public InfoWindow(ConnectionManager cm) {
-        this.connectionManager = cm;
+    public InfoWindow(MainControl mainControl) {
+        this.mainControl = mainControl;
+        this.connectionManager = null;
     	setLocationByPlatform(true);
     	
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                initComponents();
-				try {
-					URL url = InfoWindow.class.getClassLoader().getResource("resources/images/info.png");
-					setIconImage(new ImageIcon(url).getImage());
-				} catch(NullPointerException e) {}
-				startLogging();
-				peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-					public void valueChanged(ListSelectionEvent e) {
-						for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {
-							if (peerTable1.getSelectionModel().isSelectedIndex(i)) {
-								peerSelected(i);
-								break;
-							}
-						}
-					}
-				});
-            	setLocalInfo(
-            			"ID: "+connectionManager.getLocalAddr()+
-            			"  Port: "+connectionManager.getServerPort());
-				connectionManager.getRouter().addTableListener(InfoWindow.this);
-				//connectionManager.getUPnPPortForward().addListener(Main.this);
-				upnpText.setText("disabled");
-            	setVisible(true);
+        initComponents();
+        peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {
+                    if (peerTable1.getSelectionModel().isSelectedIndex(i)) {
+                        peerSelected(i);
+                        break;
+                    }
+                }
             }
         });
-        
+        try {
+            URL url = InfoWindow.class.getClassLoader().getResource("resources/images/info.png");
+            setIconImage(new ImageIcon(url).getImage());
+        } catch(NullPointerException e) {}
+        startLogging();
+        upnpText.setText("disabled");
+    }
+
+    void networkHasChanged() {
+        connectionManager = mainControl.getConnectionManager();
+        if (connectionManager != null) {
+            peerTable1.setModel(new PeerTableModel(connectionManager));
+            ipTable.setModel(new IPTableModel(connectionManager));
+            setLocalInfo(
+                    "ID: "+connectionManager.getLocalAddr()+
+                    "  Port: "+connectionManager.getServerPort());
+            connectionManager.getRouter().addTableListener(InfoWindow.this);
+            //connectionManager.getUPnPPortForward().addListener(Main.this);
+        }
     }
     
     /** This method is called from within the constructor to
@@ -120,7 +124,6 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
         jScrollPane5 = new javax.swing.JScrollPane();
         logText = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("P2PVPN");
 
         jSplitPane1.setDividerLocation(250);
@@ -141,13 +144,13 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -166,7 +169,14 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 
         localInfo1.setText(" ");
 
-        peerTable1.setModel(new PeerTableModel(connectionManager));
+        peerTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
         peerTable1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane4.setViewportView(peerTable1);
 
@@ -178,15 +188,15 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
                 .addGroup(aPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(localInfo1, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE))
+                        .addComponent(localInfo1, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE))
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addComponent(connectBtn1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(hostConnectText1, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE))
+                        .addComponent(hostConnectText1, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
                     .addGroup(aPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         aPanel1Layout.setVerticalGroup(
@@ -194,7 +204,7 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, aPanel1Layout.createSequentialGroup()
                 .addComponent(localInfo1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(aPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hostConnectText1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -206,7 +216,14 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 
         jTabbedPane1.addTab("Connections", jSplitPane1);
 
-        ipTable.setModel(new IPTableModel(connectionManager));
+        ipTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
         jScrollPane1.setViewportView(ipTable);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -215,14 +232,14 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -238,14 +255,14 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -261,14 +278,14 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -310,10 +327,6 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 	public void setLocalInfo(String s) {
 		localInfo1.setText(s);
 	}
-	
-    public static void open(ConnectionManager cm) {
-    	new InfoWindow(cm);
-    }
 
 	public void tableChanged(Router router) {
 		SwingUtilities.invokeLater(new Runnable() {

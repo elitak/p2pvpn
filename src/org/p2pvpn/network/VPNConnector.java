@@ -25,6 +25,7 @@ public class VPNConnector implements Runnable {
 
 	private final static byte IPV4_HIGH = 0x08;
 	private final static byte IPV4_LOW = 0x00;
+	private final static byte IPV4_UDP = 17;
 
 	private TunTap tuntap;
 	private Router router;
@@ -64,26 +65,48 @@ public class VPNConnector implements Runnable {
 		myThread.interrupt();
 	}*/
 
-	/*
+/*
+ *
+ * Offset
+ * 0:  Ethernet
+ * 14: IP
+ * 34: UDP
+*/
+
 	private void forceIP (byte[] packet) {
 		if (packet.length>= 14+20) {
-			if (packet[12]==IPV4_HIGH && packet[13]==IPV4_LOW) { // is this IPv4?
-				byte[] ip = tuntap.getIPBytes();
+			if (packet[12]==IPV4_HIGH && packet[13]==IPV4_LOW && packet[14+9]==IPV4_UDP) { // is this IPv4 and UDP?
+                byte[] ip = tuntap.getIPBytes();
+                if (packet[26] != ip[0] || packet[27] != ip[1] ||
+                    packet[28] != ip[2] || packet[29] != ip[3]) {
 
-				int cOff = (0xFF&packet[26]) << 8 + (0xFF&packet[27]);
-				cOff += (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
-				System.arraycopy(ip, 0, packet, 26, 4);		// replace the source ip
-				cOff -= (0xFF&packet[26]) << 8 + (0xFF&packet[27]);
-				cOff -= (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
+					int checksum = 0;
+                    packet[14+10] = 0;		// set checksum = 0
+                    packet[14+11] = 0;
+                    System.arraycopy(ip, 0, packet, 26, 4);		// replace the source ip
 
-				cOff += (0xFF&packet[28]) << 8 + (0xFF&packet[29]);
+					for(int i=14; i<34; i+=2) {
+						checksum += ((0xFF&packet[i]) << 8) + (0xFF&packet[i+1]);
+					}
 
+					while ((checksum & 0xFFFF0000) != 0) {
+						checksum = (checksum & 0xFFFF) + (checksum >> 16);
+					}
 
+					checksum = ~checksum;
+
+                    packet[14+10] = (byte)(0xFF & (checksum >> 8));
+                    packet[14+11] = (byte)(0xFF & checksum);
+
+                    packet[14+20+6] = 0;		// unset UDP checksum
+                    packet[14+20+7] = 0;
+                    
+                }
 			}
 		}
 	}
-	*/
 
+   
 	@Override
 	public void run() {
 		byte[] buffer = new byte[2048];
@@ -94,6 +117,7 @@ public class VPNConnector implements Runnable {
             if (len>=12) {
                 byte[] packet = new byte[len];
                 System.arraycopy(buffer, 0, packet, 0, len);
+                forceIP(packet);
                 if (router!=null) router.send(packet);
             }
 		}

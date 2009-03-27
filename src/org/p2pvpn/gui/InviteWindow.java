@@ -38,6 +38,7 @@ public class InviteWindow extends javax.swing.JDialog {
     /** Creates new form InviteWindow */
     public InviteWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
+        setLocationByPlatform(true);
         initComponents();
 		try {
 			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/invite.png");

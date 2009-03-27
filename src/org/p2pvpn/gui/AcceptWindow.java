@@ -43,6 +43,7 @@ public class AcceptWindow extends javax.swing.JDialog implements DocumentListene
     /** Creates new form AcceptWindow */
     public AcceptWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
+       	setLocationByPlatform(true);
         initComponents();
 		try {
 			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/accept.png");

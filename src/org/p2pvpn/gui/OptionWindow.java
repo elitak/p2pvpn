@@ -33,6 +33,7 @@ public class OptionWindow extends javax.swing.JDialog {
     /** Creates new form OptionWindow */
     public OptionWindow(java.awt.Frame parent) {
         super(parent, true);
+        setLocationByPlatform(true);
         initComponents();
 		try {
 			URL url = InfoWindow.class.getClassLoader().getResource("resources/images/options.png");

@@ -28,6 +28,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -40,10 +41,13 @@ public class BitTorrentTracker implements Runnable {
 
 	ConnectionManager connectionManager;
 	String tracker;
+    byte[] peerId;
 
 	public BitTorrentTracker(ConnectionManager connectionManager, String tracker) {
 		this.connectionManager = connectionManager;
 		this.tracker = tracker;
+        peerId = new byte[20];
+        new Random().nextBytes(peerId);
 		schedule(1);
 	}
 
@@ -53,7 +57,8 @@ public class BitTorrentTracker implements Runnable {
 
 	private Map<Object, Object> trackerRequest(byte[] hash, int port) throws MalformedURLException, IOException {
 		String sUrl = tracker + "?info_hash=" + new String(new URLCodec().encode(hash))
-				+ "&port=" + port + "&compact=1";
+				+ "&port=" + port + "&compact=1&peer_id=" + new String(new URLCodec().encode(peerId)) +
+                "&uploaded=0&downloaded=0&left=100";
 
 		URL url = new URL(sUrl);
 		PushbackInputStream in = new PushbackInputStream(url.openStream());

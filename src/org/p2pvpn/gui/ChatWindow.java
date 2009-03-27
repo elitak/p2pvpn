@@ -37,6 +37,7 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 
     /** Creates new form ChatWindow */
     public ChatWindow(MainWindow mainWindow, MainControl mainControl) {
+        setLocationByPlatform(true);
 		this.mainControl = mainControl;
 		this.mainWindow = mainWindow;
         initComponents();
