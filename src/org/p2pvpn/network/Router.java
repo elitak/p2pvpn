@@ -344,7 +344,11 @@ public class Router implements RoutungTableListener {
 	public synchronized P2PConnection[] getConnections() {
 		return connections.values().toArray(new P2PConnection[0]);
 	}
-	
+
+	public synchronized P2PConnection getConnection(PeerID id) {
+		return connections.get(id);
+	}
+
 	public synchronized boolean isConnectedTo(PeerID id) {
 		if (id==null) return false;
 		return connections.containsKey(id);

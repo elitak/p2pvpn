@@ -19,12 +19,16 @@
 
 package org.p2pvpn.gui;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.p2pvpn.network.ConnectionManager;
+import org.p2pvpn.network.P2PConnection;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
@@ -35,8 +39,11 @@ import org.p2pvpn.network.RoutungTableListener;
  */
 public class PeerTableModel implements RoutungTableListener, TableModel {
 
+	private static final NumberFormat BW_FORMAT = new DecimalFormat("0.0");
+	private static final long UPDATE_MS = 500;
+
 	/*
-	 * Table Columns: Name, Id, Direct, IP, MAC
+	 * Table Columns: Name, Id, Direct, IP, MAC, In, Out
 	 */
 	
 	private ConnectionManager connectionManager;
@@ -50,6 +57,7 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		router.addTableListener(this);
 		listeners = new Vector<TableModelListener>();
 		table = router.getPeers();
+		scheduleTableChanged();
 	}
 	
 	public PeerID getPeerID(int row) {
@@ -64,6 +72,15 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 				notifyListeners();
 			}
 		});
+	}
+
+	public void scheduleTableChanged() {
+		tableChanged(router);
+		connectionManager.getScheduledExecutor().schedule(new Runnable() {
+			public void run() {
+				scheduleTableChanged();
+			}
+		}, UPDATE_MS, TimeUnit.MILLISECONDS);
 	}
 
 	private void notifyListeners() {
@@ -83,15 +100,17 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 0: return String.class; 
 		case 1: return String.class; 
 		case 2: return String.class; 
-		case 3: return String.class; 
-		case 4: return String.class; 
+		case 3: return String.class;
+		case 4: return String.class;
+		case 5: return String.class;
+		case 6: return String.class;
 		default: return null;
 		}
 	}
 
 	@Override
 	public int getColumnCount() {
-		return 5;
+		return 7;
 	}
 
 	@Override
@@ -100,8 +119,10 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 0: return "Name"; 
 		case 1: return "ID"; 
 		case 2: return "Connection"; 
-		case 3: return "IP"; 
-		case 4: return "MAC"; 
+		case 3: return "IP";
+		case 4: return "MAC";
+		case 5: return "In (kb/s)";
+		case 6: return "Out (kb/s)";
 		default: return null;
 		}
 	}
@@ -122,6 +143,17 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 			return "indirect";
 		case 3: return router.getPeerInfo(table[r], "vpn.ip");
 		case 4: return router.getPeerInfo(table[r], "vpn.mac");
+		case 5:
+		case 6:
+			P2PConnection conn = router.getConnection(table[r]);
+			if (conn==null) return "";
+			double bw;
+			if (c==5) {
+				bw = conn.getConnection().getBwIn().getBandwidth() / 1000;
+			} else {
+				bw = conn.getConnection().getBwOut().getBandwidth() / 1000;
+			}
+			return BW_FORMAT.format(bw);
 		default: return null;
 		}
 	}

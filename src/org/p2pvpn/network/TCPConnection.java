@@ -36,12 +36,17 @@ import org.p2pvpn.tools.CryptoUtils;
 
 
 public class TCPConnection implements Runnable {
-	
+
+	private static final double BUCKET_TIME = 0.5;
+	private static final int BUCKET_LEN = 10;
+
 	private static final int MAX_QUEUE = 10;
 	private static final int MAX_PACKET_SIZE = 10 * 1024;
 
 	private enum CCState {WAIT_FOR_IV, WAIT_FOR_DATA};
-	
+
+	private MeasureBandwidth bwIn, bwOut;
+
 	private Cipher cIn, cOut;
 	private SecretKey key;
 	private CCState state;	
@@ -64,6 +69,8 @@ public class TCPConnection implements Runnable {
 		closed = false;
 		cIn = null;
 		cOut = null;
+		bwIn = new MeasureBandwidth(BUCKET_TIME, BUCKET_LEN);
+		bwOut = new MeasureBandwidth(BUCKET_TIME, BUCKET_LEN);
 		state = CCState.WAIT_FOR_DATA;
 		
 		try {
@@ -191,6 +198,7 @@ public class TCPConnection implements Runnable {
 			out.write(low);
 			out.write(packet);
 			if (flush) out.flush();
+			bwOut.countPacket(2+packet.length);
 		} catch (IOException iOException) {
 			close();
 		}
@@ -198,6 +206,9 @@ public class TCPConnection implements Runnable {
 
 	public void handleEncryptedPacket(byte[] packet) {
 		byte[] ct;
+
+		bwIn.countPacket(2+packet.length);
+
 		if (cIn==null) {
 			ct = packet;
 		} else {
@@ -254,5 +265,13 @@ public class TCPConnection implements Runnable {
 
 	public String getRemoteHost() {
 		return ((InetSocketAddress)peer).getHostName();
+	}
+
+	public MeasureBandwidth getBwIn() {
+		return bwIn;
+	}
+
+	public MeasureBandwidth getBwOut() {
+		return bwOut;
 	}
 }
