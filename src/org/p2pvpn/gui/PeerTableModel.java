@@ -149,9 +149,9 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 			if (conn==null) return "";
 			double bw;
 			if (c==5) {
-				bw = conn.getConnection().getBwIn().getBandwidth() / 1000;
+				bw = conn.getConnection().getBwIn().getBandwidth() / 1024;
 			} else {
-				bw = conn.getConnection().getBwOut().getBandwidth() / 1000;
+				bw = conn.getConnection().getBwOut().getBandwidth() / 1024;
 			}
 			return BW_FORMAT.format(bw);
 		default: return null;

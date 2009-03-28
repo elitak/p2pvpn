@@ -37,6 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.p2pvpn.network.bandwidth.TokenBucket;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
@@ -44,6 +45,8 @@ import org.p2pvpn.tools.CryptoUtils;
 public class ConnectionManager implements Runnable {
     final static private String WHATISMYIP_URL = "http://whatismyip.com/automation/n09230945.asp";
 	final static private long WHATISMYIP_REFRESH_S = 10*60;
+
+	final static private double SEND_BUCKET_SIZE = 10 * 1024;
     
 	private ServerSocket server;
 	private int serverPort;
@@ -58,6 +61,8 @@ public class ConnectionManager implements Runnable {
 	
 	private AdvProperties accessCfg;
 	private byte[] networkKey;
+
+	private TokenBucket sendLimit, recLimit;
 	
 	public ConnectionManager(AdvProperties accessCfg, int serverPort) {
 		this.serverPort = serverPort;
@@ -69,6 +74,9 @@ public class ConnectionManager implements Runnable {
 		bitTorrentTracker = null;
 		//uPnPPortForward = new UPnPPortForward(this);
 		whatIsMyIP = null;
+
+		sendLimit = new TokenBucket(0, SEND_BUCKET_SIZE);
+		recLimit = new TokenBucket(0, SEND_BUCKET_SIZE);
 
 		calcNetworkKey();
 		
@@ -247,5 +255,13 @@ public class ConnectionManager implements Runnable {
 
 	public UPnPPortForward getUPnPPortForward() {
 		return uPnPPortForward;
+	}
+
+	public TokenBucket getSendLimit() {
+		return sendLimit;
+	}
+
+	public TokenBucket getRecLimit() {
+		return recLimit;
 	}
 }

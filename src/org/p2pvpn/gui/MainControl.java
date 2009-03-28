@@ -49,6 +49,7 @@ public class MainControl implements ConnectorListener {
 	
 	private int serverPort;
 	private String name;
+	private double sendLimit, recLimit;
 	private String ip;
 
 	private Preferences prefs;
@@ -65,6 +66,8 @@ public class MainControl implements ConnectorListener {
 		String netStr = prefs.get("network", null);
 		networkCfg = netStr==null ? null : new AdvProperties(netStr);
 		ip = prefs.get("ip", "");
+		sendLimit = prefs.getDouble("sendLimit", 0);
+		recLimit = prefs.getDouble("recLimit", 0);
 	}
 	
 	public void start() {
@@ -122,7 +125,10 @@ public class MainControl implements ConnectorListener {
 
 				connectionManager.getConnector().addListener(this);
 				addStoredIPs();
-				
+
+				connectionManager.getSendLimit().setBandwidth(sendLimit);
+				connectionManager.getRecLimit().setBandwidth(recLimit);
+
 				prefs.put("access", accessCfg.toString());
 				if (networkCfg==null) {
 					prefs.remove("network");
@@ -288,5 +294,34 @@ public class MainControl implements ConnectorListener {
 		
 		return accessCfg;
 	}
-	
+
+	public double getRecLimit() {
+		return recLimit;
+	}
+
+	public void setRecLimit(double recLimit) {
+		this.recLimit = recLimit;
+		if (connectionManager!=null) connectionManager.getRecLimit().setBandwidth(recLimit);
+		prefs.putDouble("recLimit", recLimit);
+		try {
+			prefs.flush();
+		} catch (BackingStoreException ex) {
+			Logger.getLogger("").log(Level.WARNING, null, ex);
+		}
+	}
+
+	public double getSendLimit() {
+		return sendLimit;
+	}
+
+	public void setSendLimit(double sendLimit) {
+		this.sendLimit = sendLimit;
+		if (connectionManager!=null) connectionManager.getSendLimit().setBandwidth(sendLimit);
+		prefs.putDouble("sendLimit", sendLimit);
+		try {
+			prefs.flush();
+		} catch (BackingStoreException ex) {
+			Logger.getLogger("").log(Level.WARNING, null, ex);
+		}
+	}
 }

@@ -63,6 +63,12 @@ public class OptionWindow extends javax.swing.JDialog {
         txtName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         spnPort = new javax.swing.JSpinner();
+        jLabel4 = new javax.swing.JLabel();
+        spnSendLimit = new javax.swing.JSpinner();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        spnRecLimit = new javax.swing.JSpinner();
+        jLabel7 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         txtIP = new javax.swing.JTextField();
@@ -78,6 +84,18 @@ public class OptionWindow extends javax.swing.JDialog {
 
         spnPort.setModel(new javax.swing.SpinnerNumberModel(56483, 0, 65525, 1));
 
+        jLabel4.setText("Max Upload");
+
+        spnSendLimit.setModel(new javax.swing.SpinnerNumberModel(Double.valueOf(0.0d), Double.valueOf(0.0d), null, Double.valueOf(10.0d)));
+
+        jLabel5.setText("Max Download");
+
+        jLabel6.setText("kb/s");
+
+        spnRecLimit.setModel(new javax.swing.SpinnerNumberModel(Double.valueOf(0.0d), Double.valueOf(0.0d), null, Double.valueOf(10.0d)));
+
+        jLabel7.setText("kb/s");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -86,11 +104,21 @@ public class OptionWindow extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .addComponent(spnPort, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(spnRecLimit, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel7))
+                    .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addComponent(spnPort, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(spnSendLimit, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -104,7 +132,21 @@ public class OptionWindow extends javax.swing.JDialog {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(spnPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(spnSendLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(spnRecLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel7)))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Global", jPanel1);
@@ -119,7 +161,7 @@ public class OptionWindow extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtIP, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                .addComponent(txtIP, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -129,7 +171,7 @@ public class OptionWindow extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addContainerGap(116, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Network", jPanel2);
@@ -153,18 +195,18 @@ public class OptionWindow extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(153, Short.MAX_VALUE)
+                .addContainerGap(174, Short.MAX_VALUE)
                 .addComponent(btnOK)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCancel)
                 .addContainerGap())
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnOK))
@@ -214,6 +256,21 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 		return ok;
 	}
 
+	public void setSendLimit(double sendLimit) {
+		spnSendLimit.getModel().setValue(sendLimit/1024);
+	}
+
+	public void setRecLimit(double recLimit) {
+		spnRecLimit.getModel().setValue(recLimit/1024);
+	}
+
+	public double getSendLimit() {
+		return 1024*(Double)spnSendLimit.getModel().getValue();
+	}
+
+	public double getRecLimit() {
+		return 1024*(Double)spnRecLimit.getModel().getValue();
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
@@ -221,10 +278,16 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JSpinner spnPort;
+    private javax.swing.JSpinner spnRecLimit;
+    private javax.swing.JSpinner spnSendLimit;
     private javax.swing.JTextField txtIP;
     private javax.swing.JTextField txtName;
     // End of variables declaration//GEN-END:variables

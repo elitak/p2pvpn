@@ -18,6 +18,7 @@
 */
 
 package org.p2pvpn.network;
+import org.p2pvpn.network.bandwidth.MeasureBandwidth;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -192,6 +193,8 @@ public class TCPConnection implements Runnable {
 	
 	private void sendToSocket(byte[] packet, boolean flush) {
 		try {
+			connectionManager.getSendLimit().waitForTokens(2+packet.length);
+
 			int high = (packet.length & 0xFF00) >> 8;
 			int low = packet.length & 0xFF;
 			out.write(high);
@@ -208,6 +211,7 @@ public class TCPConnection implements Runnable {
 		byte[] ct;
 
 		bwIn.countPacket(2+packet.length);
+		connectionManager.getRecLimit().waitForTokens(2+packet.length);
 
 		if (cIn==null) {
 			ct = packet;

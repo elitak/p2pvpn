@@ -289,11 +289,15 @@ private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 	optionWindow.setNodeName(mainControl.getName());
 	optionWindow.setPort(mainControl.getServerPort());
 	optionWindow.setIP(mainControl.getIp());
+	optionWindow.setSendLimit(mainControl.getSendLimit());
+	optionWindow.setRecLimit(mainControl.getRecLimit());
 	optionWindow.setVisible(true);
 	if (optionWindow.isOk()) {
 		mainControl.setName(optionWindow.getNodeName());
 		mainControl.setServerPort(optionWindow.getPort());
 		mainControl.setIp(optionWindow.getIP());
+		mainControl.setSendLimit(optionWindow.getSendLimit());
+		mainControl.setRecLimit(optionWindow.getRecLimit());
 	}
 }//GEN-LAST:event_btnOptionsActionPerformed
 
