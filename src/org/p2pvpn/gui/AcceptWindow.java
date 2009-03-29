@@ -19,6 +19,12 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,7 +34,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.p2pvpn.tools.AdvProperties;
@@ -53,7 +61,31 @@ public class AcceptWindow extends javax.swing.JDialog implements DocumentListene
 		fileChooser = new JFileChooser();
 		txtInvitation.getDocument().addDocumentListener(this);
 		btnOK.setEnabled(false);
+
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem mitem = new JMenuItem("Paste");
+		mitem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				paste();
+			}
+		});
+		menu.add(mitem);
+		txtInvitation.setComponentPopupMenu(menu);
     }
+
+	private void paste() {
+		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+		boolean hasText = c!=null && c.isDataFlavorAvailable(DataFlavor.stringFlavor);
+		if (hasText) {
+			try {
+				txtInvitation.setText((String) c.getData(DataFlavor.stringFlavor));
+			} catch (UnsupportedFlavorException ex) {
+				Logger.getLogger("").log(Level.WARNING, null, ex);
+			} catch (IOException ex) {
+				Logger.getLogger("").log(Level.WARNING, null, ex);
+			}
+		}
+	}
 
     /** This method is called from within the constructor to
      * initialize the form.

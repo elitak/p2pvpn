@@ -19,6 +19,13 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,10 +34,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import org.p2pvpn.tools.AdvProperties;
 
-public class InviteWindow extends javax.swing.JDialog {
+public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner {
 
 	MainControl mainControl;
 	JFileChooser fileChooser;
@@ -46,7 +55,22 @@ public class InviteWindow extends javax.swing.JDialog {
 		} catch(NullPointerException e) {}
 		fileChooser = new JFileChooser();
 		this.mainControl = mainControl;
+
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem mitem = new JMenuItem("Copy");
+		mitem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				copy();
+			}
+		});
+		menu.add(mitem);
+		txtInvitation.setComponentPopupMenu(menu);
     }
+
+	private void copy() {
+		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+		c.setContents(new StringSelection(txtInvitation.getText()), this);
+	}
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -179,7 +203,10 @@ private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 		}
 	}	
 }//GEN-LAST:event_btnSaveActionPerformed
-	
+
+	public void lostOwnership(Clipboard arg0, Transferable arg1) {
+	}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnGenerate;

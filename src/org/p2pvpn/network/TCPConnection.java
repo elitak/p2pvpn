@@ -41,7 +41,9 @@ public class TCPConnection implements Runnable {
 	private static final double BUCKET_TIME = 0.5;
 	private static final int BUCKET_LEN = 10;
 
-	private static final int MAX_QUEUE = 10;
+	public static final int DEFAULT_MAX_QUEUE = 10;
+	public static final boolean DEFAULT_TCP_FLUSH = false;
+
 	private static final int MAX_PACKET_SIZE = 10 * 1024;
 
 	private enum CCState {WAIT_FOR_IV, WAIT_FOR_DATA};
@@ -169,6 +171,7 @@ public class TCPConnection implements Runnable {
 						}
 					} else {
 						sendEncypted(packet, false);
+						if (connectionManager.isTCPFlush()) out.flush();
 					}
 				}
 			}
@@ -211,7 +214,9 @@ public class TCPConnection implements Runnable {
 		byte[] ct;
 
 		bwIn.countPacket(2+packet.length);
-		connectionManager.getRecLimit().waitForTokens(2+packet.length);
+		if (!connectionManager.getRecLimit().tokensAvailable(2+packet.length)) {
+			return;		// drop packet to limit bandwidth
+		}
 
 		if (cIn==null) {
 			ct = packet;
@@ -247,7 +252,7 @@ public class TCPConnection implements Runnable {
 	
 	public void send(byte[] packet, boolean highPriority) {
 		synchronized (sendQueue) {
-			if (highPriority || sendQueue.size()<MAX_QUEUE) {
+			if (highPriority || sendQueue.size()<connectionManager.getSendBufferSize()) {
 				sendQueue.offer(packet);
 				sendQueue.notify();
 			}

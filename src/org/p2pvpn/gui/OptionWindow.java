@@ -21,6 +21,7 @@ package org.p2pvpn.gui;
 
 import java.net.URL;
 import javax.swing.ImageIcon;
+import org.p2pvpn.network.TCPConnection;
 
 /**
  *
@@ -72,6 +73,12 @@ public class OptionWindow extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         txtIP = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        spnBufferSize = new javax.swing.JSpinner();
+        jLabel9 = new javax.swing.JLabel();
+        chkTCPFlush = new javax.swing.JCheckBox();
+        btnReset = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         btnOK = new javax.swing.JButton();
 
@@ -176,6 +183,55 @@ public class OptionWindow extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("Network", jPanel2);
 
+        jLabel8.setText("Send buffer size");
+
+        spnBufferSize.setModel(new javax.swing.SpinnerNumberModel(10, 1, 500, 1));
+
+        jLabel9.setText("packets");
+
+        chkTCPFlush.setText("Flush after each packet");
+
+        btnReset.setText("Rest to Defaults");
+        btnReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnResetActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spnBufferSize, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel9))
+                    .addComponent(chkTCPFlush)
+                    .addComponent(btnReset))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(spnBufferSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkTCPFlush)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnReset)
+                .addContainerGap(56, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Advanced", jPanel3);
+
         btnCancel.setText("Cancel");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,6 +284,12 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 	setVisible(false);
 }//GEN-LAST:event_btnCancelActionPerformed
 
+private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
+	// add your handling code here:
+	spnBufferSize.getModel().setValue(TCPConnection.DEFAULT_MAX_QUEUE);
+	chkTCPFlush.setSelected(TCPConnection.DEFAULT_TCP_FLUSH);
+}//GEN-LAST:event_btnResetActionPerformed
+
 	public void setNodeName(String name) {
 		txtName.setText(name);
 	}
@@ -272,9 +334,27 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 		return 1024*(Double)spnRecLimit.getModel().getValue();
 	}
 
+	public int getSendBufferSize() {
+		return (Integer)spnBufferSize.getModel().getValue();
+	}
+
+	public void setSendBufferSize(int s) {
+		spnBufferSize.getModel().setValue(s);
+	}
+
+	public boolean isTCPFlush() {
+		return chkTCPFlush.isSelected();
+	}
+
+	public void setTCPFlush(boolean f) {
+		chkTCPFlush.setSelected(f);
+	}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOK;
+    private javax.swing.JButton btnReset;
+    private javax.swing.JCheckBox chkTCPFlush;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -282,9 +362,13 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JSpinner spnBufferSize;
     private javax.swing.JSpinner spnPort;
     private javax.swing.JSpinner spnRecLimit;
     private javax.swing.JSpinner spnSendLimit;

@@ -34,6 +34,7 @@ import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.Connector;
 import org.p2pvpn.network.ConnectorListener;
 import org.p2pvpn.network.PeerID;
+import org.p2pvpn.network.TCPConnection;
 import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
@@ -50,6 +51,8 @@ public class MainControl implements ConnectorListener {
 	private int serverPort;
 	private String name;
 	private double sendLimit, recLimit;
+	private int sendBufferSize;
+	private boolean tcpFlush;
 	private String ip;
 
 	private Preferences prefs;
@@ -68,6 +71,8 @@ public class MainControl implements ConnectorListener {
 		ip = prefs.get("ip", "");
 		sendLimit = prefs.getDouble("sendLimit", 0);
 		recLimit = prefs.getDouble("recLimit", 0);
+		sendBufferSize = prefs.getInt("sendBufferSize", TCPConnection.DEFAULT_MAX_QUEUE);
+		tcpFlush = prefs.getBoolean("tcpFlush", TCPConnection.DEFAULT_TCP_FLUSH);
 	}
 	
 	public void start() {
@@ -128,6 +133,8 @@ public class MainControl implements ConnectorListener {
 
 				connectionManager.getSendLimit().setBandwidth(sendLimit);
 				connectionManager.getRecLimit().setBandwidth(recLimit);
+				connectionManager.setSendBufferSize(sendBufferSize);
+				connectionManager.setTCPFlush(tcpFlush);
 
 				prefs.put("access", accessCfg.toString());
 				if (networkCfg==null) {
@@ -136,7 +143,7 @@ public class MainControl implements ConnectorListener {
 					prefs.put("network", networkCfg.toString());
 				}
 				prefs.put("ip", ip);
-				prefs.flush();
+				prefsFlush();
 			} catch (Throwable e) {
 				Logger.getLogger("").log(Level.SEVERE, "", e);
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -163,20 +170,16 @@ public class MainControl implements ConnectorListener {
 	}
 
 	public void ipListChanged(Connector c) {
-		try {
-			Connector.Endpoint[] es = c.getIPs();
-			String ips = "";
-			for (int i = 0; i < es.length; i++) {
-				if (i > 0) {
-					ips = ips + ";";
-				}
-				ips = ips + es[i].toString();
+		Connector.Endpoint[] es = c.getIPs();
+		String ips = "";
+		for (int i = 0; i < es.length; i++) {
+			if (i > 0) {
+				ips = ips + ";";
 			}
-			prefs.put("knownIPs", ips);
-			prefs.flush();
-		} catch (BackingStoreException ex) {
-			Logger.getLogger("").log(Level.SEVERE, null, ex);
+			ips = ips + es[i].toString();
 		}
+		prefs.put("knownIPs", ips);
+		prefsFlush();
 	}
 
 
@@ -212,7 +215,15 @@ public class MainControl implements ConnectorListener {
 		
 		return result.toString();
 	}
-	
+
+	private void prefsFlush() {
+		try {
+			prefs.flush();
+		} catch (BackingStoreException ex) {
+			Logger.getLogger("").log(Level.WARNING, null, ex);
+		}
+	}
+
 	public ConnectionManager getConnectionManager() {
 		return connectionManager;
 	}
@@ -230,11 +241,7 @@ public class MainControl implements ConnectorListener {
 				connectionManager.getRouter().setLocalPeerInfo("vpn.ip", ip);
 			}
 			prefs.put("ip", ip);
-			try {
-				prefs.flush();
-			} catch (BackingStoreException ex) {
-				Logger.getLogger("").log(Level.WARNING, null, ex);
-			}
+			prefsFlush();
 		}
 	}
 
@@ -249,11 +256,7 @@ public class MainControl implements ConnectorListener {
 		}
 		mainWindow.setNodeName(name);
 		prefs.put("name", name);
-		try {
-			prefs.flush();
-		} catch (BackingStoreException ex) {
-			Logger.getLogger("").log(Level.WARNING, null, ex);
-		}
+		prefsFlush();
 	}
 
 	public int getServerPort() {
@@ -263,11 +266,7 @@ public class MainControl implements ConnectorListener {
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
 		prefs.putInt("serverPort", serverPort);
-		try {
-			prefs.flush();
-		} catch (BackingStoreException ex) {
-			Logger.getLogger("").log(Level.WARNING, null, ex);
-		}
+		prefsFlush();
 	}
 
 	public AdvProperties getAccessCfg() {
@@ -303,11 +302,7 @@ public class MainControl implements ConnectorListener {
 		this.recLimit = recLimit;
 		if (connectionManager!=null) connectionManager.getRecLimit().setBandwidth(recLimit);
 		prefs.putDouble("recLimit", recLimit);
-		try {
-			prefs.flush();
-		} catch (BackingStoreException ex) {
-			Logger.getLogger("").log(Level.WARNING, null, ex);
-		}
+		prefsFlush();
 	}
 
 	public double getSendLimit() {
@@ -318,10 +313,28 @@ public class MainControl implements ConnectorListener {
 		this.sendLimit = sendLimit;
 		if (connectionManager!=null) connectionManager.getSendLimit().setBandwidth(sendLimit);
 		prefs.putDouble("sendLimit", sendLimit);
-		try {
-			prefs.flush();
-		} catch (BackingStoreException ex) {
-			Logger.getLogger("").log(Level.WARNING, null, ex);
-		}
+		prefsFlush();
+	}
+
+	public int getSendBufferSize() {
+		return sendBufferSize;
+	}
+
+	public void setSendBufferSize(int sendBufferSize) {
+		this.sendBufferSize = sendBufferSize;
+		if (connectionManager!=null) connectionManager.setSendBufferSize(sendBufferSize);
+		prefs.putInt("sendBufferSize", sendBufferSize);
+		prefsFlush();
+	}
+
+	public boolean isTCPFlush() {
+		return tcpFlush;
+	}
+
+	public void setTCPFlush(boolean tcpFlush) {
+		this.tcpFlush = tcpFlush;
+		if (connectionManager!=null) connectionManager.setTCPFlush(tcpFlush);
+		prefs.putBoolean("tcpFlush", tcpFlush);
+		prefsFlush();
 	}
 }

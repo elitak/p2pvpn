@@ -63,6 +63,9 @@ public class ConnectionManager implements Runnable {
 	private byte[] networkKey;
 
 	private TokenBucket sendLimit, recLimit;
+
+	private int sendBufferSize;
+	private boolean tcpFlush;
 	
 	public ConnectionManager(AdvProperties accessCfg, int serverPort) {
 		this.serverPort = serverPort;
@@ -263,5 +266,21 @@ public class ConnectionManager implements Runnable {
 
 	public TokenBucket getRecLimit() {
 		return recLimit;
+	}
+
+	public int getSendBufferSize() {
+		return sendBufferSize;
+	}
+
+	public void setSendBufferSize(int sendBufferSize) {
+		this.sendBufferSize = sendBufferSize;
+	}
+
+	public boolean isTCPFlush() {
+		return tcpFlush;
+	}
+
+	public void setTCPFlush(boolean tcpFlush) {
+		this.tcpFlush = tcpFlush;
 	}
 }

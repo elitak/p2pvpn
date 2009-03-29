@@ -74,6 +74,18 @@ public class TokenBucket {
 		}
 	}
 
+	public boolean tokensAvailable(double tokens) {
+		updateBucket();
+		synchronized (this) {
+			if (bucket>=0) {
+				bucket -= tokens;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
 	public synchronized void setBandwidth(double bandwidth) {
 		this.bandwidth = bandwidth;
 	}
