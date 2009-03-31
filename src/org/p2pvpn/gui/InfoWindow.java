@@ -51,6 +51,9 @@ import org.p2pvpn.network.UPnPPortForwardListener;
  */
 public class InfoWindow extends javax.swing.JFrame implements RoutungTableListener, UPnPPortForwardListener {
 	private static final long serialVersionUID = -7583281386025886297L;
+
+
+	private static final int MAX_LOG_LEN = 10*1000;
 	
 	private ConnectionManager connectionManager;
     private MainControl mainControl;
@@ -381,13 +384,15 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		
 		@Override
 		public void publish(LogRecord r) {
-			String s = getFormatter().format(r);
-			Document d = logText.getDocument();
 			try {
+				String s = getFormatter().format(r);
+				Document d = logText.getDocument();
 				d.insertString(d.getLength(), s, null);
-			} catch (BadLocationException ex) {
+				if (d.getLength() > MAX_LOG_LEN) {
+					d.remove(0, d.getLength()/2);
+				}
+			} catch (Throwable ex) {
 				ex.printStackTrace();
-				assert false;
 			}
 		}
 

@@ -51,6 +51,7 @@ public class Router implements RoutungTableListener {
 	private static final byte INTERNAL_PACKET = 4;
 
 	public static final byte INTERNAL_PORT_CHAT = -1;
+	public static final byte INTERNAL_PORT_PING = 1;
 	
 	private ConnectionManager connectionManager;
 	private VPNConnector vpnConnector;

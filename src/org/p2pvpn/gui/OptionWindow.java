@@ -94,14 +94,19 @@ public class OptionWindow extends javax.swing.JDialog {
         jLabel4.setText("Max Upload");
 
         spnSendLimit.setModel(new javax.swing.SpinnerNumberModel(Double.valueOf(0.0d), Double.valueOf(0.0d), null, Double.valueOf(10.0d)));
+        spnSendLimit.setToolTipText("0 = no limit");
 
         jLabel5.setText("Max Download");
+        jLabel5.setEnabled(false);
 
         jLabel6.setText("kb/s");
 
         spnRecLimit.setModel(new javax.swing.SpinnerNumberModel(Double.valueOf(0.0d), Double.valueOf(0.0d), null, Double.valueOf(10.0d)));
+        spnRecLimit.setToolTipText("not implemented");
+        spnRecLimit.setEnabled(false);
 
         jLabel7.setText("kb/s");
+        jLabel7.setEnabled(false);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -190,6 +195,7 @@ public class OptionWindow extends javax.swing.JDialog {
         jLabel9.setText("packets");
 
         chkTCPFlush.setText("Flush after each packet");
+        chkTCPFlush.setEnabled(false);
 
         btnReset.setText("Rest to Defaults");
         btnReset.addActionListener(new java.awt.event.ActionListener() {
