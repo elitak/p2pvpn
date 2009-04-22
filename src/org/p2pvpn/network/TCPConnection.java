@@ -161,18 +161,20 @@ public class TCPConnection implements Runnable {
 		try {
 			while (true) {
 				if (closed) break;
+				byte[] packet;
 				synchronized (sendQueue) {
-					byte[] packet = sendQueue.poll();
+					packet = sendQueue.poll();
 					if (packet == null) {
 						out.flush();
 						try {
 							sendQueue.wait();
 						} catch (InterruptedException ex) {
 						}
-					} else {
-						sendEncypted(packet, false);
-						if (connectionManager.isTCPFlush()) out.flush();
 					}
+				}
+				if (packet != null) {
+					sendEncypted(packet, false);
+					if (connectionManager.isTCPFlush()) out.flush();
 				}
 			}
 		} catch (IOException iOException) {

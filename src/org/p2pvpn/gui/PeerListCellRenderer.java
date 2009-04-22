@@ -76,9 +76,11 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer, Cl
 			if (mainControl.getConnectionManager()!=null) {
 				direct = mainControl.getConnectionManager().getRouter().isConnectedTo(peer);
 			}
-			text = mainControl.nameForPeer(peer);
+			text = "<html>"+mainControl.nameForPeer(peer);
 			toolTip = mainControl.descriptionForPeer(peer);
 			ip = mainControl.getConnectionManager().getRouter().getPeerInfo(peer, "vpn.ip");
+			if (ip!=null)
+				text += " <font size=\"-2\">(" + ip + ")</font>";
 		}
 		
 		setText(text);
@@ -95,6 +97,7 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer, Cl
 		setFont(list.getFont());
 		setOpaque(true);
 
+		/* Does not work this way
 		if (ip!=null) { // TODO repair
 			JPopupMenu menu = new JPopupMenu();
 			JMenuItem mitem = new JMenuItem("Copy IP address");
@@ -107,6 +110,7 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer, Cl
 			menu.add(mitem);
 			setComponentPopupMenu(menu);
 		}
+		*/
 
 		return this;
 	}

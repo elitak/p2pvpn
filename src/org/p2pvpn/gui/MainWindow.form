@@ -142,6 +142,10 @@
               <Connection code="peerListCellRenderer" type="code"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lstPeersMousePressed"/>
+            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lstPeersMousePressed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

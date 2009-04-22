@@ -24,6 +24,10 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -33,8 +37,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
@@ -237,6 +244,14 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 
         lstPeers.setModel(peerListModel);
         lstPeers.setCellRenderer(peerListCellRenderer);
+        lstPeers.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                lstPeersMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                lstPeersMousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(lstPeers);
 
         btnInfo.setText("I");
@@ -255,7 +270,7 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
             .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(txtNetwork)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
                 .addComponent(btnInfo))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
         );
@@ -324,6 +339,25 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 		}
 }//GEN-LAST:event_btnChatActionPerformed
 
+private void lstPeersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstPeersMousePressed
+	// add your handling code here:
+	
+	JPopupMenu menu = new JPopupMenu();
+	if (menu.isPopupTrigger(evt)) {
+		int i = lstPeers.locationToIndex(evt.getPoint());
+		if (i>=0 && mainControl.getConnectionManager()!=null) {
+			PeerID peer = (PeerID)lstPeers.getModel().getElementAt(i);
+			String ip = mainControl.getConnectionManager().getRouter().getPeerInfo(peer, "vpn.ip");
+			if (ip!=null) {
+				JMenuItem mitem = new JMenuItem("Copy IP address");
+				mitem.addActionListener(new PopupMenuListener(ip));
+				menu.add(mitem);
+				menu.show(evt.getComponent(), evt.getX(), evt.getY());
+			}
+		}
+	}
+}//GEN-LAST:event_lstPeersMousePressed
+
 	void setChatBla() {
 		setButtonIcon(btnChat, CHAT_BLA_IMG);
 		if (trayIcon!=null) {
@@ -381,4 +415,20 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     private javax.swing.JLabel txtNetwork;
     // End of variables declaration//GEN-END:variables
 
+
+	class PopupMenuListener implements ActionListener, ClipboardOwner {
+		String ip;
+
+		public PopupMenuListener(String ip) {
+			this.ip = ip;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+			c.setContents(new StringSelection(ip), this);
+		}
+
+		public void lostOwnership(Clipboard clipboard, Transferable contents) {
+		}
+	}
 }
