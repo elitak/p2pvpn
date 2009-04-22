@@ -91,6 +91,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
 
         setTitle("Generate Invitation");
 
+        chkNetwork.setSelected(true);
         chkNetwork.setText("Allow invitation of others");
 
         btnGenerate.setText("Generate Invitation");
@@ -103,7 +104,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Invitation"));
 
         txtInvitation.setColumns(20);
-        txtInvitation.setFont(new java.awt.Font("DejaVu Sans", 0, 8)); // NOI18N
+        txtInvitation.setFont(new java.awt.Font("DejaVu Sans", 0, 8));
         txtInvitation.setRows(5);
         jScrollPane1.setViewportView(txtInvitation);
 
@@ -126,7 +127,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSave))
         );
@@ -147,9 +148,9 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chkNetwork)
                     .addComponent(btnGenerate))
-                .addContainerGap(209, Short.MAX_VALUE))
+                .addContainerGap(224, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(341, Short.MAX_VALUE)
+                .addContainerGap(344, Short.MAX_VALUE)
                 .addComponent(btnClose)
                 .addContainerGap())
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

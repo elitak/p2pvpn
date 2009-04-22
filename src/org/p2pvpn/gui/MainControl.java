@@ -76,7 +76,7 @@ public class MainControl implements ConnectorListener {
 	}
 	
 	public void start() {
-		changeNet();
+		changeNet(false);
 	}
 	
 	public void connectToNewNet(AdvProperties networkCfg, AdvProperties accessCfg) {
@@ -85,7 +85,7 @@ public class MainControl implements ConnectorListener {
 		
 		if (accessCfg!=null) generateRandomIP();
 		
-		changeNet();
+		changeNet(true);
 	}
 	
 	private void generateRandomIP() {
@@ -110,7 +110,7 @@ public class MainControl implements ConnectorListener {
 		}
 	}
 	
-	private void changeNet() {
+	private void changeNet(boolean networkChanged) {
 		if (connectionManager!=null) connectionManager.close();
 		if (accessCfg!=null) {
 			try {
@@ -129,7 +129,7 @@ public class MainControl implements ConnectorListener {
 				connectionManager.addIPs(accessCfg);
 
 				connectionManager.getConnector().addListener(this);
-				addStoredIPs();
+				if (!networkChanged) addStoredIPs();
 
 				connectionManager.getSendLimit().setBandwidth(sendLimit);
 				connectionManager.getRecLimit().setBandwidth(recLimit);

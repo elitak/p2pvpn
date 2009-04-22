@@ -20,17 +20,28 @@
 package org.p2pvpn.gui;
 
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.ListCellRenderer;
 import org.p2pvpn.network.PeerID;
 
-public class PeerListCellRenderer extends JLabel implements ListCellRenderer{
+public class PeerListCellRenderer extends JLabel implements ListCellRenderer, ClipboardOwner {
 
 	private static Icon directIcon = null;
 	private static Icon indirectIcon = null;
+
+	private String ip;
 	
 	static {
 		try {
@@ -57,6 +68,7 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer{
 		boolean direct = true;
 		String text = "";
 		String toolTip = "";
+		ip=null;
 		
 		if (mainControl!=null) {
 			PeerID peer = (PeerID)value;
@@ -66,6 +78,7 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer{
 			}
 			text = mainControl.nameForPeer(peer);
 			toolTip = mainControl.descriptionForPeer(peer);
+			ip = mainControl.getConnectionManager().getRouter().getPeerInfo(peer, "vpn.ip");
 		}
 		
 		setText(text);
@@ -81,6 +94,23 @@ public class PeerListCellRenderer extends JLabel implements ListCellRenderer{
 		setEnabled(list.isEnabled());
 		setFont(list.getFont());
 		setOpaque(true);
+
+		if (ip!=null) { // TODO repair
+			JPopupMenu menu = new JPopupMenu();
+			JMenuItem mitem = new JMenuItem("Copy IP address");
+			mitem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+					c.setContents(new StringSelection(ip), PeerListCellRenderer.this);
+				}
+			});
+			menu.add(mitem);
+			setComponentPopupMenu(menu);
+		}
+
 		return this;
+	}
+
+	public void lostOwnership(Clipboard clipboard, Transferable contents) {
 	}
 }
