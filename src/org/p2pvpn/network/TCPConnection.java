@@ -64,6 +64,8 @@ public class TCPConnection implements Runnable {
 	private Queue<byte[]> sendQueue;
 	private boolean closed;
 
+	private long lastActive;
+
 	public TCPConnection(ConnectionManager connectionManager, Socket socket, byte[] keyBytes) {
 		this.connectionManager = connectionManager;
 		this.socket = socket;
@@ -75,6 +77,7 @@ public class TCPConnection implements Runnable {
 		bwIn = new MeasureBandwidth(BUCKET_TIME, BUCKET_LEN);
 		bwOut = new MeasureBandwidth(BUCKET_TIME, BUCKET_LEN);
 		state = CCState.WAIT_FOR_DATA;
+		lastActive = System.currentTimeMillis();
 		
 		try {
 			in = socket.getInputStream();
@@ -164,12 +167,12 @@ public class TCPConnection implements Runnable {
 				byte[] packet;
 				synchronized (sendQueue) {
 					packet = sendQueue.poll();
-					if (packet == null) {
-						out.flush();
-						try {
-							sendQueue.wait();
-						} catch (InterruptedException ex) {
-						}
+				}
+				if (packet == null) {
+					out.flush();
+					try {
+						synchronized (sendQueue) {sendQueue.wait();}
+					} catch (InterruptedException ex) {
 					}
 				}
 				if (packet != null) {
@@ -178,7 +181,7 @@ public class TCPConnection implements Runnable {
 				}
 			}
 		} catch (IOException iOException) {
-			Logger.getLogger("").log(Level.SEVERE, null, iOException);
+			//Logger.getLogger("").log(Level.SEVERE, null, iOException);
 			close();
 		}
 	}
@@ -215,6 +218,7 @@ public class TCPConnection implements Runnable {
 	public void handleEncryptedPacket(byte[] packet) {
 		byte[] ct;
 
+		lastActive = System.currentTimeMillis();
 		bwIn.countPacket(2+packet.length);
 		if (!connectionManager.getRecLimit().tokensAvailable(2+packet.length)) {
 			return;		// drop packet to limit bandwidth
@@ -284,5 +288,9 @@ public class TCPConnection implements Runnable {
 
 	public MeasureBandwidth getBwOut() {
 		return bwOut;
+	}
+
+	public long getLastActive() {
+		return lastActive;
 	}
 }

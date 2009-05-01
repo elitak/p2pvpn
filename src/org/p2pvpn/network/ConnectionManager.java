@@ -63,11 +63,14 @@ public class ConnectionManager implements Runnable {
 	private byte[] networkKey;
 
 	private TokenBucket sendLimit, recLimit;
+	private Pinger pinger;
 
 	private int sendBufferSize;
 	private boolean tcpFlush;
 	
 	public ConnectionManager(AdvProperties accessCfg, int serverPort) {
+		sendBufferSize = TCPConnection.DEFAULT_MAX_QUEUE;
+		tcpFlush = TCPConnection.DEFAULT_TCP_FLUSH;
 		this.serverPort = serverPort;
 		this.accessCfg = accessCfg;
 		scheduledExecutor = Executors.newScheduledThreadPool(1);
@@ -80,6 +83,7 @@ public class ConnectionManager implements Runnable {
 
 		sendLimit = new TokenBucket(0, SEND_BUCKET_SIZE);
 		recLimit = new TokenBucket(0, SEND_BUCKET_SIZE);
+		pinger = new Pinger(this);
 
 		calcNetworkKey();
 		
@@ -152,13 +156,13 @@ public class ConnectionManager implements Runnable {
 	}
 
 	public void newConnection(TCPConnection connection) {
-		Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
+		//Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
 		new P2PConnection(this, connection);
 	}
 
 	public void newP2PConnection(P2PConnection p2pConnection) {
-		Logger.getLogger("").log(Level.INFO, "new P2P connection from/to: "+p2pConnection.getRemoteAddr()
-				+" ("+p2pConnection.getConnection()+")");
+		//Logger.getLogger("").log(Level.INFO, "new P2P connection from/to: "+p2pConnection.getRemoteAddr()
+		//		+" ("+p2pConnection.getConnection()+")");
 		router.newP2PConnection(p2pConnection);
 	}
 	
@@ -213,7 +217,7 @@ public class ConnectionManager implements Runnable {
 		try {
 			scheduledExecutor.shutdownNow();
 			router.close();
-			server.close();
+			if (server!=null) server.close();
 			//TODO close connections
 		} catch (IOException e) {
 			Logger.getLogger("").log(Level.WARNING, "", e);
@@ -233,13 +237,14 @@ public class ConnectionManager implements Runnable {
 		@Override
 		public void run() {
 			Socket s;
+			connector.addIP(host, port, null, null, "connecting", false);
 			try {
 				s = new Socket(host, port);
 				new TCPConnection(ConnectionManager.this, s, networkKey);
-			} catch (UnknownHostException e) {
-				Logger.getLogger("").log(Level.WARNING, host+" "+port, e);
-			} catch (IOException e) {
-				Logger.getLogger("").log(Level.WARNING, host+" "+port, e);
+				connector.addIP(host, port, null, null, "connected", false);
+			} catch (Throwable e) {
+				//Logger.getLogger("").log(Level.WARNING, host+" "+port);
+				connector.addIP(host, port, null, null, e.getMessage(), false);
 			}
 		}
 	}

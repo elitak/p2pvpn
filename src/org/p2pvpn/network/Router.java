@@ -43,6 +43,7 @@ import org.p2pvpn.tools.VersionizedMap;
 
 public class Router implements RoutungTableListener {
 	private static final long SYNC_TIME = 5; // seconds
+	private static final long CONN_TIMEOUT_MS = 60 * 1000;
 	
 	private static final byte DATA_PACKET = 0;
 	private static final byte DATA_BROADCAST_PACKET = 1;
@@ -175,7 +176,20 @@ public class Router implements RoutungTableListener {
 		}
 		return result;
 	}
-	
+
+	public P2PConnection getP2PConnection(MacAddress mac) {
+		P2PConnection[] cs = findRoute(mac);
+		for (P2PConnection c : cs) {
+			PeerID id = c.getRemoteAddr();
+			String macStr = getPeerInfo(id, "vpn.mac");
+			if (macStr!=null) {
+				MacAddress oMac = new MacAddress(macStr);
+				if (oMac.equals(mac)) return c;
+			}
+		}
+		return null;
+	}
+
 	private void _addReachablePeer(Set<PeerID> reachable, PeerID a) {
 		if (reachable.contains(a)) return;
 		
@@ -228,10 +242,21 @@ public class Router implements RoutungTableListener {
 		} catch (IOException ex) {
 		}
 	}
-	
-	private void syncDB() {
+
+	private void removeDeadPeers() {
 		P2PConnection[] cs = getConnections();
+		long time = System.currentTimeMillis();
+
+		for(P2PConnection c : cs) {
+			if (time - c.getConnection().getLastActive() > CONN_TIMEOUT_MS) c.close();
+		}
+	}
+
+	private void syncDB() {
 		Set<PeerID> peerSet;
+
+		removeDeadPeers();
+		P2PConnection[] cs = getConnections();
 
 		synchronized (this) {
 			peerSet = peers.keySet();
@@ -314,7 +339,7 @@ public class Router implements RoutungTableListener {
                 while (st.hasMoreTokens()) {
                     try {
                         connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port),
-								a, "peer exchange", false);
+								a, "peer exchange", "", false);
                     } catch (NumberFormatException numberFormatException) {
 						Logger.getLogger("").log(Level.WARNING, "", numberFormatException);
                     }
@@ -402,7 +427,7 @@ public class Router implements RoutungTableListener {
 
 	public void receive(P2PConnection connection, byte[] packet) {
 		ByteArrayInputStream inB = new ByteArrayInputStream(packet);
-		
+
 		try {
 			int type = inB.read();
 			
@@ -477,11 +502,23 @@ public class Router implements RoutungTableListener {
 	}
 
 	private void sendInt(MacAddress dest, byte[] packet, boolean highPriority) {
+		long time = System.currentTimeMillis();
 		P2PConnection[] cs = findRoute(dest);
 		if (cs.length>0) {
-			// TODO something more intelligent then random
-			cs[(int)(Math.random()*cs.length)].send(packet, highPriority);
+			int minI=0;
+			double minPing = Double.MAX_VALUE;
+
+			for(int i=0; i<cs.length; i++) {
+				double ping = cs[i].getPingTime().getAverage();
+				if (ping<minPing) {
+					minPing = ping;
+					minI = i;
+				}
+			}
+			cs[minI].send(packet, highPriority);
 		}
+		time = System.currentTimeMillis() - time;
+		if (time>10) System.out.println("sendInt took "+ time);
 	}
 
 	private synchronized void setMac(MacAddress mac) {
@@ -567,5 +604,9 @@ public class Router implements RoutungTableListener {
 
 	public void setVpnConnector(VPNConnector vpnConnector) {
 		this.vpnConnector = vpnConnector;
+	}
+
+	public MacAddress getMyMAC() {
+		return myMAC;
 	}
 }

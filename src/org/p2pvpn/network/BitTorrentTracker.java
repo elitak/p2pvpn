@@ -93,8 +93,8 @@ public class BitTorrentTracker implements Runnable {
 				int portLow = 0xFF & (int)peers[i+5];
 				int portHi  = 0xFF & (int)peers[i+4];
 				int port = (portHi << 8) + portLow;
-				Logger.getLogger("").log(Level.INFO, "ip from tracker: "+ip+":"+port);
-				connectionManager.getConnector().addIP(ipb, port, null, "BitTorrent", false);
+				//Logger.getLogger("").log(Level.INFO, "ip from tracker: "+ip+":"+port);
+				connectionManager.getConnector().addIP(ipb, port, null, "BitTorrent", "",false);
 			}
 
 		} catch (Throwable ex) {

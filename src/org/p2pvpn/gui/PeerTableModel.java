@@ -43,7 +43,7 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 	private static final long UPDATE_MS = 500;
 
 	/*
-	 * Table Columns: Name, Id, Direct, IP, MAC, In, Out
+	 * Table Columns: Name, Id, Direct, IP, MAC, In, Out, ping
 	 */
 	
 	private ConnectionManager connectionManager;
@@ -104,13 +104,14 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 4: return String.class;
 		case 5: return String.class;
 		case 6: return String.class;
+		case 7: return String.class;
 		default: return null;
 		}
 	}
 
 	@Override
 	public int getColumnCount() {
-		return 7;
+		return 8;
 	}
 
 	@Override
@@ -123,6 +124,7 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 4: return "MAC";
 		case 5: return "In (kb/s)";
 		case 6: return "Out (kb/s)";
+		case 7: return "Ping (ms)";
 		default: return null;
 		}
 	}
@@ -134,6 +136,7 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 
 	@Override
 	public Object getValueAt(int r, int c) {
+		P2PConnection conn = router.getConnection(table[r]);
 		switch (c) {
 		case 0: return router.getPeerInfo(table[r], "name");
 		case 1: return table[r].toString(); 
@@ -145,7 +148,6 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 		case 4: return router.getPeerInfo(table[r], "vpn.mac");
 		case 5:
 		case 6:
-			P2PConnection conn = router.getConnection(table[r]);
 			if (conn==null) return "";
 			double bw;
 			if (c==5) {
@@ -154,6 +156,9 @@ public class PeerTableModel implements RoutungTableListener, TableModel {
 				bw = conn.getConnection().getBwOut().getBandwidth() / 1024;
 			}
 			return BW_FORMAT.format(bw);
+		case 7:
+			if (conn==null) return "-";
+			return ""+(int)conn.getPingTime().getAverage();
 		default: return null;
 		}
 	}

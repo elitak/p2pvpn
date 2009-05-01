@@ -59,6 +59,7 @@
 			<fileset dir="${build.classes}">
 				<exclude name="test/**"/>
 			</fileset>
+			<fileset file="default.net" />
 			<zipfileset dir="${clib}" prefix="clib"/>
 			<zipfileset dir="${resources}" prefix="resources"/>
 			<!--<zipfileset src="lib/commons-jxpath-1.1.jar"/>

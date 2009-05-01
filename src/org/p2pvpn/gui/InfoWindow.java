@@ -25,6 +25,7 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.BorderLayout;
 import java.net.URL;
 import java.util.Map;
 
@@ -36,7 +37,6 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.ConnectionManager;
@@ -58,6 +58,8 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 	private ConnectionManager connectionManager;
     private MainControl mainControl;
 	private PeerID addrShown = null;
+
+	private PeerGraph peerGraph;
 	
 	/** Creates new form Main */
     public InfoWindow(MainControl mainControl) {
@@ -66,6 +68,11 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
     	setLocationByPlatform(true);
     	
         initComponents();
+		
+		peerGraph = new PeerGraph();
+		pnlPeerGraph.setLayout(new BorderLayout());
+		pnlPeerGraph.add(peerGraph);
+
         peerTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 for(int i=e.getFirstIndex(); i<=e.getLastIndex(); i++) {
@@ -81,7 +88,6 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             setIconImage(new ImageIcon(url).getImage());
         } catch(NullPointerException e) {}
         startLogging();
-        upnpText.setText("disabled");
     }
 
     void networkHasChanged() {
@@ -95,6 +101,7 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             connectionManager.getRouter().addTableListener(InfoWindow.this);
             //connectionManager.getUPnPPortForward().addListener(Main.this);
         }
+		peerGraph.setConnectionManager(connectionManager);
     }
     
     /** This method is called from within the constructor to
@@ -120,9 +127,7 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         ipTable = new javax.swing.JTable();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        upnpText = new javax.swing.JTextArea();
+        pnlPeerGraph = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         logText = new javax.swing.JTextArea();
@@ -207,7 +212,7 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, aPanel1Layout.createSequentialGroup()
                 .addComponent(localInfo1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(aPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hostConnectText1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -248,28 +253,18 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 
         jTabbedPane1.addTab("Known IPs", jPanel1);
 
-        upnpText.setColumns(20);
-        upnpText.setRows(5);
-        jScrollPane2.setViewportView(upnpText);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                .addContainerGap())
+        javax.swing.GroupLayout pnlPeerGraphLayout = new javax.swing.GroupLayout(pnlPeerGraph);
+        pnlPeerGraph.setLayout(pnlPeerGraphLayout);
+        pnlPeerGraphLayout.setHorizontalGroup(
+            pnlPeerGraphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 564, Short.MAX_VALUE)
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-                .addContainerGap())
+        pnlPeerGraphLayout.setVerticalGroup(
+            pnlPeerGraphLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 445, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("UPnP", jPanel3);
+        jTabbedPane1.addTab("Peer Graph", pnlPeerGraph);
 
         logText.setColumns(20);
         logText.setRows(5);
@@ -416,10 +411,8 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     private javax.swing.JTable ipTable;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
@@ -429,7 +422,7 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
     private javax.swing.JTextArea logText;
     private javax.swing.JTextArea peerInfo;
     private javax.swing.JTable peerTable1;
-    private javax.swing.JTextArea upnpText;
+    private javax.swing.JPanel pnlPeerGraph;
     // End of variables declaration//GEN-END:variables
 
 

@@ -26,12 +26,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.Cipher;
+import org.p2pvpn.network.bandwidth.SlidingAverage;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
 
 public class P2PConnection {
-	
+
+	private static final int PING_BUCKET_LEN = 10;
+
 	private enum P2PConnState {WAIT_FOR_ACCESS, WAIT_FOR_RND, WAIT_FOR_ENC_RND,
 		WAIT_FOR_KEY, CONNECTED};
 	
@@ -45,10 +48,13 @@ public class P2PConnection {
 	private PeerID remoteAddr;
 	private AdvProperties remoteAccess;
 	private Router router;
+
+	private SlidingAverage pingTime;
 	
 	public P2PConnection(ConnectionManager connectionManager,
 			TCPConnection connection) {
-		
+
+		pingTime = new SlidingAverage(PING_BUCKET_LEN, 0);
 		this.connectionManager = connectionManager;
 		this.connection = connection;
 
@@ -88,8 +94,6 @@ public class P2PConnection {
 	}
 
 	public void receive(byte[] packet) {
-		//ByteArrayInputStream inB = new ByteArrayInputStream(packet); TODO
-		
 		try {
 			switch (state) {
 				case WAIT_FOR_ACCESS: {
@@ -132,6 +136,7 @@ public class P2PConnection {
 					connection.changeKey(key);
 					
 					state = P2PConnState.CONNECTED;
+					Logger.getLogger("").log(Level.INFO, "new connection to "+connection.getRemoteHost()+" ("+remoteAddr+")");
 					schedTimeout.cancel(false);
 					connectionManager.newP2PConnection(this);
 					break;
@@ -143,12 +148,11 @@ public class P2PConnection {
 		} catch (Throwable t) {
 			Logger.getLogger("").log(Level.WARNING, "closing connection to +"+remoteAddr, t);
 			connection.close();
-		} 
+		}
 	}
 
 	public void send(byte[] packet, boolean highPriority) {
-		assert state == P2PConnState.CONNECTED;
-		connection.send(packet, highPriority);
+		if (state == P2PConnState.CONNECTED) connection.send(packet, highPriority);
 	}
 	
 	public void setRouter(Router router) {
@@ -157,5 +161,9 @@ public class P2PConnection {
 
 	public void close() {
 		connection.close();
+	}
+
+	public SlidingAverage getPingTime() {
+		return pingTime;
 	}
 }

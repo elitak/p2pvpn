@@ -64,14 +64,16 @@ public class Connector {
 	}
 	
 	private void notifyListeners() {
+		ConnectorListener[] ls;
 		synchronized (listeners) {
-			for(ConnectorListener l : listeners) {
-				try {
-					l.ipListChanged(this);
-				}
-				catch (Throwable t) {
-					Logger.getLogger("").log(Level.WARNING, "", t);
-				}
+			ls = listeners.toArray(new ConnectorListener[0]);
+		}
+		for(ConnectorListener l : ls) {
+			try {
+				l.ipListChanged(this);
+			}
+			catch (Throwable t) {
+				Logger.getLogger("").log(Level.WARNING, "", t);
 			}
 		}
 	}
@@ -88,20 +90,24 @@ public class Connector {
 		}
 	}
 	
-    public void addIP(byte[] ip, int port, PeerID peerID, String info, boolean keep) {
+    public void addIP(byte[] ip, int port, PeerID peerID, String source, String status, boolean keep) {
         Endpoint endpoint = new Endpoint(ip, port);
-		EndpointInfo endpointInfo = new EndpointInfo(peerID, info, keep);
+		EndpointInfo endpointInfo = new EndpointInfo(peerID, source, status, keep);
 		connectionManager.getScheduledExecutor().schedule(
 				new AddIPLater(endpoint, endpointInfo), 0, TimeUnit.SECONDS);
     }
 
-    public void addIP(String ip, int port, PeerID peerID, String info, boolean keep) {
+    public void addIP(String ip, int port, PeerID peerID, String source, String status, boolean keep) {
         try {
-            addIP(InetAddress.getByName(ip).getAddress(), port, peerID, info, keep);
+            addIP(InetAddress.getByName(ip).getAddress(), port, peerID, source, status, keep);
         } catch (UnknownHostException ex) {
 			Logger.getLogger("").log(Level.WARNING, "unknown host "+ip, ex);
         }
     }
+
+	public void addIP(InetAddress ip, int port, PeerID peerID, String source, String status, boolean keep) {
+		addIP(ip.getAddress(), port, peerID, source, status, keep);
+	}
     
     public void addIPs(AdvProperties p) {
         int i=0;
@@ -111,7 +117,7 @@ public class Connector {
                 StringTokenizer st = new StringTokenizer(p.getProperty("network.bootstrap.connectTo." + i), ":");
                 String ip = st.nextToken();
                 int port = Integer.parseInt(st.nextToken());
-                addIP(ip, port, null, "bootstrap", true);
+                addIP(ip, port, null, "bootstrap", "", true);
             } catch (Throwable t) {
 				Logger.getLogger("").log(Level.WARNING, "", t);
             }
@@ -133,15 +139,17 @@ public class Connector {
 		}
 
 		public void run() {
+			boolean schedule = false;
 			synchronized (ips) {
 				if (!ips.containsKey(endpoint)) {
 					ips.put(endpoint, endpointInfo);
-					scheduleConnect(endpoint, 1);
+					schedule = true;
 				} else {
 					ips.get(endpoint).update(endpointInfo.peerID,
-							endpointInfo.getLastInfo(), endpointInfo.isKeepForEver());
+							endpointInfo.getSource(), endpointInfo.getStatus(), endpointInfo.isKeepForEver());
 				}
 			}
+			if (schedule) scheduleConnect(endpoint, 1);
 			notifyListeners();
 		}
 	}
@@ -154,26 +162,27 @@ public class Connector {
         }
 
         public void run() {
-			boolean notify = false;
+			EndpointInfo info;
 			synchronized (ips) {
-				EndpointInfo info = ips.get(e);
-				if (info==null) return;
-				
-				if (!connectionManager.getRouter().isConnectedTo(info.peerID)) {
-					try {
-						connectionManager.connectTo(e.getInetAddress(), e.getPort());
-					} catch (UnknownHostException ex) {
-					}
-				} else {
-					info.update();
+				info = ips.get(e);
+			}
+			if (info==null) return;
+
+			if (!connectionManager.getRouter().isConnectedTo(info.peerID)) {
+				try {
+					connectionManager.connectTo(e.getInetAddress(), e.getPort());
+				} catch (UnknownHostException ex) {
 				}
-				if (System.currentTimeMillis()-REMOVE_MS > info.timeAdded) {
+			} else {
+				info.update();
+			}
+			if (System.currentTimeMillis()-REMOVE_MS > info.timeAdded) {
+				synchronized (ips) {
 					ips.remove(e);
-					notify=true;
 				}
+				notifyListeners();
 			}
 			scheduleConnect(e, RETRY_S);
-			notifyListeners();
         }
         
     }
@@ -238,27 +247,30 @@ public class Connector {
 	public class EndpointInfo {
 		PeerID peerID;
 		long timeAdded;
-		String lastInfo;
+		String source;
+		String status;
 		boolean keepForEver;
 
-		EndpointInfo(PeerID peerID, String lastInfo, boolean keepForEver) {
+		EndpointInfo(PeerID peerID, String source, String status, boolean keepForEver) {
 			this.peerID = peerID;
-			this.lastInfo = lastInfo;
+			this.source = source;
+			this.status = status;
 			this.keepForEver = keepForEver;
 			update();
 		}
 		
 		EndpointInfo() {
-			this(null, null, false);
+			this(null, null, "", false);
 		}
 		
 		void update() {
 			timeAdded = System.currentTimeMillis();
 		}
 
-		void update(PeerID peerID, String lastInfo, boolean keepForEver) {
+		void update(PeerID peerID, String source, String status, boolean keepForEver) {
 			if (peerID!=null) this.peerID = peerID;
-			if (lastInfo!=null) this.lastInfo = lastInfo;
+			if (source!=null) this.source = source;
+			if (status!=null) this.status = status;
 			if (keepForEver) this.keepForEver = true;
 			timeAdded = System.currentTimeMillis();
 		}
@@ -267,8 +279,12 @@ public class Connector {
 			return keepForEver;
 		}
 
-		public String getLastInfo() {
-			return lastInfo;
+		public String getSource() {
+			return source;
+		}
+
+		public String getStatus() {
+			return status;
 		}
 
 		public PeerID getPeerID() {

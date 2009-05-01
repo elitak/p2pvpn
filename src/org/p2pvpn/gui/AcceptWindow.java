@@ -184,18 +184,8 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
 // TODO add your handling code here:
 	AdvProperties inv = new AdvProperties(txtInvitation.getText());
-	AdvProperties net;
-	AdvProperties access;
-	
-	if (inv.getPropertyBytes("secret.network.privateKey", null)==null) {
-		net = null;
-		access = inv;
-	} else {
-		net = inv;
-		access = MainControl.genereteAccess(net);
-	}
-	
-	mainControl.connectToNewNet(net, access);
+	AdvProperties[] ps = MainControl.calcNetworkAccess(inv);
+	mainControl.connectToNewNet(ps[0], ps[1]);
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed
 

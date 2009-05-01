@@ -19,6 +19,9 @@
 
 package org.p2pvpn.gui;
 
+import java.awt.HeadlessException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
@@ -41,6 +44,8 @@ import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tuntap.TunTap;
 
 public class MainControl implements ConnectorListener {
+	private static final String DEFAULT_NET_FILE = "default.net";
+
 	private AdvProperties networkCfg;
 	private AdvProperties accessCfg;
 	
@@ -73,8 +78,31 @@ public class MainControl implements ConnectorListener {
 		recLimit = prefs.getDouble("recLimit", 0);
 		sendBufferSize = prefs.getInt("sendBufferSize", TCPConnection.DEFAULT_MAX_QUEUE);
 		tcpFlush = prefs.getBoolean("tcpFlush", TCPConnection.DEFAULT_TCP_FLUSH);
+
+		if (accessCfg == null) loadDefaultNet();
 	}
-	
+
+	private void loadDefaultNet() {
+		try {
+			InputStream in = MainControl.class.getClassLoader().getResourceAsStream(DEFAULT_NET_FILE);
+			AdvProperties inv = new AdvProperties();
+			inv.load(in);
+			String netName = inv.getProperty("network.name");
+			if (JOptionPane.YES_OPTION ==
+					JOptionPane.showConfirmDialog(null,
+					"Your P2PVPN is not part of any network.\n" +
+					"Do you want to join '" + netName + "'?", "Default Network",
+					JOptionPane.YES_NO_OPTION)) {
+				AdvProperties[] ps = calcNetworkAccess(inv);
+				networkCfg = ps[0];
+				accessCfg = ps[1];
+				generateRandomIP();
+			}
+		} catch (IOException iOException) {
+		} catch (HeadlessException headlessException) {
+		}
+	}
+
 	public void start() {
 		changeNet(false);
 	}
@@ -163,7 +191,7 @@ public class MainControl implements ConnectorListener {
 				String ip = st.nextToken();
 				int port = Integer.parseInt(st.nextToken());
 				System.out.println("add "+ip+":"+port);
-				connectionManager.getConnector().addIP(ip, port, null, "stored", false);
+				connectionManager.getConnector().addIP(ip, port, null, "stored", "", false);
 			} catch (NumberFormatException numberFormatException) {
 			}
 		}
@@ -276,7 +304,8 @@ public class MainControl implements ConnectorListener {
 	public AdvProperties getNetworkCfg() {
 		return networkCfg;
 	}
-	
+
+
 	public static AdvProperties genereteAccess(AdvProperties netCfg) {
 		PrivateKey netPriv = CryptoUtils.decodeRSAPrivateKey(
 				netCfg.getPropertyBytes("secret.network.privateKey", null));
@@ -290,8 +319,23 @@ public class MainControl implements ConnectorListener {
 		accessCfg.setPropertyBytes("secret.access.privateKey", accessKp.getPrivate().getEncoded());
 
 		accessCfg.putAll(netCfg.filter("secret", true));
-		
+
 		return accessCfg;
+	}
+	
+	public static AdvProperties[] calcNetworkAccess(AdvProperties inv) {
+		AdvProperties net;
+		AdvProperties access;
+
+		if (inv.getPropertyBytes("secret.network.privateKey", null)==null) {
+			net = null;
+			access = inv;
+		} else {
+			net = inv;
+			access = MainControl.genereteAccess(net);
+		}
+
+		return new AdvProperties[] {net, access};
 	}
 
 	public double getRecLimit() {
