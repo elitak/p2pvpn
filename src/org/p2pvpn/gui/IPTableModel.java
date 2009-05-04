@@ -36,7 +36,7 @@ import org.p2pvpn.network.Connector;
 public class IPTableModel implements ConnectorListener, TableModel {
 
 	/*
-	 * Table Columns: IP, ID, Added, Source, Status, Keep
+	 * Table Columns: IP, ID, Added, Source, (Status, )Keep
 	 */
 	
 	private ConnectionManager connectionManager;
@@ -80,15 +80,15 @@ public class IPTableModel implements ConnectorListener, TableModel {
 		case 1: return String.class; 
 		case 2: return String.class; 
 		case 3: return String.class;
-		case 4: return String.class;
-		case 5: return Boolean.class;
+		//case 4: return String.class;
+		case 4: return Boolean.class;
 		default: return null;
 		}
 	}
 
 	@Override
 	public int getColumnCount() {
-		return 6;
+		return 5;
 	}
 
 	@Override
@@ -98,8 +98,8 @@ public class IPTableModel implements ConnectorListener, TableModel {
 		case 1: return "ID"; 
 		case 2: return "Added"; 
 		case 3: return "Source";
-		case 4: return "Status";
-		case 5: return "Keep";
+		//case 4: return "Status";
+		case 4: return "Keep";
 		default: return null;
 		}
 	}
@@ -116,8 +116,8 @@ public class IPTableModel implements ConnectorListener, TableModel {
 		case 1: return connector.getIpInfo(table[r]).getPeerID();
 		case 2: return new Date(connector.getIpInfo(table[r]).getTimeAdded());
 		case 3: return connector.getIpInfo(table[r]).getSource();
-		case 4: return connector.getIpInfo(table[r]).getStatus();
-		case 5: return connector.getIpInfo(table[r]).isKeepForEver();
+		//case 4: return connector.getIpInfo(table[r]).getStatus();
+		case 4: return connector.getIpInfo(table[r]).isKeepForEver();
 		default: return null;
 		}
 	}

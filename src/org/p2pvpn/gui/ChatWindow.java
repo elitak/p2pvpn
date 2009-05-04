@@ -148,13 +148,17 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		String date = DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
 		String line = date+" "+name+": "+msg+"\n";
 		if (!isVisible()) {
-			mainWindow.setChatBla();
+			if (mainControl.isPopupChat()) {
+				setVisible(true);
+			} else {
+				mainWindow.setChatBla();
+			}
 		}
 		try {
 			txtMessages.getDocument().insertString(txtMessages.getDocument().getLength(), line, null);
 			txtMessages.setCaretPosition(txtMessages.getDocument().getLength());
 		} catch (BadLocationException ex) {
-			Logger.getLogger("").log(Level.SEVERE, null, ex);
+			//Logger.getLogger("").log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -168,17 +172,17 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		String msg;
 		try {
 			msg = new String(msgb, "UTF-8");
-			SwingUtilities.invokeLater(new SecureWriteMessage(mainControl.nameForPeer(from), msg));
+			SwingUtilities.invokeLater(new ThreadsaveWriteMessage(mainControl.nameForPeer(from), msg));
 		} catch (UnsupportedEncodingException ex) {
 			Logger.getLogger("").log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private class SecureWriteMessage implements Runnable {
+	private class ThreadsaveWriteMessage implements Runnable {
 		private String name;
 		private String msg;
 
-		public SecureWriteMessage(String name, String msg) {
+		public ThreadsaveWriteMessage(String name, String msg) {
 			this.name = name;
 			this.msg = msg;
 		}

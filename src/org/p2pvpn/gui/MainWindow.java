@@ -308,6 +308,7 @@ private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 	optionWindow.setRecLimit(mainControl.getRecLimit());
 	optionWindow.setSendBufferSize(mainControl.getSendBufferSize());
 	optionWindow.setTCPFlush(mainControl.isTCPFlush());
+	optionWindow.setPopupChat(mainControl.isPopupChat());
 	optionWindow.setVisible(true);
 	if (optionWindow.isOk()) {
 		mainControl.setName(optionWindow.getNodeName());
@@ -317,6 +318,7 @@ private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 		mainControl.setRecLimit(optionWindow.getRecLimit());
 		mainControl.setSendBufferSize(optionWindow.getSendBufferSize());
 		mainControl.setTCPFlush(optionWindow.isTCPFlush());
+		mainControl.setPopupChat(optionWindow.isPopupChat());
 	}
 }//GEN-LAST:event_btnOptionsActionPerformed
 

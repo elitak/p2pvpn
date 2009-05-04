@@ -59,6 +59,7 @@ public class MainControl implements ConnectorListener {
 	private int sendBufferSize;
 	private boolean tcpFlush;
 	private String ip;
+	private boolean popupChat;
 
 	private Preferences prefs;
 	
@@ -79,6 +80,8 @@ public class MainControl implements ConnectorListener {
 		sendBufferSize = prefs.getInt("sendBufferSize", TCPConnection.DEFAULT_MAX_QUEUE);
 		tcpFlush = prefs.getBoolean("tcpFlush", TCPConnection.DEFAULT_TCP_FLUSH);
 
+		popupChat = prefs.getBoolean("popupChat", false);
+		
 		if (accessCfg == null) loadDefaultNet();
 	}
 
@@ -379,6 +382,16 @@ public class MainControl implements ConnectorListener {
 		this.tcpFlush = tcpFlush;
 		if (connectionManager!=null) connectionManager.setTCPFlush(tcpFlush);
 		prefs.putBoolean("tcpFlush", tcpFlush);
+		prefsFlush();
+	}
+
+	public boolean isPopupChat() {
+		return popupChat;
+	}
+
+	public void setPopupChat(boolean popupChat) {
+		this.popupChat = popupChat;
+		prefs.putBoolean("popupChat", popupChat);
 		prefsFlush();
 	}
 }

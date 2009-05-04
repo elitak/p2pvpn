@@ -502,7 +502,6 @@ public class Router implements RoutungTableListener {
 	}
 
 	private void sendInt(MacAddress dest, byte[] packet, boolean highPriority) {
-		long time = System.currentTimeMillis();
 		P2PConnection[] cs = findRoute(dest);
 		if (cs.length>0) {
 			int minI=0;
@@ -517,8 +516,6 @@ public class Router implements RoutungTableListener {
 			}
 			cs[minI].send(packet, highPriority);
 		}
-		time = System.currentTimeMillis() - time;
-		if (time>10) System.out.println("sendInt took "+ time);
 	}
 
 	private synchronized void setMac(MacAddress mac) {
