@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -34,8 +34,8 @@ import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
 /**
- *
- * @author wolfgang
+ * The Model for the peer table used in the info window.
+ * @author Wolfgang Ginolas
  */
 public class PeerTableModel implements RoutungTableListener, TableModel {
 

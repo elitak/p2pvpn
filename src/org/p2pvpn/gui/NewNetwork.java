@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -27,14 +27,17 @@ import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
 /**
- *
- * @author  wolfgang
+ * This Windows is opened, when the user wants to create a new network.
+ * @author Wolfgang Ginolas
  */
 public class NewNetwork extends javax.swing.JDialog {
 
 	private MainControl mainControl;
 	
-    /** Creates new form NewNetwork */
+    /** Creates new form NewNetwork
+	 * @param parent the parent window
+	 * @param mainControl the MainControl
+	 */
     public NewNetwork(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         setLocationByPlatform(true);
@@ -202,19 +205,20 @@ public class NewNetwork extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-// TODO add your handling code here:
 	cancel();
 }//GEN-LAST:event_btnCancelActionPerformed
 
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-// TODO add your handling code here:
 	ok();
 }//GEN-LAST:event_btnOKActionPerformed
 
 	private void cancel() {
 		setVisible(false);
 	}
-	
+
+	/**
+	 * The user pressed OK. Create a new network.
+	 */
 	private void ok() {
 		AdvProperties netCfg = new AdvProperties();
 		netCfg.setProperty("network.name", txtName.getText());

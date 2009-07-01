@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 package org.p2pvpn;
 
 import java.io.FileInputStream;
@@ -28,8 +29,18 @@ import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
 
 
+/**
+ * This is the main class of P2PVPN. Depending on the commandline arguments
+ * the GUI gets startet or not.
+ *
+ * @author Wolfgang Ginolas
+ */
 public class Main {
 
+	/**
+	 * Start P2PVPN.
+	 * @param args the parameters
+	 */
 	public static void main(String[] args) {
 		if (args.length == 5) {
             try {
@@ -61,48 +72,5 @@ public class Main {
 			new MainWindow().setVisible(true);
 		}
 	}
-	
-/*
-	public static void main(String[] args) {
-		System.out.println("Start");
-		AdvProperties props = new AdvProperties();
-		
-		try {
-			if (args.length>0) props.load(new FileReader(args[0]));
-		} catch (FileNotFoundException e1) {
-		} catch (IOException e1) {
-		}
-		
-		int port = props.getPropertyInt("localPort", 0);
-		
-		ConnectionManager cm = new ConnectionManager(port);
-		
-		String ip = props.getProperty("vpnIP", "none");
-		if (!"none".equals(ip)) {
-			TunTap tunTap = new TunTap();
-			tunTap.setIP(ip);
-			new VPNConnector(cm, tunTap, cm.getRouter());
-		}
-		
-		for(int i=0; true; i++) {
-			String host = props.getProperty("connectTo."+i);
-			if (host==null) break;
-			cm.connectTo(host);
-		}
-		
-		if (props.getPropertyInt("showGUI", 1)==1) {
-			gui.Main.open(cm);
-		}
-		
-//		try {
-//			System.in.read();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		cm.close();
-//		
-//		System.out.println("End");
-	}
-*/
+
 }

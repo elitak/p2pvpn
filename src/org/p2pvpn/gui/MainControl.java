@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -43,26 +43,35 @@ import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tuntap.TunTap;
 
+/**
+ * This class controls everything regarded to the GUI or storing the settings
+ * of P2PVPN.
+ * @author Wolfgang Ginolas
+ */
 public class MainControl implements ConnectorListener {
 	private static final String DEFAULT_NET_FILE = "default.net";
 
-	private AdvProperties networkCfg;
+	private AdvProperties networkCfg;	// the invitations for the current network
 	private AdvProperties accessCfg;
 	
 	private ConnectionManager connectionManager;
 	private MainWindow mainWindow;
 	private TunTap tuntap;
 	
-	private int serverPort;
-	private String name;
-	private double sendLimit, recLimit;
-	private int sendBufferSize;
-	private boolean tcpFlush;
-	private String ip;
-	private boolean popupChat;
+	private int serverPort;				// the local port
+	private String name;				// the name of this nide
+	private double sendLimit, recLimit;	// bandwidth limit for this node
+	private int sendBufferSize;			// the size of the send buffer
+	private boolean tcpFlush;			// flush after each packet?
+	private String ip;					// the IP of the virtual network adapter
+	private boolean popupChat;			// should the chat window popup when a message arrives?
 
-	private Preferences prefs;
-	
+	private Preferences prefs;			// used to store all settings
+
+	/**
+	 * Create a new MainControl
+	 * @param mainWindow the MainWindow
+	 */
 	public MainControl(MainWindow mainWindow) {
 		tuntap = null;
 		connectionManager = null;
@@ -85,6 +94,9 @@ public class MainControl implements ConnectorListener {
 		if (accessCfg == null) loadDefaultNet();
 	}
 
+	/**
+	 * Load the default settings.
+	 */
 	private void loadDefaultNet() {
 		try {
 			InputStream in = MainControl.class.getClassLoader().getResourceAsStream(DEFAULT_NET_FILE);
@@ -106,10 +118,18 @@ public class MainControl implements ConnectorListener {
 		}
 	}
 
+	/**
+	 * Called after initialisation and starts the operation of P2PVPN.
+	 */
 	public void start() {
 		changeNet(false);
 	}
-	
+
+	/**
+	 * Connect to a network.
+	 * @param networkCfg the network invitation
+	 * @param accessCfg the access initation
+	 */
 	public void connectToNewNet(AdvProperties networkCfg, AdvProperties accessCfg) {
 		this.networkCfg = networkCfg;
 		this.accessCfg = accessCfg;
@@ -118,7 +138,10 @@ public class MainControl implements ConnectorListener {
 		
 		changeNet(true);
 	}
-	
+
+	/**
+	 * Create an random IP address for the virtual network adapter.
+	 */
 	private void generateRandomIP() {
 		try {
 			Random random = new Random();
@@ -140,7 +163,13 @@ public class MainControl implements ConnectorListener {
 			assert false;
 		}
 	}
-	
+
+	/**
+	 * This is called, when the network has changed. It will setup the new
+	 * network and notify other parts of P2PVPN.
+	 * @param networkChanged was P2PVPN connectet to another network before
+	 *	this method was called?
+	 */
 	private void changeNet(boolean networkChanged) {
 		if (connectionManager!=null) connectionManager.close();
 		if (accessCfg!=null) {
@@ -184,6 +213,9 @@ public class MainControl implements ConnectorListener {
 		mainWindow.networkHasChanged();
 	}
 
+	/**
+	 * Add the IPs stored in the Preferences to the known IPs list.
+	 */
 	private void addStoredIPs() {
 		String ipStr = prefs.get("knownIPs", "");
 		StringTokenizer ips = new StringTokenizer(ipStr, ";");
@@ -200,6 +232,11 @@ public class MainControl implements ConnectorListener {
 		}
 	}
 
+	/**
+	 * Called, when th list of known IPs changes. This method will store
+	 * the list in the Preferences.
+	 * @param c the Connector
+	 */
 	public void ipListChanged(Connector c) {
 		Connector.Endpoint[] es = c.getIPs();
 		String ips = "";
@@ -214,14 +251,23 @@ public class MainControl implements ConnectorListener {
 	}
 
 
-
+	/**
+	 * Return the name of the peer.
+	 * @param peer the peer
+	 * @return the name or "?" when the name is unknown
+	 */
 	public String nameForPeer(PeerID peer) {
 		if (connectionManager==null) return "";
 		String name = connectionManager.getRouter().getPeerInfo(peer, "name");
 		if (name==null) return "?";
 		return name;
 	}
-	
+
+	/**
+	 * Return a short description for a peer.
+	 * @param peer the peer
+	 * @return the description
+	 */
 	public String descriptionForPeer(PeerID peer) {
 		if (connectionManager==null) return "";
 		
@@ -247,6 +293,9 @@ public class MainControl implements ConnectorListener {
 		return result.toString();
 	}
 
+	/**
+	 * Flush the Preferences to disk.
+	 */
 	private void prefsFlush() {
 		try {
 			prefs.flush();
@@ -309,6 +358,11 @@ public class MainControl implements ConnectorListener {
 	}
 
 
+	/**
+	 * Generate an access invitation from an network invitation.
+	 * @param netCfg the network invitation
+	 * @return the acess invitation
+	 */
 	public static AdvProperties genereteAccess(AdvProperties netCfg) {
 		PrivateKey netPriv = CryptoUtils.decodeRSAPrivateKey(
 				netCfg.getPropertyBytes("secret.network.privateKey", null));
@@ -325,7 +379,13 @@ public class MainControl implements ConnectorListener {
 
 		return accessCfg;
 	}
-	
+
+	/**
+	 * Find out the type of the given invitation and return a network/access
+	 * invitation pair.
+	 * @param inv the network invitation
+	 * @return an array with two invitations {net, access}.
+	 */
 	public static AdvProperties[] calcNetworkAccess(AdvProperties inv) {
 		AdvProperties net;
 		AdvProperties access;

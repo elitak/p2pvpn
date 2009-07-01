@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -42,13 +42,21 @@ import javax.swing.event.DocumentListener;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
-
+/**
+ * This class implements the window which is opened, when the user
+ * wants ti acceppt an invitation.
+ *
+ * @author Wolfgang Ginolas
+ */
 public class AcceptWindow extends javax.swing.JDialog implements DocumentListener {
 
 	MainControl mainControl;
 	JFileChooser fileChooser;
 	
-    /** Creates new form AcceptWindow */
+    /** Creates new form AcceptWindow
+	 * @param parent the parent window
+	 * @param mainControl the MainControl object
+	 */
     public AcceptWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
        	setLocationByPlatform(true);
@@ -73,6 +81,9 @@ public class AcceptWindow extends javax.swing.JDialog implements DocumentListene
 		txtInvitation.setComponentPopupMenu(menu);
     }
 
+	/**
+	 * Copy the text in the clipbord into the TextArea.
+	 */
 	private void paste() {
 		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
 		boolean hasText = c!=null && c.isDataFlavorAvailable(DataFlavor.stringFlavor);
@@ -177,20 +188,23 @@ public class AcceptWindow extends javax.swing.JDialog implements DocumentListene
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-// TODO add your handling code here:
 	setVisible(false);
 }//GEN-LAST:event_btnCancelActionPerformed
 
+/**
+ * Accept an invitation.
+ */
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-// TODO add your handling code here:
 	AdvProperties inv = new AdvProperties(txtInvitation.getText());
 	AdvProperties[] ps = MainControl.calcNetworkAccess(inv);
 	mainControl.connectToNewNet(ps[0], ps[1]);
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed
 
+/**
+ * Load an invitation from a file.
+ */
 private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadActionPerformed
-// TODO add your handling code here:
 	if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
 		try {
 			File file = fileChooser.getSelectedFile();
@@ -206,6 +220,9 @@ private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 	}
 }//GEN-LAST:event_btnLoadActionPerformed
 
+	/**
+	 * invChanged is called, when the invitation text changed.
+	 */
 	private void invChanged() {
 		try {
 			AdvProperties p = new AdvProperties(txtInvitation.getText());

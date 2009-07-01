@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -20,22 +20,21 @@
 package org.p2pvpn.gui;
 
 import java.awt.Component;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.ListCellRenderer;
 import org.p2pvpn.network.PeerID;
 
+
+/**
+ * This Renderer renders the items in the peer list used in the MainWindow.
+ * @author Wolfgang Ginoas
+ */
 public class PeerListCellRenderer extends JLabel implements ListCellRenderer, ClipboardOwner {
 
 	private static Icon directIcon = null;

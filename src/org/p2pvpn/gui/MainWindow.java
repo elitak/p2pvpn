@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -45,26 +45,33 @@ import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
+/**
+ * This is the main window of P2PVPN.
+ *
+ * @author Wolfgang Ginoas
+ */
 public class MainWindow extends javax.swing.JFrame implements RoutungTableListener {
 
 	private static final String P2PVPN_IMG = "resources/images/P2PVPN-32.png";
 	private static final String CHAT_IMG = "resources/images/chat.png";
 	private static final String CHAT_BLA_IMG = "resources/images/chat_bla.png";
 
-	private MainControl mainControl;
-	private NewNetwork newNetwork;
+	private MainControl mainControl;	// the MainControl
+	private NewNetwork newNetwork;		// the other windows
 	private OptionWindow optionWindow;
 	private InviteWindow inviteWindow;
 	private AcceptWindow acceptWindow;
 	private ChatWindow chatWindow;
     private InfoWindow infoWindow;
 
-	private PeerListModel peerListModel;
-	private PeerListCellRenderer peerListCellRenderer;
+	private PeerListModel peerListModel;// model for the peer list
+	private PeerListCellRenderer peerListCellRenderer;	// cell renderer for the peer list
 
-    private TrayIcon trayIcon;
+    private TrayIcon trayIcon;			// the try icon
 	
-    /** Creates new form MainWindow */
+    /** Creates new form MainWindow and
+	 * and initializes the MainControl and all the other windows
+	 */
     public MainWindow() {
         setLocationByPlatform(true);
 		peerListModel = new PeerListModel();
@@ -140,6 +147,11 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
 		mainControl.start();
     }
 
+	/**
+	 * Set tht icon for an button
+	 * @param btn the button
+	 * @param path thi icon
+	 */
 	private void setButtonIcon(JButton btn, String path) {
 		try {
 			btn.setIcon(new ImageIcon(InfoWindow.class.getClassLoader().getResource(path)));
@@ -290,17 +302,17 @@ public class MainWindow extends javax.swing.JFrame implements RoutungTableListen
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnNewNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewNetActionPerformed
-// TODO add your handling code here:
 	newNetwork.setVisible(true);
 }//GEN-LAST:event_btnNewNetActionPerformed
 
 private void btnInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInfoActionPerformed
-// TODO add your handling code here:
     infoWindow.setVisible(true);
 }//GEN-LAST:event_btnInfoActionPerformed
 
+/**
+ * Open the options window.
+ */
 private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptionsActionPerformed
-// TODO add your handling code here:
 	optionWindow.setNodeName(mainControl.getName());
 	optionWindow.setPort(mainControl.getServerPort());
 	optionWindow.setIP(mainControl.getIp());
@@ -323,17 +335,14 @@ private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_btnOptionsActionPerformed
 
 private void btnInviteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInviteActionPerformed
-// TODO add your handling code here:
 	inviteWindow.setVisible(true);
 }//GEN-LAST:event_btnInviteActionPerformed
 
 private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
-// TODO add your handling code here:
 	acceptWindow.setVisible(true);
 }//GEN-LAST:event_btnAcceptActionPerformed
 
 private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChatActionPerformed
-	// add your handling code here:
 	chatWindow.setVisible(true);
 	setButtonIcon(btnChat, CHAT_IMG);
 		if (trayIcon!=null) {
@@ -341,8 +350,10 @@ private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 		}
 }//GEN-LAST:event_btnChatActionPerformed
 
+/**
+ * Context menu for the peer-list
+ */
 private void lstPeersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstPeersMousePressed
-	// add your handling code here:
 	
 	JPopupMenu menu = new JPopupMenu();
 	if (menu.isPopupTrigger(evt)) {
@@ -370,7 +381,10 @@ private void lstPeersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:ev
 	public void setNodeName(String name) {
 		lblName.setText(name);
 	}
-	
+
+	/**
+	 * Called from MeinControl when the network has changed.
+	 */
 	public void networkHasChanged() {
 		btnInvite.setEnabled(mainControl.getNetworkCfg()!=null);
 		peerListModel.setConnectionManager(mainControl.getConnectionManager());
@@ -388,7 +402,11 @@ private void lstPeersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:ev
 		chatWindow.networkHasChanged();
         infoWindow.networkHasChanged();
 	}
-	
+
+	/**
+	 * Called when the peer list changes.
+	 * @param router the Router
+	 */
 	public void tableChanged(Router router) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -418,6 +436,9 @@ private void lstPeersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:ev
     // End of variables declaration//GEN-END:variables
 
 
+	/**
+	 * A listener for the peer context menu.
+	 */
 	class PopupMenuListener implements ActionListener, ClipboardOwner {
 		String ip;
 

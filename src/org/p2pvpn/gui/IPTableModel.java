@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -30,7 +30,7 @@ import org.p2pvpn.network.ConnectorListener;
 import org.p2pvpn.network.Connector;
 
 /**
- *
+ * A TableModel to show a list of known IPs.
  * @author wolfgang
  */
 public class IPTableModel implements ConnectorListener, TableModel {
@@ -43,7 +43,11 @@ public class IPTableModel implements ConnectorListener, TableModel {
 	private Connector connector;
 	private Vector<TableModelListener> listeners;
 	private Connector.Endpoint[] table;
-	
+
+	/**
+	 * Create a new IPTableModel
+	 * @param connectionManager the ConnectionManager
+	 */
 	public IPTableModel(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
 		connector = connectionManager.getConnector();
@@ -51,7 +55,11 @@ public class IPTableModel implements ConnectorListener, TableModel {
 		listeners = new Vector<TableModelListener>();
 		table = connector.getIPs();
 	}
-	
+
+	/**
+	 * Called by connector, when the list of ip's changes.
+	 * @param connector the connector
+	 */
 	@Override
 	public void ipListChanged(Connector connector) {
 		table = connector.getIPs();
@@ -62,6 +70,9 @@ public class IPTableModel implements ConnectorListener, TableModel {
 		});
 	}
 
+	/**
+	 * Notify all TableModelListeners
+	 */
 	private void notifyListeners() {
 		for(TableModelListener l : listeners) {
 			l.tableChanged(new TableModelEvent(this));

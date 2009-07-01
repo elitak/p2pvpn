@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -24,14 +24,16 @@ import javax.swing.ImageIcon;
 import org.p2pvpn.network.TCPConnection;
 
 /**
- *
- * @author  wolfgang
+ * This window is opened when the user wants to change the options.
+ * @author Wolfgang Ginolas
  */
 public class OptionWindow extends javax.swing.JDialog {
 
 	private boolean ok = false;
 	
-    /** Creates new form OptionWindow */
+    /** Creates new form OptionWindow
+	 * @param parent the parent window
+	 */
     public OptionWindow(java.awt.Frame parent) {
         super(parent, true);
         setLocationByPlatform(true);
@@ -302,19 +304,16 @@ public class OptionWindow extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-// TODO add your handling code here:
 	ok = true;
 	setVisible(false);
 }//GEN-LAST:event_btnOKActionPerformed
 
 private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-// TODO add your handling code here:
 	ok = false;
 	setVisible(false);
 }//GEN-LAST:event_btnCancelActionPerformed
 
 private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
-	// add your handling code here:
 	spnBufferSize.getModel().setValue(TCPConnection.DEFAULT_MAX_QUEUE);
 	chkTCPFlush.setSelected(TCPConnection.DEFAULT_TCP_FLUSH);
 }//GEN-LAST:event_btnResetActionPerformed

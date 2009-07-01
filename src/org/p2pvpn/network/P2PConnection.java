@@ -36,7 +36,7 @@ public class P2PConnection {
 	private static final int PING_BUCKET_LEN = 10;
 
 	private enum P2PConnState {WAIT_FOR_ACCESS, WAIT_FOR_RND, WAIT_FOR_ENC_RND,
-		WAIT_FOR_KEY, CONNECTED};
+		WAIT_FOR_KEY, CONNECTED};   // TODO aufraumen
 	
 	private P2PConnState state;
 	

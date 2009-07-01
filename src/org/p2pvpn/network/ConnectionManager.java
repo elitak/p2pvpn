@@ -97,7 +97,7 @@ public class ConnectionManager implements Runnable {
 	private void calcNetworkKey() {
 		byte[] b = accessCfg.getPropertyBytes("network.publicKey", null);
 		MessageDigest md = CryptoUtils.getMessageDigest();
-		md.update("secretKey".getBytes());	// make shure the key differs from
+		md.update("secretKey".getBytes());	// make sure the key differs from
 											// other hashes created from the publicKey
 		networkKey = md.digest(b);
 	}

@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -29,6 +29,10 @@ import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
+/**
+ * The Model for the peer list used in the MainWindow.
+ * @author Wolfgang Ginolas
+ */
 public class PeerListModel implements RoutungTableListener, ListModel {
 	
 	ConnectionManager connectionManager;

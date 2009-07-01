@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -35,15 +35,19 @@ import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 
 /**
- *
- * @author wolfgang
+ * This class implements the chat window, the user cen use to send messages to
+ * other users.
+ * @author Wolfgang Ginolas
  */
 public class ChatWindow extends javax.swing.JFrame implements InternalPacketListener {
 
 	private MainWindow mainWindow;
 	private MainControl mainControl;
 
-    /** Creates new form ChatWindow */
+    /** Creates new form ChatWindow
+	 * @param mainWindow the MainWindow
+	 * @param mainControl the MainControl
+	 */
     public ChatWindow(MainWindow mainWindow, MainControl mainControl) {
         setLocationByPlatform(true);
 		this.mainControl = mainControl;
@@ -57,6 +61,9 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		txtSend.requestFocus();
     }
 
+	/**
+	 * Called by MainWindow when the network has changed.
+	 */
 	void networkHasChanged() {
 		ConnectionManager cm = mainControl.getConnectionManager();
 		if (cm!=null) {
@@ -119,7 +126,9 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		}
 	}//GEN-LAST:event_txtSendKeyPressed
 
-
+	/**
+	 * Send the message the user entered to all other peers.
+	 */
 	private void sendMessage() {
 		String msg = txtSend.getText();
 		txtSend.setText("");
@@ -144,6 +153,11 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		}
 	}
 
+	/**
+	 * Write a message into the TextArea
+	 * @param name the name of the user
+	 * @param msg the message
+	 */
 	private void writeMessage(String name, String msg) {
 		String date = DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
 		String line = date+" "+name+": "+msg+"\n";
@@ -162,6 +176,12 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		}
 	}
 
+	/**
+	 * Called by the router, when a chat message is received.
+	 * @param router the Router
+	 * @param internalPort the internel port
+	 * @param data the data
+	 */
 	public void receiveInternalPacket(Router router, byte internalPort, byte[] data) {
 		byte[] fromb = new byte[PeerID.getIdLen()];
 		byte[] msgb = new byte[data.length - PeerID.getIdLen()];
@@ -178,6 +198,10 @@ public class ChatWindow extends javax.swing.JFrame implements InternalPacketList
 		}
 	}
 
+	/**
+	 * This class is used to write a message in the TextArea in a
+	 * threadsafe way.
+	 */
 	private class ThreadsaveWriteMessage implements Runnable {
 		private String name;
 		private String msg;

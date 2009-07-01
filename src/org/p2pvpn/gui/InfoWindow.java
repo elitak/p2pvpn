@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -17,11 +17,6 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
- * Main.java
- *
- * Created on 29. Oktober 2008, 11:43
- */
 
 package org.p2pvpn.gui;
 
@@ -46,14 +41,13 @@ import org.p2pvpn.network.UPnPPortForward;
 import org.p2pvpn.network.UPnPPortForwardListener;
 
 /**
- *
- * @author  wolfgang
+ * This is an information window which shows many informations about the
+ * current status od P2PVPN.
+ * @author Wolfgang Ginolas
  */
 public class InfoWindow extends javax.swing.JFrame implements RoutungTableListener, UPnPPortForwardListener {
-	private static final long serialVersionUID = -7583281386025886297L;
 
-
-	private static final int MAX_LOG_LEN = 10*1000;
+	private static final int MAX_LOG_LEN = 10*1000; // the max length of the log TextArea
 	
 	private ConnectionManager connectionManager;
     private MainControl mainControl;
@@ -61,7 +55,9 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 
 	private PeerGraph peerGraph;
 	
-	/** Creates new form Main */
+	/** Creates new form Main
+	 * @param mainControl the MainControl
+	 */
     public InfoWindow(MainControl mainControl) {
         this.mainControl = mainControl;
         this.connectionManager = null;
@@ -90,6 +86,8 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
         startLogging();
     }
 
+	/** Called by MainControl, when the network has changed.
+	 */
     void networkHasChanged() {
         connectionManager = mainControl.getConnectionManager();
         if (connectionManager != null) {
@@ -313,6 +311,11 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 	connectionManager.connectTo(hostConnectText1.getText());
 }//GEN-LAST:event_eventConnectTo
 
+	/**
+	 * Called, when the user selects a peer in the peer table. This
+	 * will show the database of the selected peer.
+	 * @param i the selected row
+	 */
 	private void peerSelected(int i) {
 		if (i<0) {
 			return;
@@ -322,10 +325,20 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		tableChanged(null);
 	}	
 
+	/**
+	 * Set information like the PeerID ant the local port which should be
+	 * shown to the user.
+	 * @param s the info
+	 */
 	public void setLocalInfo(String s) {
 		localInfo1.setText(s);
 	}
 
+	/**
+	 * Called, when the peer-table changes. This will update
+	 * the database shown to the user.
+	 * @param router
+	 */
 	public void tableChanged(Router router) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -334,6 +347,10 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		});
 	}
 
+	/**
+	 * Called, when the peer-table changes. This will update
+	 * the database shown to the user.
+	 */
 	public void tableChangedSave() {
 		StringBuffer info = new StringBuffer();
 		info.append("Info for "+addrShown+"\n\n");
@@ -363,14 +380,20 @@ private void eventConnectTo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e
 		}
 		*/
 	}
-	
+
+	/**
+	 * Initialize the logging-tab.
+	 */
 	public void startLogging() {
 		LoggingWriter lt = new LoggingWriter();
 		lt.setFormatter(new SimpleFormatter());
 		
 		Logger.getLogger("").addHandler(lt);
 	}
-	
+
+	/**
+	 * A Logging-Handler which shows all log messages in the log-tab.
+	 */
 	class LoggingWriter extends Handler {
 
 		public LoggingWriter() {

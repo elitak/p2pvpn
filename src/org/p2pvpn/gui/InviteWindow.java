@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -39,12 +39,19 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import org.p2pvpn.tools.AdvProperties;
 
+/**
+ * This window is shown, when the user wants to invite another persion.
+ * @author Wolfgang Ginolas
+ */
 public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner {
 
 	MainControl mainControl;
 	JFileChooser fileChooser;
 	
-    /** Creates new form InviteWindow */
+    /** Creates new form InviteWindow
+	 * @param parent the parent Frame
+	 * @param mainControl the MainControl
+	 */
     public InviteWindow(java.awt.Frame parent, MainControl mainControl) {
         super(parent, true);
         setLocationByPlatform(true);
@@ -67,6 +74,9 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
 		txtInvitation.setComponentPopupMenu(menu);
     }
 
+	/**
+	 * Copy the invitation into the clipboard.
+	 */
 	private void copy() {
 		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
 		c.setContents(new StringSelection(txtInvitation.getText()), this);
@@ -173,12 +183,13 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-// TODO add your handling code here:
 	setVisible(false);
 }//GEN-LAST:event_btnCloseActionPerformed
 
+/**
+ * Generate an invitation.
+ */
 private void btnGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateActionPerformed
-// TODO add your handling code here:
 	AdvProperties netCfg = mainControl.getNetworkCfg();
 	if (chkNetwork.isSelected()) {
 		txtInvitation.setText(netCfg.toString(null, false, true));
@@ -188,8 +199,10 @@ private void btnGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 	}
 }//GEN-LAST:event_btnGenerateActionPerformed
 
+/**
+ * Save the invitation in a file
+ */
 private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-// TODO add your handling code here:
 	if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(this)) {
 		try {
 			File file = fileChooser.getSelectedFile();

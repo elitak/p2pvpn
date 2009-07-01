@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -33,6 +33,10 @@ import org.p2pvpn.network.PeerID;
 import org.p2pvpn.network.Router;
 import org.p2pvpn.network.RoutungTableListener;
 
+/**
+ * This Component shows a simple peer graph which is used in the info window
+ * @author Wolfgang Ginolas
+ */
 public class PeerGraph extends JComponent implements RoutungTableListener {
 	private static final int BORDER = 50;
 	private static final int NODE_SIZE = 20;
