@@ -107,7 +107,8 @@ public class ConnectionManager implements Runnable {
 	 * Calculate the network key used for encryption
 	 */
 	private void calcNetworkKey() {
-		byte[] b = accessCfg.getPropertyBytes("network.publicKey", null);
+		// byte[] b = accessCfg.getPropertyBytes("network.publicKey", null);
+		byte[] b = accessCfg.getPropertyBytes("network.signature", null);
 		MessageDigest md = CryptoUtils.getMessageDigest();
 		md.update("secretKey".getBytes());	// make sure the key differs from
 											// other hashes created from the publicKey
