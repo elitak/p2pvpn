@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.util.Date;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -361,16 +362,21 @@ public class MainControl implements ConnectorListener {
 	/**
 	 * Generate an access invitation from an network invitation.
 	 * @param netCfg the network invitation
+	 * @param date the date of expiry
 	 * @return the acess invitation
 	 */
-	public static AdvProperties genereteAccess(AdvProperties netCfg) {
+	public static AdvProperties genereteAccess(AdvProperties netCfg, Date date) {
 		PrivateKey netPriv = CryptoUtils.decodeRSAPrivateKey(
 				netCfg.getPropertyBytes("secret.network.privateKey", null));
 
 		KeyPair accessKp = CryptoUtils.createEncryptionKeyPair();
 
 		AdvProperties accessCfg = new AdvProperties();
-		accessCfg.setProperty("access.expiryDate", "none");
+		if (date==null) {
+			accessCfg.setProperty("access.expiryDate", "none");
+		} else {
+			accessCfg.setProperty("access.expiryDate", ""+date.getTime());
+		}
 		accessCfg.setPropertyBytes("access.publicKey", accessKp.getPublic().getEncoded());
 		accessCfg.sign("access.signature", netPriv);
 		accessCfg.setPropertyBytes("secret.access.privateKey", accessKp.getPrivate().getEncoded());
@@ -395,7 +401,7 @@ public class MainControl implements ConnectorListener {
 			access = inv;
 		} else {
 			net = inv;
-			access = MainControl.genereteAccess(net);
+			access = MainControl.genereteAccess(net, null);
 		}
 
 		return new AdvProperties[] {net, access};

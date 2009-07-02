@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -91,6 +92,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        grpDate = new javax.swing.ButtonGroup();
         chkNetwork = new javax.swing.JCheckBox();
         btnGenerate = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -98,11 +100,20 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
         txtInvitation = new javax.swing.JTextArea();
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
+        lblDate = new javax.swing.JLabel();
+        spnExpiryDate = new javax.swing.JSpinner();
+        lblNote = new javax.swing.JLabel();
+        radNever = new javax.swing.JRadioButton();
+        radDate = new javax.swing.JRadioButton();
 
         setTitle("Generate Invitation");
 
-        chkNetwork.setSelected(true);
         chkNetwork.setText("Allow invitation of others");
+        chkNetwork.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkNetworkItemStateChanged(evt);
+            }
+        });
 
         btnGenerate.setText("Generate Invitation");
         btnGenerate.addActionListener(new java.awt.event.ActionListener() {
@@ -114,7 +125,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Invitation"));
 
         txtInvitation.setColumns(20);
-        txtInvitation.setFont(new java.awt.Font("DejaVu Sans", 0, 8));
+        txtInvitation.setFont(new java.awt.Font("DejaVu Sans", 0, 8)); // NOI18N
         txtInvitation.setRows(5);
         jScrollPane1.setViewportView(txtInvitation);
 
@@ -137,7 +148,7 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSave))
         );
@@ -149,20 +160,49 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
             }
         });
 
+        lblDate.setText("Date of expiry: ");
+
+        spnExpiryDate.setModel(new javax.swing.SpinnerDateModel());
+
+        lblNote.setText("Make sure to generate a new invitation for every person!");
+
+        grpDate.add(radNever);
+        radNever.setSelected(true);
+        radNever.setText("Never");
+
+        grpDate.add(radDate);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chkNetwork)
-                    .addComponent(btnGenerate))
+                .addComponent(chkNetwork)
                 .addContainerGap(224, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(344, Short.MAX_VALUE)
                 .addComponent(btnClose)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblDate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(radDate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spnExpiryDate, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
+                    .addComponent(radNever))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblNote)
+                .addContainerGap(64, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnGenerate)
+                .addContainerGap(268, Short.MAX_VALUE))
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -170,6 +210,16 @@ public class InviteWindow extends javax.swing.JDialog implements ClipboardOwner 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(chkNetwork)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDate)
+                    .addComponent(radNever))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(radDate)
+                    .addComponent(spnExpiryDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblNote)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnGenerate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -194,7 +244,11 @@ private void btnGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 	if (chkNetwork.isSelected()) {
 		txtInvitation.setText(netCfg.toString(null, false, true));
 	} else {
-		AdvProperties accessCfg = MainControl.genereteAccess(netCfg);
+		Date date = null;
+		if (radDate.isSelected()) {
+			date = (Date)spnExpiryDate.getModel().getValue();
+		}
+		AdvProperties accessCfg = MainControl.genereteAccess(netCfg, date);
 		txtInvitation.setText(accessCfg.toString(null, false, true));
 	}
 }//GEN-LAST:event_btnGenerateActionPerformed
@@ -218,6 +272,23 @@ private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 	}	
 }//GEN-LAST:event_btnSaveActionPerformed
 
+private void chkNetworkItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkNetworkItemStateChanged
+	// TODO add your handling code here:
+	if (chkNetwork.isSelected()) {
+		lblNote.setVisible(false);
+		spnExpiryDate.setEnabled(false);
+		lblDate.setEnabled(false);
+		radNever.setEnabled(false);
+		radDate.setEnabled(false);
+	} else {
+		lblNote.setVisible(true);
+		spnExpiryDate.setEnabled(true);
+		lblDate.setEnabled(true);
+		radNever.setEnabled(true);
+		radDate.setEnabled(true);
+	}
+}//GEN-LAST:event_chkNetworkItemStateChanged
+
 	public void lostOwnership(Clipboard arg0, Transferable arg1) {
 	}
 
@@ -226,8 +297,14 @@ private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     private javax.swing.JButton btnGenerate;
     private javax.swing.JButton btnSave;
     private javax.swing.JCheckBox chkNetwork;
+    private javax.swing.ButtonGroup grpDate;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblDate;
+    private javax.swing.JLabel lblNote;
+    private javax.swing.JRadioButton radDate;
+    private javax.swing.JRadioButton radNever;
+    private javax.swing.JSpinner spnExpiryDate;
     private javax.swing.JTextArea txtInvitation;
     // End of variables declaration//GEN-END:variables
 

@@ -242,7 +242,7 @@ private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 		netCfg.sign("network.signature", netKey.getPrivate());
 		netCfg.setPropertyBytes("secret.network.privateKey", netKey.getPrivate().getEncoded());
 		
-		AdvProperties accessCfg = MainControl.genereteAccess(netCfg);
+		AdvProperties accessCfg = MainControl.genereteAccess(netCfg, null);
 		mainControl.connectToNewNet(netCfg, accessCfg);
 		
 		setVisible(false);

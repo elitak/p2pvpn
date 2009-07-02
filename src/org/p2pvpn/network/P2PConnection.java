@@ -51,9 +51,11 @@ public class P2PConnection {
 	private ScheduledFuture<?> schedTimeout;		// used for a connect timeout
 	private PeerID remoteAddr;						// the remote PeerID
 	private AdvProperties remoteAccess;				// the remote access invitation
+	private long remoteExpiryDate;					// the remote date of expiry
 	private Router router;							// the router
 
 	private SlidingAverage pingTime;				// the latency for this connection
+
 
 	/**
 	 * Create a new P2PConnetion
@@ -120,24 +122,38 @@ public class P2PConnection {
 					remoteAddr = new PeerID(remoteAccess.getPropertyBytes("access.publicKey", null), true);
 					PublicKey netKey = CryptoUtils.decodeRSAPublicKey(
 							connectionManager.getAccessCfg().getPropertyBytes("network.publicKey", null));
-					if (remoteAccess.verify("access.signature", netKey)) {
-						SecureRandom rnd = CryptoUtils.getSecureRandom();
-						myKeyPart = new byte[CryptoUtils.getSymmetricKeyLength()];
-						rnd.nextBytes(myKeyPart);
 
-						PublicKey remoteKey = CryptoUtils.decodeRSAPublicKey(
-								remoteAccess.getPropertyBytes("access.publicKey", null));
-						
-						Cipher c = CryptoUtils.getAsymmetricCipher();
-						c.init(Cipher.ENCRYPT_MODE, remoteKey, rnd);
-						
-						connection.send(c.doFinal(myKeyPart), true);
-						
-						state = P2PConnState.WAIT_FOR_KEY;
-					} else {
+					if (!remoteAccess.verify("access.signature", netKey)) { // check signature
 						Logger.getLogger("").log(Level.WARNING, remoteAddr+" has no valid access!");
 						close();
+						break;
 					}
+
+
+					try {
+						remoteExpiryDate = Long.parseLong(remoteAccess.getProperty("access.expiryDate"));
+					} catch (NumberFormatException numberFormatException) {
+						remoteExpiryDate = 0;
+					}
+					if (remoteInvitatonExpired()) {
+						Logger.getLogger("").log(Level.WARNING, remoteAddr+" has expired!");
+						close();
+						break;
+					}
+
+					SecureRandom rnd = CryptoUtils.getSecureRandom();
+					myKeyPart = new byte[CryptoUtils.getSymmetricKeyLength()];
+					rnd.nextBytes(myKeyPart);
+
+					PublicKey remoteKey = CryptoUtils.decodeRSAPublicKey(
+							remoteAccess.getPropertyBytes("access.publicKey", null));
+
+					Cipher c = CryptoUtils.getAsymmetricCipher();
+					c.init(Cipher.ENCRYPT_MODE, remoteKey, rnd);
+
+					connection.send(c.doFinal(myKeyPart), true);
+
+					state = P2PConnState.WAIT_FOR_KEY;
 					break;
 				}
 				case WAIT_FOR_KEY: {
@@ -177,6 +193,13 @@ public class P2PConnection {
 	 */
 	public void send(byte[] packet, boolean highPriority) {
 		if (state == P2PConnState.CONNECTED) connection.send(packet, highPriority);
+	}
+
+	/**
+	 * @return did the remote invitation expire?
+	 */
+	public boolean remoteInvitatonExpired() {
+		return remoteExpiryDate!=0 && remoteExpiryDate < System.currentTimeMillis();
 	}
 
 	public void setRouter(Router router) {

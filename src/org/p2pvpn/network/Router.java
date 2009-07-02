@@ -299,14 +299,16 @@ public class Router implements RoutungTableListener {
 	}
 
 	/**
-	 * Disconnect from neighbours which did not send a apcket for some time.
+	 * Disconnect from neighbours which did not send a apcket for some time or
+	 * the invitation expired.
 	 */
 	private void removeDeadPeers() {
 		P2PConnection[] cs = getConnections();
 		long time = System.currentTimeMillis();
 
 		for(P2PConnection c : cs) {
-			if (time - c.getConnection().getLastActive() > CONN_TIMEOUT_MS) c.close();
+			if ((time - c.getConnection().getLastActive() > CONN_TIMEOUT_MS)
+					|| c.remoteInvitatonExpired()) c.close();
 		}
 	}
 
