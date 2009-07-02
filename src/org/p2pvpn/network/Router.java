@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -40,7 +40,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.p2pvpn.tools.VersionizedMap;
 
-
+/**
+ * All packets are running throug the Router. Packages are received from the
+ * neighbour peers and the VPNConnecter and send to the neighbour peers or the
+ * VPNConnector accordting to the destination address.
+ * @author wolfgang
+ */
 public class Router implements RoutungTableListener {
 	private static final long SYNC_TIME = 5; // seconds
 	private static final long CONN_TIMEOUT_MS = 60 * 1000;
@@ -54,20 +59,24 @@ public class Router implements RoutungTableListener {
 	public static final byte INTERNAL_PORT_CHAT = -1;
 	public static final byte INTERNAL_PORT_PING = 1;
 	
-	private ConnectionManager connectionManager;
-	private VPNConnector vpnConnector;
+	private ConnectionManager connectionManager;	// the ConnectioionManager
+	private VPNConnector vpnConnector;				// the VpnConnector
 
-	private Map<PeerID, P2PConnection> connections;
-	private Map<PeerID, VersionizedMap<String, String>> peers;
-	private Map<MacAddress, P2PConnection[]> routeCache;
+	private Map<PeerID, P2PConnection> connections;	// all connections
+	private Map<PeerID, VersionizedMap<String, String>> peers;	// all peers
+	private Map<MacAddress, P2PConnection[]> routeCache;		// cached routes
 
-	private MacAddress myMAC;
-	private boolean gotMacFromTun;
+	private MacAddress myMAC;			// local mac address
+	private boolean gotMacFromTun;		// was the mac address received from the und interface?
 
-	private Vector<RoutungTableListener> tableListeners;
+	private Vector<RoutungTableListener> tableListeners; // listeners of the peer list
 
-	private Map<Byte, InternalPacketListener> internalListeners;
+	private Map<Byte, InternalPacketListener> internalListeners; // listeners for internal packets
 
+	/**
+	 * Create a new Router
+	 * @param connectionManager the ConnectionManager
+	 */
 	public Router(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
 		tableListeners = new Vector<RoutungTableListener>();
@@ -85,15 +94,28 @@ public class Router implements RoutungTableListener {
 			}
 		}, SYNC_TIME, TimeUnit.SECONDS);
 	}
-	
+
+	/**
+	 * Add a listener for the peer list.
+	 * @param l the listener
+	 */
 	public synchronized void addTableListener(RoutungTableListener l) {
 		tableListeners.add(l);
 	}
 
+	/**
+	 * Return all knpown peers.
+	 * @return the peers
+	 */
 	public synchronized PeerID[] getPeers() {
 		return peers.keySet().toArray(new PeerID[0]);
 	}
-	
+
+	/**
+	 * Return all known mac addresses.
+	 * @param withLocalMac include the local mac address
+	 * @return the addresses
+	 */
 	private synchronized Set<MacAddress> getKnownMACs(boolean withLocalMac) {
 		Set<MacAddress> result = new HashSet<MacAddress>();
 		for(Map.Entry<PeerID, VersionizedMap<String, String>> e : peers.entrySet()) {
@@ -107,6 +129,11 @@ public class Router implements RoutungTableListener {
 		return result;
 	}
 
+	/**
+	 * Return the ID of the peer with the given mac address.
+	 * @param mac the addrress
+	 * @return the PeerID
+	 */
 	private PeerID findAddressForMac(MacAddress mac) {
 		String macStr = mac.toString();
 		for(Map.Entry<PeerID, VersionizedMap<String, String>> e : peers.entrySet()) {
@@ -114,7 +141,12 @@ public class Router implements RoutungTableListener {
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Calculate a route to another peer wothout caching.
+	 * @param macDest the osther peer
+	 * @return list of naighbours  with the shortest connection to the destination
+	 */
 	private P2PConnection[] findRouteInt(MacAddress macDest) {
 		if (macDest.equals(myMAC)) return new P2PConnection[0];
 		
@@ -162,7 +194,12 @@ public class Router implements RoutungTableListener {
 		}
 		return result.toArray(new P2PConnection[0]);
 	}
-	
+
+	/**
+	 * Calculate a route to another peer with caching.
+	 * @param macDest the osther peer
+	 * @return list of naighbours  with the shortest connection to the destination
+	 */
 	private P2PConnection[] findRoute(MacAddress macDest) {
 		P2PConnection[] result;
 		synchronized (this) {
@@ -177,6 +214,11 @@ public class Router implements RoutungTableListener {
 		return result;
 	}
 
+	/**
+	 * Find a naigbour with the given mac address.
+	 * @param mac the mac address
+	 * @return the P2PCpnnection to the neighbour
+	 */
 	public P2PConnection getP2PConnection(MacAddress mac) {
 		P2PConnection[] cs = findRoute(mac);
 		for (P2PConnection c : cs) {
@@ -190,6 +232,11 @@ public class Router implements RoutungTableListener {
 		return null;
 	}
 
+	/**
+	 * Find all peers that are reachable from the given peer.
+	 * @param reachable the set of reachable peers
+	 * @param a the peer
+	 */
 	private void _addReachablePeer(Set<PeerID> reachable, PeerID a) {
 		if (reachable.contains(a)) return;
 		
@@ -207,6 +254,9 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Update the peer list after the network topology changed.
+	 */
 	private synchronized void updatePeers() {
 		Set<PeerID> reachable = new HashSet<PeerID>();
 
@@ -227,7 +277,12 @@ public class Router implements RoutungTableListener {
 			}
 		}
 	}
-	
+
+	/**
+	 * Send the database of a peer.
+	 * @param connection sent to this connection
+	 * @param a the peer
+	 */
 	private void sendDBPacket(P2PConnection connection, PeerID a) {
 		try {
 			ByteArrayOutputStream outB = new ByteArrayOutputStream();
@@ -243,6 +298,9 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Disconnect from neighbours which did not send a apcket for some time.
+	 */
 	private void removeDeadPeers() {
 		P2PConnection[] cs = getConnections();
 		long time = System.currentTimeMillis();
@@ -252,6 +310,9 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Request the databases of all peers.
+	 */
 	private void syncDB() {
 		Set<PeerID> peerSet;
 
@@ -295,7 +356,11 @@ public class Router implements RoutungTableListener {
 			}
 		}, SYNC_TIME, TimeUnit.SECONDS);
 	}
-	
+
+	/**
+	 * Notify all listeners that the peer list changed.
+	 * @param connectionsChanged did the list of neighbours change?
+	 */
 	private void notifyListeners(boolean connectionsChanged) {
 		
 		if (connectionsChanged) {
@@ -322,7 +387,12 @@ public class Router implements RoutungTableListener {
 				l.tableChanged(this);
 		}
 	}
-	
+
+	/**
+	 * Called when the database for a peer changed. Update the network topolpgy
+	 * and the list of known IPs.
+	 * @param a the peer
+	 */
     private void dbChanged(PeerID a) {
     	notifyListeners(false);
         
@@ -347,7 +417,7 @@ public class Router implements RoutungTableListener {
             }
         }
     }
-    
+   
 	public synchronized String getPeerInfo(PeerID peer, String key) {
 		VersionizedMap<String, String> db = peers.get(peer);
 		if (db==null) return null;
@@ -379,7 +449,12 @@ public class Router implements RoutungTableListener {
 		if (id==null) return false;
 		return connections.containsKey(id);
 	}
-	
+
+	/**
+	 * A new P2PConnection is established and can be used for sending
+	 * and receivong apckages.
+	 * @param connection the connection
+	 */
 	public void newP2PConnection(P2PConnection connection) {
 		synchronized (this) {
 			if (connections.containsKey(connection.getRemoteAddr())
@@ -393,13 +468,20 @@ public class Router implements RoutungTableListener {
 		notifyListeners(true);
 	}
 
+	/**
+	 * A connection to a neighbour was closed.
+	 * @param connection the connection
+	 */
 	public void connectionClosed(P2PConnection connection) {
 		synchronized (this) {
 			connections.remove(connection.getRemoteAddr());
 		}
 		notifyListeners(true);
 	}
-	
+
+	/**
+	 * Close all connections.
+	 */
 	public void close() {
 		P2PConnection[] cs;
 		synchronized (this) {
@@ -409,7 +491,10 @@ public class Router implements RoutungTableListener {
 			c.close();
 		}
 	}
-	
+
+	/**
+	 * Print the routing table.
+	 */
 	public void printTable() {
 		System.out.println("Routing Table (this is: "+connectionManager.getLocalAddr()+")");
 		System.out.println("=============");
@@ -425,6 +510,11 @@ public class Router implements RoutungTableListener {
 		System.out.println();
 	}
 
+	/**
+	 * Called when a packad arrived
+	 * @param connection the connection which recheived this packet
+	 * @param packet the packet
+	 */
 	public void receive(P2PConnection connection, byte[] packet) {
 		ByteArrayInputStream inB = new ByteArrayInputStream(packet);
 
@@ -479,6 +569,11 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Handle a data packet
+	 * @param type the type of the packet
+	 * @param packet the packet
+	 */
 	private void handleDataPacket(int type, byte[] packet) {
 		MacAddress dest = new MacAddress(packet, 0+1);
 		
@@ -501,6 +596,12 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Send an packet.
+	 * @param dest the destination
+	 * @param packet the packet
+	 * @param highPriority has this packet a high priority?
+	 */
 	private void sendInt(MacAddress dest, byte[] packet, boolean highPriority) {
 		P2PConnection[] cs = findRoute(dest);
 		if (cs.length>0) {
@@ -518,11 +619,19 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Set the local mac address.
+	 * @param mac the address
+	 */
 	private synchronized void setMac(MacAddress mac) {
 		myMAC = mac;
 		peers.get(connectionManager.getLocalAddr()).put("vpn.mac", myMAC.toString());
 	}
 
+	/**
+	 * Set a random mac address.
+	 * Used when the real mac address is yet unknown.
+	 */
 	private void setRandomMac() {
 		Random rnd = new Random();
 		byte[] mac = new byte[6];
@@ -530,6 +639,10 @@ public class Router implements RoutungTableListener {
 		setMac(new MacAddress(mac));
 	}
 
+	/**
+	 * Send a packet. Called from VPNConnector.
+	 * @param packet the packet
+	 */
 	public void send(byte[] packet) {
 		
 		if (!gotMacFromTun) {
@@ -556,10 +669,19 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Add an internal packet listener.
+	 * @param internalPort listen to this port
+	 * @param l the listener
+	 */
 	public synchronized void addInternalPacketListener(byte internalPort, InternalPacketListener l) {
 		internalListeners.put(internalPort, l);
 	}
 
+	/**
+	 * Handle an internal packet
+	 * @param packet the packet
+	 */
 	private void handleInternalPacket(byte[] packet) {
 		MacAddress dest = new MacAddress(packet, 0+2);
 		byte intPort = packet[1];
@@ -578,6 +700,12 @@ public class Router implements RoutungTableListener {
 		}
 	}
 
+	/**
+	 * Send an internal packet
+	 * @param to the destination
+	 * @param internalPort the internal destination port
+	 * @param data the data
+	 */
 	public void sendInternalPacket(MacAddress to, byte internalPort, byte[] data) {
 		if (to==null) {
 			Collection<MacAddress> macs = getKnownMACs(false);

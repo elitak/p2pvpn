@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -22,12 +22,20 @@ package org.p2pvpn.network.bandwidth;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * A claas that cna calculate a liding average.
+ * @author Wolfgang Ginolas
+ */
 public class SlidingAverage {
 	private int bucketLen;
 	private Queue<Double>  buckets;
 	private double bucketSum;
 
-
+	/**
+	 * Create a new Sliding average.
+	 * @param bucketLen number of values that are used for the average
+	 * @param init initialisation value
+	 */
 	public SlidingAverage(int bucketLen, double init) {
 		this.bucketLen = bucketLen;
 
@@ -36,6 +44,10 @@ public class SlidingAverage {
 		bucketSum = bucketLen*init;
 	}
 
+	/**
+	 * Use this value for the average.
+	 * @param val the value
+	 */
 	public void putVaule(double val) {
 		long time = System.currentTimeMillis();
 		bucketSum -= buckets.poll();

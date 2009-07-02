@@ -39,6 +39,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+/**
+ * Utility class to create differenty cryptographic algorithms.
+ * @author wolfgang
+ */
 public class CryptoUtils {
 	
 	private static final int RSA_KEYSIZE = 1024;
@@ -46,11 +50,17 @@ public class CryptoUtils {
 	static {
 		initBC();
 	}
-	
+
+	/**
+	 * Initialize the bouncy castle provider.
+	 */
 	static private void initBC() {
 		Security.addProvider(new BouncyCastleProvider());
 	}
-	
+
+	/**
+	 * @return a SecureRandom object
+	 */
 	static public SecureRandom getSecureRandom() {
 		try {
 			return SecureRandom.getInstance("SHA1PRNG");
@@ -60,7 +70,10 @@ public class CryptoUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * @return a Signature object
+	 */
 	static public Signature getSignature() {
 		try {
 			return Signature.getInstance("SHA1withRSA", "BC");
@@ -70,7 +83,10 @@ public class CryptoUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * @return a new KeyPair usable to sign things
+	 */
 	static public KeyPair createSignatureKeyPair() {
 		try {
 			KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "BC");
@@ -82,7 +98,10 @@ public class CryptoUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * @return a asymmetric Cipher
+	 */
 	static public Cipher getAsymmetricCipher() {
 		try {
 			return Cipher.getInstance("RSA/NONE/PKCS1Padding", "BC");
@@ -92,11 +111,19 @@ public class CryptoUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * @return a KeyPair that cna be used or an asymmetric cipher
+	 */
 	static public KeyPair createEncryptionKeyPair() {
 		return createSignatureKeyPair();		// also uses RSA
 	}
-	
+
+	/**
+	 * Convert a byte array to a RSA public key
+	 * @param ekey the byte array
+	 * @return the public key
+	 */
 	static public PublicKey decodeRSAPublicKey(byte[] ekey) {
 		try {
 			X509EncodedKeySpec spec = new X509EncodedKeySpec(ekey);
@@ -109,6 +136,11 @@ public class CryptoUtils {
 		}
 	}
 
+	/**
+	 * Convert a byte array to a RSA private key
+	 * @param ekey the byte array
+	 * @return the private key
+	 */
 	static public PrivateKey decodeRSAPrivateKey(byte[] ekey) {
 		try {
 			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(ekey);
@@ -120,7 +152,10 @@ public class CryptoUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * @return a hash algorithm
+	 */
 	static public MessageDigest getMessageDigest() {
 		try {
 			return MessageDigest.getInstance("SHA1");
@@ -130,7 +165,10 @@ public class CryptoUtils {
 			return null;
 		}		
 	}
-	
+
+	/**
+	 * @return a symmetric cipher
+	 */
 	static public Cipher getSymmetricCipher() {
 		try {
 			return Cipher.getInstance("AES/CBC/ISO10126Padding", "BC");
@@ -140,11 +178,19 @@ public class CryptoUtils {
 			return null;
 		}			
 	}
-	
+
+	/**
+	 * @return the key length of the symmetric cipher in bytes
+	 */
 	static public int getSymmetricKeyLength() {
 		return 16;
 	}
-	
+
+	/**
+	 * Create a symmetric key from bytes.
+	 * @param b the bytes
+	 * @return the symmetric key
+	 */
 	static public SecretKey decodeSymmetricKey(byte[] b) {
 		return new SecretKeySpec(b, 0, 16, "AES");
 	}

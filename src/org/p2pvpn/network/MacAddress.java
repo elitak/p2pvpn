@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -21,17 +21,35 @@ package org.p2pvpn.network;
 
 import java.util.StringTokenizer;
 
+/**
+ * This class represents an Mac-Address.
+ * @author wolfgang
+ */
 public class MacAddress {
 	private long address;
 
+	/**
+	 * Create a new MacAddress using 6 bytes in the array starting at the
+	 * given offset
+	 * @param address the byte array
+	 * @param off the offset
+	 */
 	public MacAddress(byte[] address, int off) {
 		setAddress(address, off);
 	}
 	
+	/**
+	 * Create a new MacAddress
+	 * @param address the address (6 bytes)
+	 */
 	public MacAddress(byte[] address) {
 		setAddress(address);
 	}
 	
+	/**
+	 * Create a new MacAddress
+	 * @param s the address using the format "xx:xx:xx:xx:xx:xx"
+	 */
 	public MacAddress(String s) {
 		byte[] addr = new byte[6];
 		StringTokenizer st = new StringTokenizer(s, ":");
@@ -45,7 +63,12 @@ public class MacAddress {
 		
 		setAddress(addr);
 	}
-	
+
+	/**
+	 * Set the address.
+	 * @param address the byte array
+	 * @param off the offset
+	 */
 	public void setAddress(byte[] address, int off) {
 		assert address.length>=off+6;
 		
@@ -56,10 +79,18 @@ public class MacAddress {
 		}
 	}
 
+	/**
+	 * Set the address.
+	 * @param address the address
+	 */
 	public void setAddress(byte[] address) {
 		setAddress(address, 0);
 	}
 
+	/**
+	 * Return the address as byte array
+	 * @return the address
+	 */
 	public byte[] getAddress() {
 		byte[] result = new byte[6];
 		
@@ -71,7 +102,11 @@ public class MacAddress {
 		}
 		return result;
 	}
-	
+
+	/**
+	 * Is this mac address an broadcast address?
+	 * @return is this mac address an broadcast address?
+	 */
 	public boolean isBroadcast() {
 		return 0 != (address & 0x010000000000l);
 	}

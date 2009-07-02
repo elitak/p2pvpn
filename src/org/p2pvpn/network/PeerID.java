@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -24,13 +24,20 @@ import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
 import org.p2pvpn.tools.CryptoUtils;
 
+/**
+ * PeerID ist an unique ID for every peer.
+ * @author Wolfgang Ginolas
+ */
 public class PeerID implements Comparable<PeerID>, Serializable {
-	private static final long serialVersionUID = 1L;
-
 	private static int idLen = CryptoUtils.getMessageDigest().getDigestLength();
 
 	private byte[] id;
 
+	/**
+	 * Create a new PeerID.
+	 * @param b the ID
+	 * @param hash use the hash of b as ID?
+	 */
 	public PeerID(byte[] b, boolean hash) {
 		if (hash) {
 			MessageDigest md = CryptoUtils.getMessageDigest();
@@ -40,14 +47,26 @@ public class PeerID implements Comparable<PeerID>, Serializable {
 		}
 	}
 
+	/**
+	 * Create a new PeerID
+	 * @param addrStr the ID as Base64 String.
+	 */
 	public PeerID(String addrStr) {
 		id = Base64.decodeBase64(addrStr.getBytes());
 	}
 
+	/**
+	 * The length of PeerIDs.
+	 * @return the length in bytes
+	 */
 	public static int getIdLen() {
 		return idLen;
 	}
 
+	/**
+	 * The ID as an byte array
+	 * @return the bytes
+	 */
 	public byte[] getId() {
 		return id;
 	}

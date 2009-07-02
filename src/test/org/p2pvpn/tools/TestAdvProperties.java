@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 

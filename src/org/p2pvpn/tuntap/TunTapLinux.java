@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -24,8 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Wolfgang
+ * The TunTap class for linux.
+ * @author Wolfgang  Ginolas
  */
 public class TunTapLinux extends TunTap {
     static {
@@ -39,6 +39,10 @@ public class TunTapLinux extends TunTap {
     private int fd;
     private String dev;    
 
+	/**
+	 * Create a new TunTapLinux
+	 * @throws java.lang.Exception
+	 */
     public TunTapLinux() throws Exception {
         if (1==openTun()) throw new Exception("Could not open '/dev/net/tun!'\n" +
 				"Please run this application as root.");

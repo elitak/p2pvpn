@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -19,6 +19,14 @@
 
 package org.p2pvpn.network;
 
+/**
+ * A listene which is notified, when the list of known IPs changes.
+ * @author wolfgang
+ */
 public interface ConnectorListener {
+	/**
+	 * The list of known IPs changed.
+	 * @param c the Connector
+	 */
 	public void ipListChanged(Connector c);
 }

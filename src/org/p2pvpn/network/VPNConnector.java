@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -21,6 +21,11 @@ package org.p2pvpn.network;
 
 import org.p2pvpn.tuntap.TunTap;
 
+/**
+ * This claas establishes a connection between the virtual network adapter
+ * and the Router.
+ * @author wolfgang
+ */
 public class VPNConnector implements Runnable {
 
 	private final static byte IPV4_HIGH = 0x08;
@@ -32,7 +37,11 @@ public class VPNConnector implements Runnable {
 	private Thread myThread;
 	
 	private static VPNConnector vpnConnector = null;
-	
+
+	/**
+	 * Create a new VPNConnector.
+	 * @throws java.lang.Exception
+	 */
 	private VPNConnector() throws Exception {
 		tuntap = TunTap.createTunTap();
 		router = null;
@@ -41,11 +50,20 @@ public class VPNConnector implements Runnable {
 		myThread.start();
 	}
 
+	/**
+	 * Get the global VPNConnector.
+	 * @return
+	 * @throws java.lang.Exception
+	 */
 	public static VPNConnector getVPNConnector() throws Exception {
 		if (vpnConnector == null) vpnConnector = new VPNConnector();
 		return vpnConnector;
 	}
-	
+
+	/**
+	 * Set the Router.
+	 * @param router the Router.
+	 */
 	public void setRouter(Router router) {
 		this.router = router;
 		if (router!=null) router.setVpnConnector(this);
@@ -54,7 +72,11 @@ public class VPNConnector implements Runnable {
 	public TunTap getTunTap() {
 		return tuntap;
 	}
-	
+
+	/**
+	 * Send an packet to the virtual network adapter.
+	 * @param packet the packet
+	 */
 	public void receive(byte[] packet) {
 		//System.out.println("VPNConnector.write "+packet.length);
 		tuntap.write(packet, packet.length);
@@ -65,7 +87,7 @@ public class VPNConnector implements Runnable {
 		myThread.interrupt();
 	}*/
 
-/*
+/* Headers of a MAC-Packet
  *
  * Offset
  * 0:  Ethernet
@@ -73,6 +95,11 @@ public class VPNConnector implements Runnable {
  * 34: UDP
 */
 
+	/**
+	 * Force the correct local IP in an UDP broadcast packet. This is necessary
+	 * becaus Windows sometimes uses the wrong sourc IP in breadcast packages.
+	 * @param packet the packet
+	 */
 	private void forceIP (byte[] packet) {
 		if (packet.length>= 14+20) {
 			if (packet[12]==IPV4_HIGH && packet[13]==IPV4_LOW && packet[14+9]==IPV4_UDP) { // is this IPv4 and UDP?
@@ -95,7 +122,7 @@ public class VPNConnector implements Runnable {
 
 					checksum = ~checksum;
 
-                    packet[14+10] = (byte)(0xFF & (checksum >> 8));
+                    packet[14+10] = (byte)(0xFF & (checksum >> 8)); // set the new IP header chacksum
                     packet[14+11] = (byte)(0xFF & checksum);
 
                     packet[14+20+6] = 0;		// unset UDP checksum
@@ -106,7 +133,11 @@ public class VPNConnector implements Runnable {
 		}
 	}
 
-   
+
+	/**
+	 * A thread the reads packages from the virtual network adapter and sends them
+	 * to the Router.
+	 */
 	@Override
 	public void run() {
 		byte[] buffer = new byte[2048];

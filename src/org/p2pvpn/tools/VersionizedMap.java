@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
- * @author wolfgang
+ * This is a Map with the version. The version is increased with every change made.
+ * @author Wolfgang Ginolas
  */
 public class VersionizedMap<K, V> implements Map<K, V>, Serializable {
 

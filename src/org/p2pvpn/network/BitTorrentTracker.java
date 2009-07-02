@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -36,6 +36,11 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.net.URLCodec;
 import org.p2pvpn.tools.CryptoUtils;
 
+/**
+ * This class connects to a BitTorrent tracker, to find other peers.
+ * (http://www.bittorrent.org/beps/bep_0003.html)
+ * @author Wolfgang Ginolas
+ */
 public class BitTorrentTracker implements Runnable {
 	private static final int REFRESH_S = 10 * 60;
 
@@ -43,6 +48,12 @@ public class BitTorrentTracker implements Runnable {
 	String tracker;
     byte[] peerId;
 
+	/**
+	 * Create a new BitTorrentTracker object which periodically polls an
+	 * tracker to find other peers.
+	 * @param connectionManager the ConnectionManager
+	 * @param tracker the trakcer url
+	 */
 	public BitTorrentTracker(ConnectionManager connectionManager, String tracker) {
 		this.connectionManager = connectionManager;
 		this.tracker = tracker;
@@ -51,10 +62,22 @@ public class BitTorrentTracker implements Runnable {
 		schedule(1);
 	}
 
+	/**
+	 * Schedule a tracker poll
+	 * @param seconds poll in <code>secongs</codee> seconds
+	 */
 	private void schedule(int seconds) {
 		connectionManager.getScheduledExecutor().schedule(this, seconds, TimeUnit.SECONDS);
 	}
 
+	/**
+	 * Poll the tracker.
+	 * @param hash the hash of the cuttent network
+	 * @param port the local port
+	 * @return a Bencode-Map
+	 * @throws java.net.MalformedURLException
+	 * @throws java.io.IOException
+	 */
 	private Map<Object, Object> trackerRequest(byte[] hash, int port) throws MalformedURLException, IOException {
 		String sUrl = tracker + "?info_hash=" + new String(new URLCodec().encode(hash))
 				+ "&port=" + port + "&compact=1&peer_id=" + new String(new URLCodec().encode(peerId)) +
@@ -65,6 +88,11 @@ public class BitTorrentTracker implements Runnable {
 		return (Map<Object, Object>) parseBencode(in);
 	}
 
+	/**
+	 * Calculate a hash for the network, using the pubkicKey of the net
+	 * @param maxLen length of the hash
+	 * @return the hash
+	 */
 	private byte[] networkHash(int maxLen) {
 		byte[] b = connectionManager.getAccessCfg().getPropertyBytes("network.publicKey", null);
 		MessageDigest md = CryptoUtils.getMessageDigest();
@@ -76,6 +104,9 @@ public class BitTorrentTracker implements Runnable {
 		return result;
 	}
 
+	/**
+	 * Poll the tracker and add the returned IPs to the known hosts list.
+	 */
 	public void run() {
 		int nextRequest = REFRESH_S;
 		try {
@@ -104,6 +135,13 @@ public class BitTorrentTracker implements Runnable {
 		schedule(nextRequest);
 	}
 
+	/**
+	 * Parse a Bencode string
+	 * @param in the input stream
+	 * @return the result. The type is Integer, BencodeString,
+	 * Vector&lt;Object&gt; or HashMap&lt;Object, Object&gt;
+	 * @throws java.io.IOException
+	 */
 	private Object parseBencode(PushbackInputStream in) throws IOException {
 		int first = in.read();
 		in.unread(first);
@@ -127,11 +165,23 @@ public class BitTorrentTracker implements Runnable {
 		}
 	}
 
+	/**
+	 * Parse an Mencode integer.
+	 * @param in the inputstream
+	 * @return the Integer
+	 * @throws java.io.IOException
+	 */
 	private Object parseBencodeInt(PushbackInputStream in) throws IOException {
 		parseBencodeExpect(in, 'i');
 		return parseBencodeReadInt(in);
 	}
 
+	/**
+	 * Read an Integer from the stream
+	 * @param in the input stream
+	 * @return the int
+	 * @throws java.io.IOException
+	 */
 	private int parseBencodeReadInt(PushbackInputStream in) throws IOException {
 		int result=0;
 
@@ -145,6 +195,12 @@ public class BitTorrentTracker implements Runnable {
 		return result;
 	}
 
+	/**
+	 * Parse an BencodeString
+	 * @param in the inputstream
+	 * @return the BencodeString
+	 * @throws java.io.IOException
+	 */
 	private Object parseBencodeString(PushbackInputStream in) throws IOException {
 		int len = parseBencodeReadInt(in);
 
@@ -158,6 +214,12 @@ public class BitTorrentTracker implements Runnable {
 		return new BencodeString(bs);
 	}
 
+	/**
+	 * Parse an bencode list
+	 * @param in the input stream
+	 * @return the Vector
+	 * @throws java.io.IOException
+	 */
 	private Object parseBencodeList(PushbackInputStream in) throws IOException {
 		parseBencodeExpect(in, 'l');
 
@@ -171,6 +233,12 @@ public class BitTorrentTracker implements Runnable {
 		return result.toArray();
 	}
 
+	/**
+	 * Parse an bencode map
+	 * @param in the input stream
+	 * @return the HashMap
+	 * @throws java.io.IOException
+	 */
 	private Object parseBencodeMap(PushbackInputStream in) throws IOException {
 		parseBencodeExpect(in, 'd');
 
@@ -187,6 +255,12 @@ public class BitTorrentTracker implements Runnable {
 		return result;
 	}
 
+	/**
+	 * Expect the given byte in the stream
+	 * @param in the input stream
+	 * @param b the expected byte
+	 * @throws java.io.IOException
+	 */
 	private void parseBencodeExpect(PushbackInputStream in, int b) throws IOException {
 		int bIn = in.read();
 		if (b != bIn) {
@@ -194,6 +268,9 @@ public class BitTorrentTracker implements Runnable {
 		}
 	}
 
+	/**
+	 * A byte array that can easily convertet to/from a String.
+	 */
 	public class BencodeString {
 		byte[] bytes;
 

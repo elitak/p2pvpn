@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -35,10 +35,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 
-
+/**
+ * Extended Properties. This class allows: Storing long byte arrays,
+ * signing etc.
+ * @author Wolfgang Ginolas
+ */
 public class AdvProperties extends Properties {
-	private static final long serialVersionUID = -743572689101055639L;
-
 	private static int SPLIT_LEN = 32;
 	
 	public AdvProperties() {
@@ -49,17 +51,31 @@ public class AdvProperties extends Properties {
 		super(defaults);
 	}
 
+	/**
+	 * Create Properties from a String (compatible to this.toString)
+	 * @param s the String
+	 */
 	public AdvProperties(String s) {
 		this(s.getBytes());
 	}
-	
+
+	/**
+	 * Create Properties from a byte array
+	 * @param b the array
+	 */
 	public AdvProperties(byte[] b) {
 		ByteArrayInputStream in = new ByteArrayInputStream(b);
 		try {
 			load(in);
 		} catch (IOException ex) {}
 	}
-	
+
+	/**
+	 * Return a value as int
+	 * @param key the key
+	 * @param def the default value
+	 * @return the int
+	 */
 	public int getPropertyInt(String key, int def) {
 		String s = getProperty(key);
 		if (s==null) return def;
@@ -70,7 +86,12 @@ public class AdvProperties extends Properties {
 			return def;
 		}
 	}
-	
+
+	/**
+	 * Set a byte array value.
+	 * @param key the key
+	 * @param bs the byte array
+	 */
 	public void setPropertyBytes(String key, byte[] bs) {
 		String val = new String(Base64.encodeBase64(bs, true));
 		StringTokenizer st = new  StringTokenizer(val, "\n");
@@ -84,7 +105,13 @@ public class AdvProperties extends Properties {
 			row++;
 		}
 	}
-	
+
+	/**
+	 * Return a value as byte array.
+	 * @param key the key
+	 * @param def the default value
+	 * @return the byte array
+	 */
 	public byte[] getPropertyBytes(String key, byte[] def) {
 		StringBuffer val = new StringBuffer();
 		
@@ -104,7 +131,11 @@ public class AdvProperties extends Properties {
 		
 		return Base64.decodeBase64(val.toString().getBytes());
 	}
-	
+
+	/**
+	 * A new version of keys which sorts the keys.
+	 * @return sortet keys
+	 */
 	@Override
 	public synchronized Enumeration keys() {
 		Enumeration keysEnum = super.keys();
@@ -121,7 +152,14 @@ public class AdvProperties extends Properties {
 	public String toString() {
 		return toString(null, false, false);
 	}
-	
+
+	/**
+	 * Return the properties as String.
+	 * @param comment a comment added to the String
+	 * @param removeDate remove the date?
+	 * @param hr add horizontal roulers?
+	 * @return the String
+	 */
 	public String toString(String comment, boolean removeDate, boolean hr) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		String result;
@@ -144,7 +182,13 @@ public class AdvProperties extends Properties {
 		
 		return result;
 	}
-	
+
+	/**
+	 * Filter the keys.
+	 * @param prefix the prefix of the filtered keys
+	 * @param exclude exclude the matching keys? (else include)
+	 * @return new filtered properties
+	 */
 	public AdvProperties filter(String prefix, boolean exclude) {
 		AdvProperties result = new AdvProperties();
 		
@@ -159,7 +203,11 @@ public class AdvProperties extends Properties {
 		}
 		return result;
 	}
-	
+
+	/**
+	 * Return properties as byte array.
+	 * @return the byte array.
+	 */
 	public byte[] asBytes () {
 		try {
             String s = toString(null, true, false);
@@ -170,7 +218,12 @@ public class AdvProperties extends Properties {
 			return null;
 		}		
 	}
-	
+
+	/**
+	 * Sign this properties with the given key.
+	 * @param keyName name of the key
+	 * @param privateKey the key used for the signature
+	 */
 	public void sign(String keyName, PrivateKey privateKey) {
 		try {
 			byte[] data = asBytes();
@@ -183,7 +236,13 @@ public class AdvProperties extends Properties {
 			assert false;
 		}
 	}
-	
+
+	/**
+	 * Verify a signature.
+	 * @param keyName name if the signature key.
+	 * @param publicKey the public key of the signature
+	 * @return signature correct?
+	 */
 	public boolean verify(String keyName, PublicKey publicKey) {
 		try {
 			byte[] data = filter(keyName, true).asBytes();

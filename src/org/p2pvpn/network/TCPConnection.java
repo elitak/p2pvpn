@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -35,7 +35,11 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import org.p2pvpn.tools.CryptoUtils;
 
-
+/**
+ * This is the lowest layer in the P2PVPN network. It encrypts packages and
+ * sends and recheives them using TCP.
+ * @author Wolfgang Ginolas
+ */
 public class TCPConnection implements Runnable {
 
 	private static final double BUCKET_TIME = 0.5;
@@ -48,24 +52,30 @@ public class TCPConnection implements Runnable {
 
 	private enum CCState {WAIT_FOR_IV, WAIT_FOR_DATA};
 
-	private MeasureBandwidth bwIn, bwOut;
+	private MeasureBandwidth bwIn, bwOut;		// The currently used Bandwidth
 
-	private Cipher cIn, cOut;
-	private SecretKey key;
-	private CCState state;	
+	private Cipher cIn, cOut;					// The ciphers for sending and receiving
+	private SecretKey key;						// The current encryption kay
+	private CCState state;						// The state of this connection
 	
-	private ConnectionManager connectionManager;
-	private Socket socket;
-	private InputStream in;
-	private BufferedOutputStream out;
-	private SocketAddress peer;
-	private P2PConnection listener;
+	private ConnectionManager connectionManager;// The ConnectionManager
+	private Socket socket;						// the Socket for this connection
+	private InputStream in;						// InputStream for this connection
+	private BufferedOutputStream out;			// OutputStream for this connection
+	private SocketAddress peer;					// the remote address
+	private P2PConnection listener;				// the upper network layer
 	
-	private Queue<byte[]> sendQueue;
-	private boolean closed;
+	private Queue<byte[]> sendQueue;			// a send queue
+	private boolean closed;						// is this connection closed?
 
-	private long lastActive;
+	private long lastActive;					// time of the last received packet
 
+	/**
+	 * Create a new TCPConnection
+	 * @param connectionManager the ConnectionManager
+	 * @param socket the Socket of the connection
+	 * @param keyBytes the encryption kay to use
+	 */
 	public TCPConnection(ConnectionManager connectionManager, Socket socket, byte[] keyBytes) {
 		this.connectionManager = connectionManager;
 		this.socket = socket;
@@ -95,6 +105,10 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * Change the encryption key.
+	 * @param keyBytes the new key
+	 */
 	public void changeKey(byte[] keyBytes) {
 		state = CCState.WAIT_FOR_IV;
 
@@ -110,7 +124,12 @@ public class TCPConnection implements Runnable {
 		
 		cOut = newOut;
 	}
-	
+
+	/**
+	 * Read an 2 Byte integer from the connection
+	 * @return the int
+	 * @throws java.io.IOException
+	 */
 	private int readInt() throws IOException {
 		int result, high, low;
 		high = in.read();
@@ -120,7 +139,10 @@ public class TCPConnection implements Runnable {
 		result = (high << 8) + low;
 		return result;
 	}
-	
+
+	/**
+	 * Receive packages.
+	 */
 	@Override
 	public void run() {
 		byte[] buffer = new byte[MAX_PACKET_SIZE];
@@ -160,6 +182,9 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * Get packages from the queue and send them.
+	 */
 	private void sendThread() {
 		try {
 			while (true) {
@@ -186,6 +211,11 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * Encrypt an packet and send it.
+	 * @param packet the packet
+	 * @param flush flush the stream?
+	 */
 	private void sendEncypted(byte[] packet, boolean flush) {
 		if (cOut==null) {
 			sendToSocket(packet, flush);
@@ -198,7 +228,12 @@ public class TCPConnection implements Runnable {
 			} 
 		}
 	}	
-	
+
+	/**
+	 * Send an packet throug the socket.
+	 * @param packet the packet
+	 * @param flush flush the stream?
+	 */
 	private void sendToSocket(byte[] packet, boolean flush) {
 		try {
 			connectionManager.getSendLimit().waitForTokens(2+packet.length);
@@ -215,6 +250,10 @@ public class TCPConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * Handle an incoming encrypten packet.
+	 * @param packet the packet
+	 */
 	public void handleEncryptedPacket(byte[] packet) {
 		byte[] ct;
 
@@ -251,11 +290,21 @@ public class TCPConnection implements Runnable {
 				break;
 		}
 	}	
-	
+
+	/**
+	 * Set the object of the upperlayer.
+	 * @param listener the upper layer
+	 */
 	public void setListener(P2PConnection listener) {
 		this.listener = listener;
 	}
-	
+
+	/**
+	 * Put a packet in the sen queue.
+	 * @param packet the packet
+	 * @param highPriority a high priority packet? A high
+	 * priority packer won't be dropped even if the send queue is full.
+	 */
 	public void send(byte[] packet, boolean highPriority) {
 		synchronized (sendQueue) {
 			if (highPriority || sendQueue.size()<connectionManager.getSendBufferSize()) {
@@ -264,7 +313,10 @@ public class TCPConnection implements Runnable {
 			}
 		}
 	}
-	
+
+	/**
+	 * Close the connection.
+	 */
 	public void close() {
 		try {
 			socket.close();

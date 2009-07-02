@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -32,8 +32,9 @@ import java.util.logging.Logger;
 import org.p2pvpn.tools.AdvProperties;
 
 /**
- *
- * @author Wolfgang
+ * This class maintains a list of known hosts and tries to connect them
+ * periodically.
+ * @author Wolfgang Ginolas
  */
 public class Connector {
     
@@ -44,25 +45,40 @@ public class Connector {
     Map<Endpoint, EndpointInfo> ips;
 	
 	Vector<ConnectorListener> listeners;
-    
+
+	/**
+	 * Create a new Connector
+	 * @param connectionManager the ConnectionManager
+	 */
     public Connector(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
 		listeners = new Vector<ConnectorListener>();
         ips = new HashMap<Endpoint, EndpointInfo>();
     }    
-    
+
+	/**
+	 * Add a ConnectorListener.
+	 * @param l the listener
+	 */
 	public void addListener(ConnectorListener l) {
 		synchronized (listeners) {
 			listeners.add(l);
 		}
 	}
-	
+
+	/**
+	 * Remove a Connector Listener
+	 * @param l the listener
+	 */
 	public void removeListener(ConnectorListener l) {
 		synchronized (listeners) {
 			listeners.remove(l);
 		}
 	}
-	
+
+	/**
+	 * Notify all ConnectorListeners.
+	 */
 	private void notifyListeners() {
 		ConnectorListener[] ls;
 		synchronized (listeners) {
@@ -77,19 +93,37 @@ public class Connector {
 			}
 		}
 	}
-	
+
+	/**
+	 * Return all known hosts.
+	 * @return the hosts
+	 */
 	public Endpoint[] getIPs() {
 		synchronized (ips) {
 			return ips.keySet().toArray(new Endpoint[0]);
 		}
 	}
-	
+
+	/**
+	 * Return information about the given IP.
+	 * @param e the IP
+	 * @return the information
+	 */
 	public EndpointInfo getIpInfo(Endpoint e) {
 		synchronized (ips) {
 			return ips.get(e);
 		}
 	}
-	
+
+	/**
+	 * Add an IP to the known hosts.
+	 * @param ip the IP
+	 * @param port the port
+	 * @param peerID the PeerID ot null when it's unknown
+	 * @param source the source of this information
+	 * @param status the last known status if this host
+	 * @param keep kepp the ip in the list for ever?
+	 */
     public void addIP(byte[] ip, int port, PeerID peerID, String source, String status, boolean keep) {
         Endpoint endpoint = new Endpoint(ip, port);
 		EndpointInfo endpointInfo = new EndpointInfo(peerID, source, status, keep);
@@ -97,6 +131,15 @@ public class Connector {
 				new AddIPLater(endpoint, endpointInfo), 0, TimeUnit.SECONDS);
     }
 
+	/**
+	 * Add an IP to the known hosts.
+	 * @param ip the IP
+	 * @param port the port
+	 * @param peerID the PeerID ot null when it's unknown
+	 * @param source the source of this information
+	 * @param status the last known status if this host
+	 * @param keep kepp the ip in the list for ever?
+	 */
     public void addIP(String ip, int port, PeerID peerID, String source, String status, boolean keep) {
         try {
             addIP(InetAddress.getByName(ip).getAddress(), port, peerID, source, status, keep);
@@ -105,11 +148,24 @@ public class Connector {
         }
     }
 
+	/**
+	 * Add an IP to the known hosts.
+	 * @param ip the IP
+	 * @param port the port
+	 * @param peerID the PeerID ot null when it's unknown
+	 * @param source the source of this information
+	 * @param status the last known status if this host
+	 * @param keep kepp the ip in the list for ever?
+	 */
 	public void addIP(InetAddress ip, int port, PeerID peerID, String source, String status, boolean keep) {
 		addIP(ip.getAddress(), port, peerID, source, status, keep);
 	}
     
-    public void addIPs(AdvProperties p) {
+	/**
+	 * Add the IPs given in the access invitation.
+	 * @param p the access invitation
+	 */
+	public void addIPs(AdvProperties p) {
         int i=0;
         
         while(p.containsKey("network.bootstrap.connectTo."+i)) {
@@ -124,20 +180,36 @@ public class Connector {
             i++;
         }
     }
-    
+
+	/**
+	 * Schedule a connection attempt.
+	 * @param e the host to connect
+	 * @param delay the delay
+	 */
     private void scheduleConnect(Endpoint e, long delay) {
         connectionManager.getScheduledExecutor().schedule(new ConnectRunnable(e), delay, TimeUnit.SECONDS);
     }
 
+	/**
+	 * A Thread which adds an IP to the known host list.
+	 */
 	private class AddIPLater implements Runnable {
 		private Endpoint endpoint;
 		private EndpointInfo endpointInfo;
 
+		/**
+		 * Add the given IP later.
+		 * @param endpoint the Host
+		 * @param endpointInfo host information
+		 */
 		public AddIPLater(Endpoint endpoint, EndpointInfo endpointInfo) {
 			this.endpoint = endpoint;
 			this.endpointInfo = endpointInfo;
 		}
 
+		/**
+		 * Add the IP.
+		 */
 		public void run() {
 			boolean schedule = false;
 			synchronized (ips) {
@@ -154,13 +226,23 @@ public class Connector {
 		}
 	}
 
+	/**
+	 * Try to connect to the given Host.
+	 */
     private class ConnectRunnable implements Runnable {
         Endpoint e;
 
+		/**
+		 * Try to connect to the given Host.
+		 * @param e the host
+		 */
         public ConnectRunnable(Endpoint e) {
             this.e = e;
         }
 
+		/**
+		 * Connect the host.
+		 */
         public void run() {
 			EndpointInfo info;
 			synchronized (ips) {
@@ -186,11 +268,19 @@ public class Connector {
         }
         
     }
-    
+
+	/***
+	 * A Host (IP and port).
+	 */
     public class Endpoint {
         byte[] ip;
         int port;
 
+		/**
+		 * Create a new Endpoint.
+		 * @param ip the ip
+		 * @param port the port
+		 */
         public Endpoint(byte[] ip, int port) {
             this.ip = ip;
             this.port = port;
@@ -243,7 +333,10 @@ public class Connector {
 			}
 		}
     }
-	
+
+	/**
+	 * Information about a host.
+	 */
 	public class EndpointInfo {
 		PeerID peerID;
 		long timeAdded;
@@ -251,6 +344,13 @@ public class Connector {
 		String status;
 		boolean keepForEver;
 
+		/**
+		 * Create a new EndpointInfo.
+		 * @param peerID the PeerID
+		 * @param source the source of this host
+		 * @param status the status of the host
+		 * @param keepForEver keep this host for ever?
+		 */
 		EndpointInfo(PeerID peerID, String source, String status, boolean keepForEver) {
 			this.peerID = peerID;
 			this.source = source;
@@ -267,6 +367,13 @@ public class Connector {
 			timeAdded = System.currentTimeMillis();
 		}
 
+		/**
+		 * Update the hist info
+		 * @param peerID the PeerID
+		 * @param source the source of this host
+		 * @param status the status of the host
+		 * @param keepForEver keep this host for ever?
+		 */
 		void update(PeerID peerID, String source, String status, boolean keepForEver) {
 			if (peerID!=null) this.peerID = peerID;
 			if (source!=null) this.source = source;

@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -19,6 +19,14 @@
 
 package org.p2pvpn.network;
 
+/**
+ * A listener which is notified, when a the list of peers changed.
+ * @author Wolfgang Ginolas
+ */
 public interface RoutungTableListener {
+	/**
+	 * Called when the list of peers or the distibuted database changed.
+	 * @param router the Router
+	 */
 	public void tableChanged(Router router);
 }

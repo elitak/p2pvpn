@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -30,27 +30,36 @@ import org.p2pvpn.network.bandwidth.SlidingAverage;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
-
+/**
+ * The autorisation layer of the network. If checks if a remote peer is allowed
+ * to be part of this network.
+ * @author Wolfgang Ginolas
+ */
 public class P2PConnection {
 
 	private static final int PING_BUCKET_LEN = 10;
 
-	private enum P2PConnState {WAIT_FOR_ACCESS, WAIT_FOR_RND, WAIT_FOR_ENC_RND,
-		WAIT_FOR_KEY, CONNECTED};   // TODO aufraumen
+	private enum P2PConnState {WAIT_FOR_ACCESS,
+		WAIT_FOR_KEY, CONNECTED};
 	
-	private P2PConnState state;
+	private P2PConnState state;						// the current state
 	
-	private byte[] myKeyPart;
+	private byte[] myKeyPart;						// my key part
 	
-	private ConnectionManager connectionManager;
-	private TCPConnection connection;
-	private ScheduledFuture<?> schedTimeout;
-	private PeerID remoteAddr;
-	private AdvProperties remoteAccess;
-	private Router router;
+	private ConnectionManager connectionManager;	// the ConnectionManager
+	private TCPConnection connection;				// the underlying TCPConnection
+	private ScheduledFuture<?> schedTimeout;		// used for a connect timeout
+	private PeerID remoteAddr;						// the remote PeerID
+	private AdvProperties remoteAccess;				// the remote access invitation
+	private Router router;							// the router
 
-	private SlidingAverage pingTime;
-	
+	private SlidingAverage pingTime;				// the latency for this connection
+
+	/**
+	 * Create a new P2PConnetion
+	 * @param connectionManager the ConnectionManager
+	 * @param connection the TCPConnection
+	 */
 	public P2PConnection(ConnectionManager connectionManager,
 			TCPConnection connection) {
 
@@ -82,17 +91,27 @@ public class P2PConnection {
 		return remoteAddr;
 	}
 
+	/**
+	 * Called when the connection timed out.
+	 */
 	private void timeout() {
 		Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString()+
 				" in state: "+state);
 		connection.close();
 	}
 
+	/**
+	 * Called, when the connection closed.
+	 */
 	public void connectionClosed() {
 		Logger.getLogger("").log(Level.INFO, "P2P connection to "+connection+" lost");
 		if (router!=null) router.connectionClosed(this);
 	}
 
+	/**
+	 * Called, when a packat arrived.
+	 * @param packet the packet
+	 */
 	public void receive(byte[] packet) {
 		try {
 			switch (state) {
@@ -151,14 +170,22 @@ public class P2PConnection {
 		}
 	}
 
+	/**
+	 * Send a packet
+	 * @param packet the packet
+	 * @param highPriority does this packet habe ah high priority?
+	 */
 	public void send(byte[] packet, boolean highPriority) {
 		if (state == P2PConnState.CONNECTED) connection.send(packet, highPriority);
 	}
-	
+
 	public void setRouter(Router router) {
 		this.router = router;
 	}
 
+	/**
+	 * Close the connection to the remote peer.
+	 */
 	public void close() {
 		connection.close();
 	}

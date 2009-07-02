@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -24,12 +24,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Wolfgang
+ * The TunTap class for Windows
+ * @author Wolfgang Ginolas
  */
 public class TunTapWindows extends TunTap {
     static {
-        //System.load("C:\\Dokumente und Einstellungen\\Wolfgang\\Desktop\\sf\\tapWindows\\trunk\\dist\\Debug\\Cygwin-Windows\\libTunTapWindows.dll");
 		try {
 			loadLibFromRecsource("clib/libTunTapWindows.dll", ".dll");
 		} catch (IOException e) {
@@ -40,6 +39,10 @@ public class TunTapWindows extends TunTap {
     private long cPtr;
     private String dev;    
 
+	/**
+	 * Create a new TunTapWindows.
+	 * @throws java.lang.Exception
+	 */
     public TunTapWindows() throws Exception {
         if (0!=openTun()) throw new Exception("Could not open Virtual Eternat Adapter!\n" +
 				"Make sure the TAP-Win32 driver ist installed."); // TODO More error messages

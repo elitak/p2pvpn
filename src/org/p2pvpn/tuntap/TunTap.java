@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -27,10 +27,22 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+/**
+ * An apstract claas for an virtual network adapter. A different implementation
+ * for every operating system is needed.
+ * @author Wolfgang Ginolas
+ */
 public abstract class TunTap {
 
 	private byte[] ip = null;
 
+	/**
+	 * Load a libary (*.so or *.dll) from the jar file.
+	 * To do this the libary is copied to a temp dir.
+	 * @param lib the libary name
+	 * @param suffix the suffinx (".so" od ".dll")
+	 * @throws java.io.IOException
+	 */
 	static void loadLibFromRecsource(String lib, String suffix) throws IOException {
 		File tmp = File.createTempFile("lib", suffix);
 		tmp.deleteOnExit();
@@ -49,6 +61,11 @@ public abstract class TunTap {
 		System.load(tmp.getCanonicalPath());
 	}
 
+	/**
+	 * Return a TunTap object for the currently used operating system.
+	 * @return the TunTap object
+	 * @throws java.lang.Exception
+	 */
     static public TunTap createTunTap() throws Exception {
         String osName = System.getProperty("os.name");
         
@@ -60,15 +77,36 @@ public abstract class TunTap {
             throw new Exception("The operating system "+osName+" is not supported!");
         }
     }
-    
+
+	/**
+	 * @return the name of the virtuel network device
+	 */
     abstract public String getDev();
-    
+
+	/**
+	 * Close the device.
+	 */
     abstract public void close();
-    
+
+	/**
+	 * Send a packet to the virtual network adapter.
+	 * @param b the packet
+	 * @param len the length of the packet
+	 */
     abstract public void write(byte[] b, int len);
-    
+
+	/**
+	 * Read a packet from the virtual network adapter.
+	 * @param b the packet
+	 * @return length if the packet
+	 */
     abstract public int read(byte[] b);
-    
+
+	/**
+	 * Set the IP address of the virtual network adapter.
+	 * @param ip the IP
+	 * @param subnetmask the subnet mask
+	 */
     public void setIP(String ip, String subnetmask) {
 		try {
 			this.ip = InetAddress.getByName(ip).getAddress();
@@ -76,6 +114,10 @@ public abstract class TunTap {
 		}
 	}
 
+	/**
+	 * Return the last set IP address.
+	 * @return the ip address
+	 */
 	public byte[] getIPBytes() {
 		return ip;
 	}

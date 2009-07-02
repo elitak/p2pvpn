@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -41,33 +41,42 @@ import org.p2pvpn.network.bandwidth.TokenBucket;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 
-
+/**
+ * The ConnectionManager is the central point of the P2PVPN network. It
+ * coordinates the different layers of the network.
+ * @author Wolfgang Ginolas
+ */
 public class ConnectionManager implements Runnable {
     final static private String WHATISMYIP_URL = "http://whatismyip.com/automation/n09230945.asp";
 	final static private long WHATISMYIP_REFRESH_S = 10*60;
 
 	final static private double SEND_BUCKET_SIZE = 10 * 1024;
     
-	private ServerSocket server;
-	private int serverPort;
-	private PeerID localAddr;
-	private ScheduledExecutorService scheduledExecutor;
-	private Router router;
-    private Connector connector;
-	private UPnPPortForward uPnPPortForward;
-	private BitTorrentTracker bitTorrentTracker;
+	private ServerSocket server;						// the ServerSocked to accept connections
+	private int serverPort;								// the local port
+	private PeerID localAddr;							// the local PeerID
+	private ScheduledExecutorService scheduledExecutor;	// a scheduled exicutor used for various tasks
+	private Router router;								// the Router
+    private Connector connector;						// the Connector
+	private UPnPPortForward uPnPPortForward;			// currently not used
+	private BitTorrentTracker bitTorrentTracker;		// the BitTorrentTracker
     
-	private String whatIsMyIP;
+	private String whatIsMyIP;							// the local IP returned by whatismyip.com
 	
-	private AdvProperties accessCfg;
-	private byte[] networkKey;
+	private AdvProperties accessCfg;					// the access invitation
+	private byte[] networkKey;							// network key used for encryption
 
-	private TokenBucket sendLimit, recLimit;
-	private Pinger pinger;
+	private TokenBucket sendLimit, recLimit;			// maximum bandwidth
+	private Pinger pinger;								// the Pinger
 
-	private int sendBufferSize;
-	private boolean tcpFlush;
-	
+	private int sendBufferSize;							// the send buffer size
+	private boolean tcpFlush;							// flush after each packet send?
+
+	/**
+	 * Create a new ConnectionManager
+	 * @param accessCfg the access invitation
+	 * @param serverPort the local server port
+	 */
 	public ConnectionManager(AdvProperties accessCfg, int serverPort) {
 		sendBufferSize = TCPConnection.DEFAULT_MAX_QUEUE;
 		tcpFlush = TCPConnection.DEFAULT_TCP_FLUSH;
@@ -90,10 +99,13 @@ public class ConnectionManager implements Runnable {
 		(new Thread(this, "ConnectionManager")).start();
 		
 		scheduledExecutor.schedule(new Runnable() {
-			public void run() {checkWhaiIsMyIP();}
+			public void run() {checkWhatIsMyIP();}
 		}, 1, TimeUnit.SECONDS);
 	}
 
+	/**
+	 * Calculate the network key used for encryption
+	 */
 	private void calcNetworkKey() {
 		byte[] b = accessCfg.getPropertyBytes("network.publicKey", null);
 		MessageDigest md = CryptoUtils.getMessageDigest();
@@ -101,7 +113,10 @@ public class ConnectionManager implements Runnable {
 											// other hashes created from the publicKey
 		networkKey = md.digest(b);
 	}
-	
+
+	/**
+	 * Find out the IPs of the local network adapters.
+	 */
 	public void updateLocalIPs() {
         String ipList="";
         try {
@@ -127,8 +142,11 @@ public class ConnectionManager implements Runnable {
         router.setLocalPeerInfo("local.port", ""+serverPort);
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
 	}
-    
-    private void checkWhaiIsMyIP() {
+
+	/**
+	 * Periodically check the local IPs.
+	 */
+    private void checkWhatIsMyIP() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     new URL(WHATISMYIP_URL).openConnection().getInputStream()));
@@ -139,7 +157,7 @@ public class ConnectionManager implements Runnable {
         }
         updateLocalIPs();
 		scheduledExecutor.schedule(new Runnable() {
-			public void run() {checkWhaiIsMyIP();}
+			public void run() {checkWhatIsMyIP();}
 		}, WHATISMYIP_REFRESH_S, TimeUnit.SECONDS);		
     }
     
@@ -155,17 +173,28 @@ public class ConnectionManager implements Runnable {
 		return scheduledExecutor;
 	}
 
+	/**
+	 * Called, when a TCPConnection is established.
+	 * @param connection the connection
+	 */
 	public void newConnection(TCPConnection connection) {
 		//Logger.getLogger("").log(Level.INFO, "new connection from/to: "+connection);
 		new P2PConnection(this, connection);
 	}
 
+	/**
+	 * Called, when a new P2PConnectrion is established.
+	 * @param p2pConnection
+	 */
 	public void newP2PConnection(P2PConnection p2pConnection) {
 		//Logger.getLogger("").log(Level.INFO, "new P2P connection from/to: "+p2pConnection.getRemoteAddr()
 		//		+" ("+p2pConnection.getConnection()+")");
 		router.newP2PConnection(p2pConnection);
 	}
-	
+
+	/**
+	 * A thread to accept connections from other peers.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -183,12 +212,21 @@ public class ConnectionManager implements Runnable {
 		}
 	}
 
+	/**
+	 * Add the IPs stored in the access invitation to the known hosts list.
+	 * @param accessCfg the access invitation
+	 */
 	public void addIPs(AdvProperties accessCfg) {
 		connector.addIPs(accessCfg);
 		String tracker = accessCfg.getProperty("network.bootstrap.tracker");
 		if (tracker!=null) bitTorrentTracker = new BitTorrentTracker(this, tracker);
 	}
 
+	/**
+	 * Try to connect to the given host.
+	 * @param host the host
+	 * @param port the port
+	 */
 	public void connectTo(String host, int port) {
         try {
             connectTo(InetAddress.getByName(host), port);
@@ -196,11 +234,20 @@ public class ConnectionManager implements Runnable {
 			Logger.getLogger("").log(Level.WARNING, "", ex);
         }
 	}
-	
+
+	/**
+	 * Try to connect to the given host.
+	 * @param host the host
+	 * @param port the port
+	 */
 	public void connectTo(InetAddress host, int port) {
 		new ConnectTask(host, port);
 	}
-	
+
+	/**
+	 * Try to connect to the given host.
+	 * @param addr the host and port using the format "hist:port"
+	 */
 	public void connectTo(String addr) {
 		try {
 			StringTokenizer st = new StringTokenizer(addr, ":");
@@ -212,7 +259,10 @@ public class ConnectionManager implements Runnable {
 			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
-	
+
+	/**
+	 * Stop this network and close all connections
+	 */
 	public void close() {
 		try {
 			scheduledExecutor.shutdownNow();
@@ -223,11 +273,19 @@ public class ConnectionManager implements Runnable {
 			Logger.getLogger("").log(Level.WARNING, "", e);
 		}
 	}
-	
+
+	/**
+	 * A Task which tries to connect another peer
+	 */
 	private class ConnectTask implements Runnable {
 		private InetAddress host;
 		private int port;
 
+		/**
+		 * Try to connect another peer.
+		 * @param host the host
+		 * @param port the port
+		 */
 		public ConnectTask(InetAddress host, int port) {
 			this.host = host;
 			this.port = port;

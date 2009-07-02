@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -22,6 +22,10 @@ package org.p2pvpn.network.bandwidth;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class can be used to limit bandwidth using the token bucket algorithm.
+ * @author Wolfgang Ginolas
+ */
 public class TokenBucket {
 
 	private static final double MIN_WAIT_S = 0.005;
@@ -35,6 +39,11 @@ public class TokenBucket {
 	private double bucket;
 	private long lastFill;
 
+	/**
+	 * Create a new TokenBicket
+	 * @param bandwidth the maximum andwith in tokens/s
+	 * @param bucketSize the maximum burst size
+	 */
 	public TokenBucket(double bandwidth, double bucketSize) {
 		this.bandwidth = bandwidth;
 		this.bucketSize = bucketSize;
@@ -43,6 +52,9 @@ public class TokenBucket {
 		lastFill = System.currentTimeMillis();
 	}
 
+	/**
+	 * Update the bucket fill level.
+	 */
 	private synchronized void updateBucket() {
 		long time = System.currentTimeMillis();
 
@@ -55,6 +67,10 @@ public class TokenBucket {
 		lastFill = time;
 	}
 
+	/**
+	 * Wait until this many tokens may be send/received.
+	 * @param tokens number if tokens
+	 */
 	public void waitForTokens(double tokens) {
 		while (true) {
 			updateBucket();
@@ -74,6 +90,11 @@ public class TokenBucket {
 		}
 	}
 
+	/**
+	 * Check if the number of tokens may be send/received right now.
+	 * @param tokens number of tokens
+	 * @return send/received allowed right now?
+	 */
 	public boolean tokensAvailable(double tokens) {
 		updateBucket();
 		synchronized (this) {
@@ -86,6 +107,10 @@ public class TokenBucket {
 		}
 	}
 
+	/**
+	 * Set the maximum bandwidth.
+	 * @param bandwidth the bandwidth in tokens/s
+	 */
 	public synchronized void setBandwidth(double bandwidth) {
 		this.bandwidth = bandwidth;
 	}

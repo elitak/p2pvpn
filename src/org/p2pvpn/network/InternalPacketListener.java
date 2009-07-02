@@ -19,7 +19,16 @@
 
 package org.p2pvpn.network;
 
-
+/**
+ * A listener which can receive internal packages.
+ * @author wolfgang
+ */
 public interface InternalPacketListener {
+	/**
+	 * Called when an internal packet for this listener arrived.
+	 * @param router the Router
+	 * @param internalPort the internal port
+	 * @param data the data
+	 */
 	public void receiveInternalPacket(Router router, byte internalPort, byte[] data);
 }

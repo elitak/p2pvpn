@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Wolfgang Ginolas
+    Copyright 2008, 2009 Wolfgang Ginolas
 
     This file is part of P2PVPN.
 
@@ -19,6 +19,10 @@
 
 package org.p2pvpn.network;
 
+/**
+ * This was an attempt to penetrate NAT with UpNP. Currently not used.
+ * @author Wolfgang Ginolas
+ */
 public interface UPnPPortForwardListener {
 	public void upnpChanged(UPnPPortForward upnp);
 }
