@@ -83,6 +83,8 @@ public class BitTorrentTracker implements Runnable {
 				+ "&port=" + port + "&compact=1&peer_id=" + new String(new URLCodec().encode(peerId)) +
                 "&uploaded=0&downloaded=0&left=100";
 
+		//System.out.println(sUrl);
+
 		URL url = new URL(sUrl);
 		PushbackInputStream in = new PushbackInputStream(url.openStream());
 		return (Map<Object, Object>) parseBencode(in);
