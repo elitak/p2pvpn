@@ -97,9 +97,11 @@ public class P2PConnection {
 	 * Called when the connection timed out.
 	 */
 	private void timeout() {
-		Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString()+
-				" in state: "+state);
-		connection.close();
+		if (state!=P2PConnState.CONNECTED) {
+			Logger.getLogger("").log(Level.INFO, "Timeout in handshake with "+connection.toString()+
+					" in state: "+state);
+			connection.close();
+		}
 	}
 
 	/**
