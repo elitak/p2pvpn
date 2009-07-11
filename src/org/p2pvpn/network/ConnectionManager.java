@@ -296,14 +296,14 @@ public class ConnectionManager implements Runnable {
 		@Override
 		public void run() {
 			Socket s;
-			connector.addIP(host, port, null, null, "connecting", false);
+			//connector.addIP(host, port, null, null, "connecting", false);
 			try {
 				s = new Socket(host, port);
 				new TCPConnection(ConnectionManager.this, s, networkKey);
-				connector.addIP(host, port, null, null, "connected", false);
+				//connector.addIP(host, port, null, null, "connected", false);
 			} catch (Throwable e) {
 				//Logger.getLogger("").log(Level.WARNING, host+" "+port);
-				connector.addIP(host, port, null, null, e.getMessage(), false);
+				//connector.addIP(host, port, null, null, e.getMessage(), false);
 			}
 		}
 	}

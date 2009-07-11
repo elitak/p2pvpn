@@ -292,15 +292,15 @@ public class InfoWindow extends javax.swing.JFrame implements RoutungTableListen
 
         jTabbedPane1.addTab("Log", jPanel4);
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 0, 24)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 0, 24));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("P2PVPN");
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("1.0");
+        jLabel2.setText("0.7");
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("10. July  2009");
+        jLabel3.setText("11. July  2009");
 
         jLabel4.setText("<html>P2PVPN  Copyright (C) 2008, 2009 Wolfgang Ginolas<br>\nThis program comes with ABSOLUTELY NO WARRANTY;<br>\nThis is free software, and you are welcome to redistribute it<br>\nunder certain conditions.\n");
 

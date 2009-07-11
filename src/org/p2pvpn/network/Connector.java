@@ -39,7 +39,7 @@ import org.p2pvpn.tools.AdvProperties;
 public class Connector {
     
 	private final static long RETRY_S = 5*60;
-	private final static long REMOVE_MS = 16*60*1000;
+	private final static long REMOVE_MS = 60*60*1000;
 	
     ConnectionManager connectionManager;
     Map<Endpoint, EndpointInfo> ips;
@@ -215,6 +215,11 @@ public class Connector {
 			synchronized (ips) {
 				if (!ips.containsKey(endpoint)) {
 					ips.put(endpoint, endpointInfo);
+					//try {
+					//	System.out.println("add: " + endpoint.getInetAddress());
+					//} catch (UnknownHostException ex) {
+					//	Logger.getLogger(Connector.class.getName()).log(Level.SEVERE, null, ex);
+					//}
 					schedule = true;
 				} else {
 					ips.get(endpoint).update(endpointInfo.peerID,
@@ -244,25 +249,32 @@ public class Connector {
 		 * Connect the host.
 		 */
         public void run() {
-			EndpointInfo info;
-			synchronized (ips) {
-				info = ips.get(e);
-			}
-			if (info==null) return;
-
-			if (!connectionManager.getRouter().isConnectedTo(info.peerID)) {
-				try {
-					connectionManager.connectTo(e.getInetAddress(), e.getPort());
-				} catch (UnknownHostException ex) {
-				}
-			} else {
-				info.update();
-			}
-			if (System.currentTimeMillis()-REMOVE_MS > info.timeAdded) {
+			try {
+				EndpointInfo info;
 				synchronized (ips) {
-					ips.remove(e);
+					info = ips.get(e);
 				}
-				notifyListeners();
+				if (info == null) {
+					return;
+				}
+
+				if (!connectionManager.getRouter().isConnectedTo(info.peerID)) {
+					try {
+						connectionManager.connectTo(e.getInetAddress(), e.getPort());
+					} catch (UnknownHostException ex) {
+					}
+				} else {
+					info.update();
+				}
+				//System.out.println("Check: "+e.getInetAddress());
+				if (System.currentTimeMillis() - REMOVE_MS > info.timeAdded) {
+					synchronized (ips) {
+						ips.remove(e);
+					}
+					//System.out.println("removed");
+					notifyListeners();
+				}
+			} catch (Throwable t) {
 			}
 			scheduleConnect(e, RETRY_S);
         }

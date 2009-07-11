@@ -226,7 +226,6 @@ public class MainControl implements ConnectorListener {
 				StringTokenizer st = new StringTokenizer(ips.nextToken(), ":");
 				String ip = st.nextToken();
 				int port = Integer.parseInt(st.nextToken());
-				System.out.println("add "+ip+":"+port);
 				connectionManager.getConnector().addIP(ip, port, null, "stored", "", false);
 			} catch (NumberFormatException numberFormatException) {
 			}

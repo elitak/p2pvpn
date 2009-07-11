@@ -379,13 +379,13 @@
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="1.0"/>
+                <Property name="text" type="java.lang.String" value="0.7"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="10. July  2009"/>
+                <Property name="text" type="java.lang.String" value="11. July  2009"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel4">
