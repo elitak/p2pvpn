@@ -316,40 +316,43 @@ public class Router implements RoutungTableListener {
 	 * Request the databases of all peers.
 	 */
 	private void syncDB() {
-		Set<PeerID> peerSet;
+		try {
+			Set<PeerID> peerSet;
 
-		removeDeadPeers();
-		P2PConnection[] cs = getConnections();
+			removeDeadPeers();
+			P2PConnection[] cs = getConnections();
 
-		synchronized (this) {
-			peerSet = peers.keySet();
-		}
+			synchronized (this) {
+				peerSet = peers.keySet();
+			}
 
-		for(PeerID a : peerSet) {
-			P2PConnection c = null;
-			
-			if (!a.equals(connectionManager.getLocalAddr())) {
-				long version;
-				synchronized (this) {
-					if (connections.containsKey(a)) {
-						c = connections.get(a);
-					} else {
-						c = cs[(int)(Math.random()*cs.length)];
+			for (PeerID a : peerSet) {
+				P2PConnection c = null;
+
+				if (!a.equals(connectionManager.getLocalAddr())) {
+					long version;
+					synchronized (this) {
+						if (connections.containsKey(a)) {
+							c = connections.get(a);
+						} else {
+							c = cs[(int) (Math.random() * cs.length)];
+						}
+						version = peers.get(a).getVersion();
 					}
-					version = peers.get(a).getVersion();
-				}
 
-				try {
-					ByteArrayOutputStream outB = new ByteArrayOutputStream();
-					outB.write(ASK_DB);
-					ObjectOutputStream outO = new ObjectOutputStream(outB);
-					outO.writeObject(a);
-					outO.writeLong(version);
-					outO.flush();
-					c.send(outB.toByteArray(), true);
-				} catch (IOException ex) {
+					try {
+						ByteArrayOutputStream outB = new ByteArrayOutputStream();
+						outB.write(ASK_DB);
+						ObjectOutputStream outO = new ObjectOutputStream(outB);
+						outO.writeObject(a);
+						outO.writeLong(version);
+						outO.flush();
+						c.send(outB.toByteArray(), true);
+					} catch (IOException ex) {
+					}
 				}
 			}
+		} catch (Throwable e) {
 		}
 		
 		connectionManager.getScheduledExecutor().schedule(new Runnable() {
