@@ -48,10 +48,15 @@
 
 	<target name="jar" depends="compile">
 		<mkdir dir="${build}/lib"/>
-
 		<copy todir="${build}/lib">
 			<fileset dir="lib/">
 				<exclude name="lib/junit-4.5.jar"/>
+			</fileset>
+		</copy>
+
+		<mkdir dir="${build}/clib"/>
+		<copy todir="${build}/clib">
+			<fileset dir="clib/">
 			</fileset>
 		</copy>
 
@@ -60,7 +65,7 @@
 				<exclude name="test/**"/>
 			</fileset>
 			<fileset file="default.net" />
-			<zipfileset dir="${clib}" prefix="clib"/>
+			<!-- <zipfileset dir="${clib}" prefix="clib"/> -->
 			<zipfileset dir="${resources}" prefix="resources"/>
 			<!--<zipfileset src="lib/commons-jxpath-1.1.jar"/>
 			<zipfileset src="lib/commons-logging.jar"/>

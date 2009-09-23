@@ -37,29 +37,32 @@ public abstract class TunTap {
 	private byte[] ip = null;
 
 	/**
-	 * Load a libary (*.so or *.dll) from the jar file.
-	 * To do this the libary is copied to a temp dir.
+	 * Load a libary (*.so or *.dll).
 	 * @param lib the libary name
-	 * @param suffix the suffinx (".so" od ".dll")
 	 * @throws java.io.IOException
 	 */
-	static void loadLibFromRecsource(String lib, String suffix) throws IOException {
+	static void loadLib(String lib) throws IOException {
+		String myRoot = new File(TunTap.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
+		System.load(myRoot+"/"+lib);
+	}
+
+	/*static void loadLibFromRecsource(String lib, String suffix) throws IOException {
 		File tmp = File.createTempFile("lib", suffix);
 		tmp.deleteOnExit();
 		InputStream in = TunTap.class.getClassLoader().getResourceAsStream(lib);
 		OutputStream out = new FileOutputStream(tmp);
-		
+
 		byte[] buffer = new byte[1024*8];
 		int len;
-		
+
 		while (0<(len = in.read(buffer))) {
 			out.write(buffer, 0, len);
 		}
 		in.close();
 		out.close();
-		
+
 		System.load(tmp.getCanonicalPath());
-	}
+	}*/
 
 	/**
 	 * Return a TunTap object for the currently used operating system.
