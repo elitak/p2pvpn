@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -120,12 +121,14 @@ public class ConnectionManager implements Runnable {
 	 */
 	public void updateLocalIPs() {
         String ipList="";
+        String ipv6List="";
         try {
             Enumeration<NetworkInterface> is = NetworkInterface.getNetworkInterfaces();
             while (is.hasMoreElements()) {
                 NetworkInterface i = is.nextElement();
-                Enumeration<InetAddress> as = i.getInetAddresses();
 
+                Enumeration<InetAddress> as = i.getInetAddresses();
+				System.out.println("if: "+i.getName());
                 while (as.hasMoreElements()) {
                     InetAddress a = as.nextElement();
                     if (a instanceof Inet4Address) {
@@ -133,6 +136,10 @@ public class ConnectionManager implements Runnable {
                         if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
                             ipList = ipList + " " + s;
                         }
+                    }
+                    if (a instanceof Inet6Address) {
+                        String s = a.getHostAddress();
+                        ipv6List = ipv6List + " " + s;
                     }
                 }
             }
@@ -142,6 +149,7 @@ public class ConnectionManager implements Runnable {
 		if (whatIsMyIP!=null) ipList = ipList + " " + whatIsMyIP;
         router.setLocalPeerInfo("local.port", ""+serverPort);
         router.setLocalPeerInfo("local.ips", ipList.substring(1));
+        router.setLocalPeerInfo("local.ip6s", ipv6List.substring(1));
 	}
 
 	/**

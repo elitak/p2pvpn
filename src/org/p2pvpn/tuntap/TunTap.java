@@ -43,7 +43,7 @@ public abstract class TunTap {
 	 */
 	static void loadLib(String lib) throws IOException {
 		String myRoot = new File(TunTap.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
-		System.load(myRoot+"/"+lib);
+		System.load(myRoot+System.getProperty("file.separator")+lib);
 	}
 
 	/*static void loadLibFromRecsource(String lib, String suffix) throws IOException {
