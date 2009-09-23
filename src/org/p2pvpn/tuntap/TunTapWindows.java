@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public class TunTapWindows extends TunTap {
     static {
 		try {
-			loadLib("clib\\lsibTunTapWindows.dll");
+			loadLib("clib\\libTunTapWindows.dll");
 		} catch (IOException e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load libTunTapWindows.dll", e);
 		}

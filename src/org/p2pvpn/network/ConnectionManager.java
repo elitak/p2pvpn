@@ -128,7 +128,7 @@ public class ConnectionManager implements Runnable {
                 NetworkInterface i = is.nextElement();
 
                 Enumeration<InetAddress> as = i.getInetAddresses();
-				System.out.println("if: "+i.getName());
+				System.out.println("if: '"+i.getName()+"', '"+i.getDisplayName()+"'");
                 while (as.hasMoreElements()) {
                     InetAddress a = as.nextElement();
                     if (a instanceof Inet4Address) {
