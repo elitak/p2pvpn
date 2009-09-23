@@ -42,7 +42,7 @@ public abstract class TunTap {
 	 * @throws java.io.IOException
 	 */
 	static void loadLib(String lib) throws IOException {
-		String myRoot = new File(TunTap.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
+		String myRoot = new File(TunTap.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
 		System.load(myRoot+System.getProperty("file.separator")+lib);
 	}
 

@@ -127,21 +127,26 @@ public class ConnectionManager implements Runnable {
             while (is.hasMoreElements()) {
                 NetworkInterface i = is.nextElement();
 
-                Enumeration<InetAddress> as = i.getInetAddresses();
-				System.out.println("if: '"+i.getName()+"', '"+i.getDisplayName()+"'");
-                while (as.hasMoreElements()) {
-                    InetAddress a = as.nextElement();
-                    if (a instanceof Inet4Address) {
-                        String s = a.getHostAddress();
-                        if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
-                            ipList = ipList + " " + s;
-                        }
-                    }
-                    if (a instanceof Inet6Address) {
-                        String s = a.getHostAddress();
-                        ipv6List = ipv6List + " " + s;
-                    }
-                }
+				if (!i.getName().toLowerCase().startsWith("tap") &&
+						!i.getDisplayName().toLowerCase().startsWith("tap") &&
+						!i.getName().equals("lo")) {
+
+					System.out.println("if: '"+i.getName()+"', '"+i.getDisplayName()+"'");
+					Enumeration<InetAddress> as = i.getInetAddresses();
+					while (as.hasMoreElements()) {
+						InetAddress a = as.nextElement();
+						if (a instanceof Inet4Address) {
+							String s = a.getHostAddress();
+							//if (!s.startsWith("127") && !s.equals(router.getPeerInfo(localAddr, "vpn.ip"))) {
+							ipList = ipList + " " + s;
+							//}
+						}
+						if (a instanceof Inet6Address) {
+							String s = a.getHostAddress();
+							ipv6List = ipv6List + " " + s;
+						}
+					}
+				}
             }
         } catch (SocketException ex) {
 			Logger.getLogger("").log(Level.WARNING, "", ex);
