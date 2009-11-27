@@ -1,0 +1,26 @@
+#==============================
+#Sun Feb 01 17:51:23 CET 2009
+network.bootstrap.tracker=http\://tracker.thepiratebay.org\:80/announce
+network.ip.network=10.6.0.0
+network.ip.subnet=255.255.0.0
+network.name=Test Network
+network.publicKey.0=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCinJlX8wneBc2Hfc/Gn8EKT/8350XWaSZKd+G3
+network.publicKey.1=g/NyyXYU1x4BhLp2fsYBmOSTweW/rXh+YWs0XAmqT9V4QELPR/43AoeJ7+SLx6NPRPy1S7XqkSNM
+network.publicKey.2=3Bb/ciD5x+CaYeTmhcwRW4zoK+BQS5JRbhvacTVqptraDUDCk5soGTaX9wIDAQAB
+network.signature.0=LhJqQWVqDApxPxjq2xItIyOLte+s2kDv6i3Ol0IkNl2UlhtIbMIGrplh6EfOPEcSS9fnA+ZGCkKF
+network.signature.1=S/YvNTLh8TGFA2UNoo5kXOpDPKoalVta9vVwkw2fPWmLL1OKSVfOSI7CNg2YQ8Ap2CaepCu1vOB3
+network.signature.2=oBRByQ29tuKALA9Z1io\=
+secret.network.privateKey.0=MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAKKcmVfzCd4FzYd9z8afwQpP/zfn
+secret.network.privateKey.1=RdZpJkp34beD83LJdhTXHgGEunZ+xgGY5JPB5b+teH5hazRcCapP1XhAQs9H/jcCh4nv5IvHo09E
+secret.network.privateKey.2=/LVLteqRI0zcFv9yIPnH4Jph5OaFzBFbjOgr4FBLklFuG9pxNWqm2toNQMKTmygZNpf3AgMBAAEC
+secret.network.privateKey.3=gYA0Y3NbzGcvansu3a+k9C8DHYbCAfaT/0hg0YKc1xwFrTYnvK5kGtjf+DPeq91oZR2ZxU9+l/Ar
+secret.network.privateKey.4=7EMI5bOGjF15WsA44tHRzRZGtZ6cljPd/S1r3JAeYo9hBXqhnPOg6NnXwZ8Ms3WkMhUfBtBI+M3X
+secret.network.privateKey.5=OVvFlgD2tYCOA3EiLgJX0QJBANYLIbGMkji3qGh8rHhtCwUUyGazON88xPYzB553CQ9V8OWAJSnY
+secret.network.privateKey.6=zktGJmX7c+8iuxp1fpNiHK0J3RuEESjbg5UCQQDCfJTOfHnHIWV+qLTtfHtK1OracIb+dK1qWln0
+secret.network.privateKey.7=Mb9XhTpnWXMo32Pp8kvlKULL4dGIU9TfR8vGN0pMO8iNHwpbAkBDvkYtsXXd6ZKtbzgO7UQdmZRL
+secret.network.privateKey.8=nNGVJeCYo1H3/2iop+SUXlhkxC+Wd19Ty5/HwdBB8YncD6NPyN1oBgaATel5AkAKoUCI4KjPR3YC
+secret.network.privateKey.9=rDnnWQxsFKMZeVkHg10PGQ0dmbJ5mCCPEYaHz13opYOcbNrnxdnr95kE8ymiFdeLvyDBBddNAkEA
+secret.network.privateKey.a=0VE3gD/vt4SqlSE7+aRpTv9qy1rentMbxuxFc6u3K5sSVbsvFCjm5uNGsVa/TT64KcJxMeTjYqpg
+secret.network.privateKey.b=mobHtr6D3w\=\=
+#==============================
+
