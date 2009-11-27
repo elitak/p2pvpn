@@ -17,6 +17,8 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// TODO option: use whatisymip
+
 package org.p2pvpn.gui;
 
 import java.net.URL;

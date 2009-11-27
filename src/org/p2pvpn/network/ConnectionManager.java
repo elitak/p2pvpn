@@ -83,7 +83,7 @@ public class ConnectionManager implements Runnable {
 		tcpFlush = TCPConnection.DEFAULT_TCP_FLUSH;
 		this.serverPort = serverPort;
 		this.accessCfg = accessCfg;
-		scheduledExecutor = Executors.newScheduledThreadPool(1);
+		scheduledExecutor = Executors.newScheduledThreadPool(10);
 		localAddr = new PeerID(accessCfg.getPropertyBytes("access.publicKey", null), true);
 		router = new Router(this);
         connector = new Connector(this);

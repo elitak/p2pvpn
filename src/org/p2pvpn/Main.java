@@ -17,7 +17,12 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.p2pvpn;
+
+/*
+ * TODO Linux64, Windows64, Mac
+ *
+ */
+ package org.p2pvpn;
 
 import java.io.FileInputStream;
 import java.util.logging.Level;
