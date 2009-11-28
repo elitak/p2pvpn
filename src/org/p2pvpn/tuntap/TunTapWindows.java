@@ -31,7 +31,7 @@ public class TunTapWindows extends TunTap {
     static {
 		try {
 			loadLib("clib\\libTunTapWindows.dll");
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load libTunTapWindows.dll", e);
 		}
     }

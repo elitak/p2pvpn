@@ -20,10 +20,7 @@
 package org.p2pvpn.tuntap;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -38,13 +35,18 @@ public abstract class TunTap {
 
 	/**
 	 * Load a libary (*.so or *.dll).
-	 * @param lib the libary name
+	 * @param libs the libary names
 	 * @throws java.io.IOException
 	 */
-	static void loadLib(String lib) throws IOException {
-		//String myRoot = new File(TunTap.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
-		//System.load(myRoot+System.getProperty("file.separator")+lib);
-		System.load(new File(lib).getCanonicalPath());
+	static void loadLib(String... libs) throws Throwable {
+		Throwable e=null;
+		for(String lib : libs) {
+			try {
+				System.load(new File(lib).getCanonicalPath());
+				break;
+			} catch (Throwable eio) {e = eio;}
+		}
+		if (e!=null) throw e;
 	}
 
 	/*static void loadLibFromRecsource(String lib, String suffix) throws IOException {
