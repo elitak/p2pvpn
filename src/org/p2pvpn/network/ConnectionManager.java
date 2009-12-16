@@ -18,6 +18,7 @@
 */
 
 package org.p2pvpn.network;
+import org.p2pvpn.network.bittorrent.BitTorrentTracker;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

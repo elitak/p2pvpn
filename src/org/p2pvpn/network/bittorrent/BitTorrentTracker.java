@@ -17,8 +17,11 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.p2pvpn.network;
+package org.p2pvpn.network.bittorrent;
 
+import org.p2pvpn.network.bittorrent.bencode.BencodeString;
+import org.p2pvpn.network.bittorrent.bencode.Bencode;
+import org.p2pvpn.network.*;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.net.Inet4Address;
@@ -34,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.net.URLCodec;
+import org.p2pvpn.network.bittorrent.bencode.BencodeInt;
 import org.p2pvpn.tools.CryptoUtils;
 
 /**
@@ -87,7 +91,7 @@ public class BitTorrentTracker implements Runnable {
 
 		URL url = new URL(sUrl);
 		PushbackInputStream in = new PushbackInputStream(url.openStream());
-		return (Map<Object, Object>) parseBencode(in);
+		return (Map<Object, Object>) Bencode.parseBencode(in);
 	}
 
 	/**
@@ -114,8 +118,8 @@ public class BitTorrentTracker implements Runnable {
 		try {
 			Map<Object, Object> res = trackerRequest(networkHash(20), connectionManager.getServerPort());
 
-			Integer minInterval = (Integer)res.get(new BencodeString("min interval"));
-			if (minInterval!=null) nextRequest = minInterval;
+			BencodeInt minInterval = (BencodeInt)res.get(new BencodeString("min interval"));
+			if (minInterval!=null) nextRequest = minInterval.getInt();
 
 			byte[] peers = ((BencodeString)res.get(new BencodeString("peers"))).getBytes();
 
@@ -135,172 +139,5 @@ public class BitTorrentTracker implements Runnable {
 		}
 
 		schedule(nextRequest);
-	}
-
-	/**
-	 * Parse a Bencode string
-	 * @param in the input stream
-	 * @return the result. The type is Integer, BencodeString,
-	 * Vector&lt;Object&gt; or HashMap&lt;Object, Object&gt;
-	 * @throws java.io.IOException
-	 */
-	private Object parseBencode(PushbackInputStream in) throws IOException {
-		int first = in.read();
-		in.unread(first);
-
-		switch (first) {
-			case 'i':
-				return parseBencodeInt(in);
-
-			case '0': case '1':	case '2': case '3': case '4':
-			case '5': case '6': case '7': case '8': case '9':
-				return parseBencodeString(in);
-
-			case 'l':
-				return parseBencodeList(in);
-
-			case 'd':
-				return parseBencodeMap(in);
-
-			default:
-				throw new IOException("no bencode: illecal char: "+ ((char)first));
-		}
-	}
-
-	/**
-	 * Parse an Mencode integer.
-	 * @param in the inputstream
-	 * @return the Integer
-	 * @throws java.io.IOException
-	 */
-	private Object parseBencodeInt(PushbackInputStream in) throws IOException {
-		parseBencodeExpect(in, 'i');
-		return parseBencodeReadInt(in);
-	}
-
-	/**
-	 * Read an Integer from the stream
-	 * @param in the input stream
-	 * @return the int
-	 * @throws java.io.IOException
-	 */
-	private int parseBencodeReadInt(PushbackInputStream in) throws IOException {
-		int result=0;
-
-		while (true) {
-			int b=in.read();
-
-			if (b<'0' || b>'9') break;
-
-			result = result * 10 + (b-'0');
-		}
-		return result;
-	}
-
-	/**
-	 * Parse an BencodeString
-	 * @param in the inputstream
-	 * @return the BencodeString
-	 * @throws java.io.IOException
-	 */
-	private Object parseBencodeString(PushbackInputStream in) throws IOException {
-		int len = parseBencodeReadInt(in);
-
-		byte[] bs = new byte[len];
-		int pos = 0;
-
-		while(pos<len) {
-			pos += in.read(bs, pos, bs.length-pos);
-		}
-
-		return new BencodeString(bs);
-	}
-
-	/**
-	 * Parse an bencode list
-	 * @param in the input stream
-	 * @return the Vector
-	 * @throws java.io.IOException
-	 */
-	private Object parseBencodeList(PushbackInputStream in) throws IOException {
-		parseBencodeExpect(in, 'l');
-
-		int first;
-		Vector<Object> result = new Vector<Object>();
-
-		while ('e'!= (first = in.read())) {
-			in.unread(first);
-			result.add(parseBencode(in));
-		}
-		return result.toArray();
-	}
-
-	/**
-	 * Parse an bencode map
-	 * @param in the input stream
-	 * @return the HashMap
-	 * @throws java.io.IOException
-	 */
-	private Object parseBencodeMap(PushbackInputStream in) throws IOException {
-		parseBencodeExpect(in, 'd');
-
-		int first;
-		HashMap<Object, Object> result = new HashMap<Object, Object>();
-
-		while ('e'!= (first = in.read())) {
-			in.unread(first);
-			Object key = parseBencode(in);
-			Object val = parseBencode(in);
-
-			result.put(key, val);
-		}
-		return result;
-	}
-
-	/**
-	 * Expect the given byte in the stream
-	 * @param in the input stream
-	 * @param b the expected byte
-	 * @throws java.io.IOException
-	 */
-	private void parseBencodeExpect(PushbackInputStream in, int b) throws IOException {
-		int bIn = in.read();
-		if (b != bIn) {
-			throw new IOException("no bencode: illecal char: "+ ((char)bIn)+" ("+bIn+") expected: "+((char)b));
-		}
-	}
-
-	/**
-	 * A byte array that can easily convertet to/from a String.
-	 */
-	public class BencodeString {
-		byte[] bytes;
-
-		public BencodeString(byte[] bytes) {
-			this.bytes = bytes;
-		}
-
-		public BencodeString(String s) {
-			bytes = s.getBytes();
-		}
-
-		public byte[] getBytes() {
-			return bytes;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			return toString().equals(obj.toString());
-		}
-
-		@Override
-		public int hashCode() {
-			return toString().hashCode();
-		}
-
-		@Override
-		public String toString() {
-			return new String(bytes);
-		}
 	}
 }
