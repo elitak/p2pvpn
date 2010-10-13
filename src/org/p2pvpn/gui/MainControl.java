@@ -43,6 +43,7 @@ import org.p2pvpn.network.VPNConnector;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tuntap.TunTap;
+import org.p2pvpn.tools.ProfileManager;
 
 /**
  * This class controls everything regarded to the GUI or storing the settings
@@ -67,17 +68,25 @@ public class MainControl implements ConnectorListener {
 	private String ip;					// the IP of the virtual network adapter
 	private boolean popupChat;			// should the chat window popup when a message arrives?
 
-	private Preferences prefs;			// used to store all settings
+	//private Preferences prefs;			// used to store all settings
+        private ProfileManager prefs;
 
 	/**
 	 * Create a new MainControl
 	 * @param mainWindow the MainWindow
 	 */
 	public MainControl(MainWindow mainWindow) {
+
+
+                //prefs = Preferences.userNodeForPackage(MainControl.class);
+
+                ProfileManager profile = new ProfileManager();
+                prefs = profile.load("default");
+
 		tuntap = null;
 		connectionManager = null;
 		this.mainWindow = mainWindow;
-		prefs = Preferences.userNodeForPackage(MainControl.class);
+
 		serverPort = prefs.getInt("serverPort", 0);
 		setName(prefs.get("name", "no name"));
 		String accessStr = prefs.get("access", null);
@@ -297,11 +306,18 @@ public class MainControl implements ConnectorListener {
 	 * Flush the Preferences to disk.
 	 */
 	private void prefsFlush() {
+
+            prefs.flush();
+            /*
+             *  No need to catch exception, ProfielManager do it now
+             *
 		try {
 			prefs.flush();
 		} catch (BackingStoreException ex) {
 			Logger.getLogger("").log(Level.WARNING, null, ex);
 		}
+             *
+             */
 	}
 
 	public ConnectionManager getConnectionManager() {

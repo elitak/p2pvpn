@@ -22,6 +22,7 @@ package org.p2pvpn.tuntap;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.p2pvpn.tools.AdapterManager;
 
 /**
  * The TunTap class for Windows
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
 public class TunTapWindows extends TunTap {
     static {
 		try {
-			loadLib("clib\\libTunTapWindows.dll");
+			loadLib("clib\\libTunTapWindows.dll", "clib\\libTunTapWindows64.dll");
 		} catch (Throwable e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load libTunTapWindows.dll", e);
 		}
@@ -44,6 +45,19 @@ public class TunTapWindows extends TunTap {
 	 * @throws java.lang.Exception
 	 */
     public TunTapWindows() throws Exception {
+        
+        /* try to install Win Tap Driver
+        Integer erg = openTun();
+        if(erg == 1){
+            checkAndInstallAdapter();
+            if (1==openTun())throw new Exception("ERROR during Install. Try as administrator.");
+        } else if (erg == 2){
+            throw new Exception("Could not open Virtual Ethernet Adapter!\n" +
+				"Make sure the TAP-Win32 driver ist installed."); // TODO More error messages
+        }
+        */
+
+
         if (0!=openTun()) throw new Exception("Could not open Virtual Eternat Adapter!\n" +
 				"Make sure the TAP-Win32 driver ist installed."); // TODO More error messages
     }
@@ -66,11 +80,31 @@ public class TunTapWindows extends TunTap {
             String[] cmd = {
                 "netsh", "interface", "ip", "set", "address", dev, "static", ip, subnetmask
             };
-    		Process p = Runtime.getRuntime().exec(cmd);
+            String[] metric = {
+                "netsh", "interface", "ip", "set", "interface", "interface="+dev,
+                "metric=10"
+            };
+
+            String[] rename = {
+                "netsh", "interface", "set", "interface", "name="+dev,
+                "newname=P2P VPN"
+            };
+
+            Process p = Runtime.getRuntime().exec(cmd);
+            p = Runtime.getRuntime().exec(metric);
+            p = Runtime.getRuntime().exec(rename);
     		//System.out.println("IP set successfully ("+p.waitFor()+")");
             // netsh takes a long time... don't wait for it
     	} catch (Exception e) {
 			Logger.getLogger("").log(Level.WARNING, "Could not set IP!", e);
     	}        
+    }
+
+    public Boolean checkAndInstallAdapter() {
+        AdapterManager adapter = new AdapterManager();
+        if(adapter.install())
+            return true;
+
+        return false;
     }
 }
