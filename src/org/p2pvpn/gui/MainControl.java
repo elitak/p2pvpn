@@ -78,10 +78,8 @@ public class MainControl implements ConnectorListener {
 	public MainControl(MainWindow mainWindow) {
 
 
-                //prefs = Preferences.userNodeForPackage(MainControl.class);
-
-                ProfileManager profile = new ProfileManager();
-                prefs = profile.load("default");
+		ProfileManager profile = new ProfileManager();
+		prefs = profile.load("default");
 
 		tuntap = null;
 		connectionManager = null;

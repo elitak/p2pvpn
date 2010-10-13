@@ -4,6 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +61,10 @@ public class ProfileManager {
 
     }
 
+    public void putGlobal(String key, String val){
+        props.setProperty(key, val);
+    }
+
     public void put(String key, String val){
         props.setProperty(networkName+'.'+key, val);
     }
@@ -72,6 +81,10 @@ public class ProfileManager {
          props.setProperty(networkName+'.'+key, val.toString() );
     }
 
+
+    public String getGlobal(String key, String def){
+        return props.getProperty(key, def);
+    }
 
     public String get(String key, String def){
         return props.getProperty(networkName+'.'+key, def);
@@ -98,6 +111,32 @@ public class ProfileManager {
         props.remove(key);
     }
 
+	public ProfileDescription[] getProfiles() {
+		final List<ProfileDescription> result = new ArrayList<ProfileDescription>();
+
+		for (Entry<Object, Object> entry : props.entrySet()) {
+			final String key = entry.getKey().toString();
+			final String value = entry.getValue().toString();
+
+			if (key.endsWith(".name")) {
+				result.add(new ProfileDescription(
+						key.substring(0, key.length()-5),
+						value));
+			}
+		}
+
+		ProfileDescription[] resultArray = new ProfileDescription[result.size()];
+		result.toArray(resultArray);
+
+		Arrays.sort(resultArray, new Comparator<ProfileDescription>() {
+			public int compare(ProfileDescription p1, ProfileDescription p2) {
+				return p1.getName().compareTo(p2.getName());
+			}
+		});
+
+		return resultArray;
+	}
+
     public static void setDefaults(String defaultName){
         props.setProperty(defaultName+'.'+"name", "no name");
         props.setProperty(defaultName+'.'+"serverPort", "0");
@@ -121,4 +160,21 @@ public class ProfileManager {
             fos.close();//close
     }
 
+	public class ProfileDescription {
+		private final String key;
+		private final String name;
+
+		public ProfileDescription(String key, String name) {
+			this.key = key;
+			this.name = name;
+		}
+
+		public String getKey() {
+			return key;
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
 }
