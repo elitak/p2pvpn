@@ -20,6 +20,7 @@
 package org.p2pvpn.network;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.p2pvpn.tools.AdvProperties;
+import org.p2pvpn.tools.SocketAddrStr;
 
 /**
  * This class maintains a list of known hosts and tries to connect them
@@ -170,10 +172,8 @@ public class Connector {
         
         while(p.containsKey("network.bootstrap.connectTo."+i)) {
             try {
-                StringTokenizer st = new StringTokenizer(p.getProperty("network.bootstrap.connectTo." + i), ":");
-                String ip = st.nextToken();
-                int port = Integer.parseInt(st.nextToken());
-                addIP(ip, port, null, "bootstrap", "", true);
+				InetSocketAddress a = SocketAddrStr.parseSocketAddr(p.getProperty("network.bootstrap.connectTo." + i));
+                addIP(a.getAddress(), a.getPort(), null, "bootstrap", "", true);
             } catch (Throwable t) {
 				Logger.getLogger("").log(Level.WARNING, "", t);
             }
@@ -339,7 +339,7 @@ public class Connector {
 		@Override
 		public String toString() {
 			try {
-				return InetAddress.getByAddress(ip).getHostAddress() + ":" + port;
+				return SocketAddrStr.socketAddrToStr(new InetSocketAddress(InetAddress.getByAddress(ip), port));
 			} catch (UnknownHostException ex) {
 				return "unknown host";
 			}

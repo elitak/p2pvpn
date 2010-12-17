@@ -19,13 +19,14 @@ import java.util.logging.Logger;
  */
 public class ProfileManager {
 
-    private static Properties props;
+    private static Properties props = new Properties();
     private static final String file = "profile.ini";
     private static String networkName = "default";
 
 
     static final File profileFile = new File(file);
 
+    /*
     static{
          props = new Properties();//Create the properties object
         //create new File if not exist
@@ -39,7 +40,7 @@ public class ProfileManager {
             }
         }
     }
-
+*/
     public ProfileManager load(String network){
         networkName = network;
 

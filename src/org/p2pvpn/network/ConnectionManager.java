@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,6 +43,7 @@ import java.util.logging.Logger;
 import org.p2pvpn.network.bandwidth.TokenBucket;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
+import org.p2pvpn.tools.SocketAddrStr;
 
 /**
  * The ConnectionManager is the central point of the P2PVPN network. It
@@ -265,11 +267,8 @@ public class ConnectionManager implements Runnable {
 	 */
 	public void connectTo(String addr) {
 		try {
-			StringTokenizer st = new StringTokenizer(addr, ":");
-			
-			String host = st.nextToken();
-			int port = Integer.parseInt(st.nextToken());
-			connectTo(host, port);
+			InetSocketAddress a = SocketAddrStr.parseSocketAddr(addr);
+			connectTo(a.getAddress(), a.getPort());
 		} catch (Exception e) {
 			Logger.getLogger("").log(Level.WARNING, "", e);
 		}

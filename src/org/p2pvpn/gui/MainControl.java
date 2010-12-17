@@ -31,8 +31,6 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.Connector;

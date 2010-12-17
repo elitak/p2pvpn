@@ -404,13 +404,25 @@ public class Router implements RoutungTableListener {
         // check for local IPs
         if (!a.equals(connectionManager.getLocalAddr())) {
 			String port;
-			String ips;
+			String ips, ip6s;
 			synchronized (this) {
 				port = peers.get(a).get("local.port");
 				ips = peers.get(a).get("local.ips");
+				ip6s = peers.get(a).get("local.ip6s");
 			}
             if (port!=null && ips!=null) {
                 StringTokenizer st = new StringTokenizer(ips);
+                while (st.hasMoreTokens()) {
+                    try {
+                        connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port),
+								a, "peer exchange", "", false);
+                    } catch (NumberFormatException numberFormatException) {
+						Logger.getLogger("").log(Level.WARNING, "", numberFormatException);
+                    }
+                }
+            }
+            if (port!=null && ip6s!=null) {
+                StringTokenizer st = new StringTokenizer(ip6s);
                 while (st.hasMoreTokens()) {
                     try {
                         connectionManager.getConnector().addIP(st.nextToken(), Integer.parseInt(port),
