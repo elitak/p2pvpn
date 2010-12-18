@@ -39,36 +39,46 @@ import org.p2pvpn.network.bittorrent.bencode.BencodeList;
 import org.p2pvpn.network.bittorrent.bencode.BencodeMap;
 import org.p2pvpn.network.bittorrent.bencode.BencodeObject;
 import org.p2pvpn.network.bittorrent.bencode.BencodeString;
+import org.p2pvpn.tools.CryptoUtils;
 
 public class DHT {
 	private static final int PACKET_LEN = 10*1024;
 	private static final BigInteger MASK = new BigInteger("1").shiftLeft(160);
-	private static int QUEUE_MAX_LEN = 100;
-	private static int MAX_BAD = 4;
+	private static final int QUEUE_MAX_LEN = 100;
+	private static final int MAX_BAD = 4;
+	private static final int MAX_BAD_LEN = 100;
 
-	private DatagramSocket dSock;
+	private static final int FAST_DELAY = 1000; //ms
+	private static final int SLOW_DELAY = 60*1000; //ms
 
-	private BencodeString id =       new BencodeString("01234567890123456789");
-	private BencodeString searchID = new BencodeString("abcdefghijabcdefghij");
-	private BigInteger searchIDInt = unsigned(new BigInteger(searchID.getBytes()));
+	private final DatagramSocket dSock;
+
+	private final BencodeString id;
+	private BencodeString searchID = null;
+	private BigInteger searchIDInt = null;
 
 	private PriorityBlockingQueue<Contact> peerQueue;
 
-	private Map<Contact, Integer> peerBad;
+	private final Map<Contact, Integer> peerBad;
+
+	private boolean queryFast = true;
 
 	public DHT(DatagramSocket dSock) {
+		System.out.println("2");
+
 		this.dSock = dSock;
 
-		peerQueue = new PriorityBlockingQueue<Contact>(10, new Comparator<Contact>() {
-			public int compare(Contact o1, Contact o2) {
-				BigInteger d1 = searchDist(o1);
-				BigInteger d2 = searchDist(o2);
-				return d1.compareTo(d2);
-			}
-		});
+		final byte[] idBytes = new byte[20];
+		CryptoUtils.getSecureRandom().nextBytes(idBytes);
+		System.out.println("3");
+		id = new BencodeString(idBytes);
+
+		peerQueue = makeQueue();
 
 		peerBad = Collections.synchronizedMap(new HashMap<Contact, Integer>());
 		
+		setSearchID(new BencodeString("01234567890123456789"));
+
 		new Thread(new Runnable() {
 			public void run() {
 				recvThread();
@@ -77,6 +87,25 @@ public class DHT {
 
 		testPing();
 	}
+
+	private PriorityBlockingQueue<Contact> makeQueue() {
+		return new PriorityBlockingQueue<Contact>(10, new Comparator<Contact>() {
+			public int compare(Contact o1, Contact o2) {
+				BigInteger d1 = searchDist(o1);
+				BigInteger d2 = searchDist(o2);
+				return d1.compareTo(d2);
+			}
+		});
+	}
+
+	public void setSearchID(BencodeString searchID) {
+		this.searchID = searchID;
+		searchIDInt = unsigned(new BigInteger(searchID.getBytes()));
+
+		// reorder queue
+		cleanQueue();
+	}
+
 
 	private BigInteger searchDist(Contact c) {
 		return unsigned(searchIDInt.xor(c.getId()));
@@ -132,19 +161,31 @@ public class DHT {
 	}
 
 	private void cleanQueue() {
-		
+		System.out.println("cleanQueue");
+		final PriorityBlockingQueue<Contact> newQueue = makeQueue();
+
+		for(Contact c : peerQueue) {
+			newQueue.add(c);
+			if (newQueue.size()*2 > QUEUE_MAX_LEN) break;
+		}
+
+		peerQueue = newQueue;
 	}
 
-
+	private void cleanBad() {
+		peerBad.clear();
+	}
 
 	private void testPing() {
 		try {
 			while (true) {
-				Thread.sleep(1000);
+				System.out.println("loop");
+				Thread.sleep(queryFast ? FAST_DELAY : SLOW_DELAY);
 				if (peerQueue.isEmpty()) {
-					//ping(new InetSocketAddress("router.utorrent.com", 6881));
-					//ping(new InetSocketAddress("router.torrent.com", 6881));
-					ping(new InetSocketAddress("dht.wifi.pps.jussieu.fr",6881));
+					queryFast = true;
+					ping(new InetSocketAddress("router.utorrent.com", 6881));
+					ping(new InetSocketAddress("router.bittorrent.com", 6881));
+					//ping(new InetSocketAddress("dht.wifi.pps.jussieu.fr",6881));
 				} else {
 					Vector<Contact> best = new Vector<Contact>();
 					{
@@ -163,10 +204,10 @@ public class DHT {
 						makeBad(c);
 						addQueue(c, false);
 					}
+					System.out.println(String.format("peerQueue: %d  peerBad: %d",
+							peerQueue.size(), peerBad.size()));
 				}
 			}
-			//sendPacket(new InetSocketAddress("router.bittorrent.com", 6881), m);
-			//sendPacket(new InetSocketAddress("192.168.0.102", 51413), m);
 		} catch (Exception ex) {
 			ex.printStackTrace(); // TODO
 		}
@@ -195,11 +236,14 @@ public class DHT {
 	}
 
 	private void makeBad(Contact c) {
+		if (peerBad.size()>MAX_BAD_LEN) cleanBad();
+
 		peerBad.put(c, getBad(c)+1);
 	}
 
 	private void addQueue(Contact c, boolean good) {
-		//System.out.println("add: dist: "+searchDist(c).bitLength()+"  peer: "+c);
+		if (peerQueue.size()>QUEUE_MAX_LEN) cleanQueue();
+
 		if (!peerQueue.contains(c)) peerQueue.add(c);
 		if (good) {
 			makeGood(c);
@@ -238,6 +282,7 @@ public class DHT {
 						}
 					}
 					if (values!=null) {
+						queryFast = false;
 						System.out.println("Values:");
 						for(BencodeObject val : values) {
 							byte[] bs = ((BencodeString)val).getBytes();
@@ -274,8 +319,10 @@ public class DHT {
 	}
 
 	public static void main(String args[]) {
+		System.out.println("main");
 		try {
-			new DHT(new DatagramSocket(12345));
+			System.out.println("1");
+			new DHT(new DatagramSocket(Integer.parseInt(args[0])));
 		} catch (SocketException ex) {
 			ex.printStackTrace();
 		}
