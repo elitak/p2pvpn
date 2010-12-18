@@ -22,6 +22,7 @@ import org.p2pvpn.network.bittorrent.BitTorrentTracker;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -34,13 +35,14 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.p2pvpn.network.bandwidth.TokenBucket;
+import org.p2pvpn.network.bittorrent.DHT;
+import org.p2pvpn.network.bittorrent.bencode.BencodeString;
 import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tools.SocketAddrStr;
@@ -55,6 +57,8 @@ public class ConnectionManager implements Runnable {
 	final static private long WHATISMYIP_REFRESH_S = 10*60;
 
 	final static private double SEND_BUCKET_SIZE = 10 * 1024;
+
+	private static DHT dht = null;
     
 	private ServerSocket server;						// the ServerSocked to accept connections
 	private int serverPort;								// the local port
@@ -105,6 +109,19 @@ public class ConnectionManager implements Runnable {
 		scheduledExecutor.schedule(new Runnable() {
 			public void run() {checkWhatIsMyIP();}
 		}, 1, TimeUnit.SECONDS);
+
+		try {
+			if (dht==null) {
+				dht = new DHT(new DatagramSocket(serverPort));
+				dht.start();
+			}
+
+			dht.setSearchID(calcDHTKey());
+			dht.setConnectionManager(this);
+		} catch (SocketException e) {
+			Logger.getLogger("").log(Level.SEVERE, "Could not start DHT", e);
+		}
+
 	}
 
 	/**
@@ -117,6 +134,14 @@ public class ConnectionManager implements Runnable {
 		md.update("secretKey".getBytes());	// make sure the key differs from
 											// other hashes created from the publicKey
 		networkKey = md.digest(b);
+	}
+
+	private BencodeString calcDHTKey() {
+		byte[] b = accessCfg.getPropertyBytes("network.signature", null);
+		MessageDigest md = CryptoUtils.getMessageDigest();
+		md.update("secretKeyDHT".getBytes());	// make sure the key differs from
+												// other hashes created from the publicKey
+		return new BencodeString(md.digest(b));
 	}
 
 	/**

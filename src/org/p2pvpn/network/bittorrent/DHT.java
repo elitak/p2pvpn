@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.PriorityBlockingQueue;
+import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.bittorrent.bencode.Bencode;
 import org.p2pvpn.network.bittorrent.bencode.BencodeInt;
 import org.p2pvpn.network.bittorrent.bencode.BencodeList;
@@ -48,12 +49,13 @@ public class DHT {
 	private static final int MAX_BAD = 4;
 	private static final int MAX_BAD_LEN = 100;
 
-	private static final int FAST_DELAY = 1000; //ms
+	private static final int ASK_PEER_COUNT = 10;
+	private static final int FAST_DELAY = 1000; //msant && java -classpath build/P2PVPN.jar org.p2pvpn.network.bittorrent.DHT
 	private static final int SLOW_DELAY = 60*1000; //ms
 
 	private final DatagramSocket dSock;
 
-	private final BencodeString id;
+	private BencodeString id;
 	private BencodeString searchID = null;
 	private BigInteger searchIDInt = null;
 
@@ -61,7 +63,9 @@ public class DHT {
 
 	private final Map<Contact, Integer> peerBad;
 
-	private boolean queryFast = true;
+	private int ipsFound = 0;
+
+	private ConnectionManager connectionManager = null;
 
 	public DHT(DatagramSocket dSock) {
 		System.out.println("2");
@@ -77,15 +81,16 @@ public class DHT {
 
 		peerBad = Collections.synchronizedMap(new HashMap<Contact, Integer>());
 		
-		setSearchID(new BencodeString("01234567890123456789"));
+		setSearchID(null);
 
+	}
+
+	public void start() {
 		new Thread(new Runnable() {
 			public void run() {
-				recvThread();
+				mainThread();
 			}
 		}).start();
-
-		testPing();
 	}
 
 	private PriorityBlockingQueue<Contact> makeQueue() {
@@ -98,12 +103,17 @@ public class DHT {
 		});
 	}
 
+	public void setConnectionManager(ConnectionManager connectionManager) {
+		this.connectionManager = connectionManager;
+	}
+
 	public void setSearchID(BencodeString searchID) {
-		this.searchID = searchID;
-		searchIDInt = unsigned(new BigInteger(searchID.getBytes()));
+		this.searchID = searchID==null ? new BencodeString("01234567890123456789") : searchID;
+		searchIDInt = unsigned(new BigInteger(this.searchID.getBytes()));
 
 		// reorder queue
 		cleanQueue();
+		ipsFound = 0;
 	}
 
 
@@ -176,13 +186,19 @@ public class DHT {
 		peerBad.clear();
 	}
 
-	private void testPing() {
-		try {
-			while (true) {
+	private void mainThread() {
+		new Thread(new Runnable() {
+			public void run() {
+				recvThread();
+			}
+		}).start();
+
+		while (true) {
+			try {
 				System.out.println("loop");
-				Thread.sleep(queryFast ? FAST_DELAY : SLOW_DELAY);
+				Thread.sleep(ipsFound < 10 ? FAST_DELAY : SLOW_DELAY);
 				if (peerQueue.isEmpty()) {
-					queryFast = true;
+					ipsFound = 0;
 					ping(new InetSocketAddress("router.utorrent.com", 6881));
 					ping(new InetSocketAddress("router.bittorrent.com", 6881));
 					//ping(new InetSocketAddress("dht.wifi.pps.jussieu.fr",6881));
@@ -190,7 +206,7 @@ public class DHT {
 					Vector<Contact> best = new Vector<Contact>();
 					{
 						Contact c;
-						while (best.size()<4 && null!=(c=peerQueue.poll())) {
+						while (best.size()<ASK_PEER_COUNT && null!=(c=peerQueue.poll())) {
 							if (!best.contains(c) && getBad(c)<MAX_BAD) {
 								best.add(c);
 								System.out.println("best: dist: "+searchDist(c).bitLength()+"  peer: "+c+
@@ -207,9 +223,9 @@ public class DHT {
 					System.out.println(String.format("peerQueue: %d  peerBad: %d",
 							peerQueue.size(), peerBad.size()));
 				}
+			} catch (Exception ex) {
+				ex.printStackTrace(); // TODO
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace(); // TODO
 		}
 	}
 
@@ -282,11 +298,20 @@ public class DHT {
 						}
 					}
 					if (values!=null) {
-						queryFast = false;
 						System.out.println("Values:");
 						for(BencodeObject val : values) {
+							ipsFound++;
 							byte[] bs = ((BencodeString)val).getBytes();
 							InetSocketAddress addr = Contact.parseSocketAddress(bs, 0, bs.length);
+							if (connectionManager!=null) {
+								connectionManager.getConnector().addIP(
+										addr.getAddress(),
+										addr.getPort(),
+										null,
+										"DHT",
+										"",
+										false);
+							}
 							System.out.println("   "+addr);
 						}
 					}
@@ -322,7 +347,8 @@ public class DHT {
 		System.out.println("main");
 		try {
 			System.out.println("1");
-			new DHT(new DatagramSocket(Integer.parseInt(args[0])));
+			final DHT dht = new DHT(new DatagramSocket(Integer.parseInt(args[0])));
+			dht.start();
 		} catch (SocketException ex) {
 			ex.printStackTrace();
 		}
