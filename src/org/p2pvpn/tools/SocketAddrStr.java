@@ -39,7 +39,7 @@ public class SocketAddrStr {
 		} else return sAddr.toString();
 	}
 
-	public static InetSocketAddress parseSocketAddr(String s) throws Exception {
+	public static InetSocketAddress parseSocketAddr(String s) throws IllegalArgumentException {
 		String host=null, port=null;
 		s = s.trim();
 		Matcher m4 = ipv4.matcher(s);
@@ -56,6 +56,6 @@ public class SocketAddrStr {
 			return new InetSocketAddress(host, Integer.parseInt(port));
 		}
 
-		throw new Exception("'"+s+"' is not a valid socket address");
+		throw new IllegalArgumentException("'"+s+"' is not a valid socket address");
 	}
 }

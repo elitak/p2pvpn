@@ -27,11 +27,15 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import org.p2pvpn.network.ConnectionManager;
 import org.p2pvpn.network.bittorrent.bencode.Bencode;
@@ -50,8 +54,9 @@ public class DHT {
 	private static final int MAX_BAD_LEN = 100;
 
 	private static final int ASK_PEER_COUNT = 10;
-	private static final int FAST_DELAY = 1000; //msant && java -classpath build/P2PVPN.jar org.p2pvpn.network.bittorrent.DHT
+	private static final int FAST_DELAY = 1000; //ms
 	private static final int SLOW_DELAY = 60*1000; //ms
+	private static final int ANNOUNCE_INTERVAL = 1*60*60*1000; //ms
 
 	private final DatagramSocket dSock;
 
@@ -63,6 +68,9 @@ public class DHT {
 
 	private final Map<Contact, Integer> peerBad;
 
+	private final Set<Contact> announced = new HashSet<Contact>();
+	private long lastAnnounceFlush;
+
 	private int ipsFound = 0;
 
 	private ConnectionManager connectionManager = null;
@@ -71,6 +79,8 @@ public class DHT {
 		System.out.println("2");
 
 		this.dSock = dSock;
+
+		lastAnnounceFlush = System.currentTimeMillis();
 
 		final byte[] idBytes = new byte[20];
 		CryptoUtils.getSecureRandom().nextBytes(idBytes);
@@ -154,20 +164,33 @@ public class DHT {
 		sendPacket(c.getAddr(), m);
 	}
 
+	private void cleanAnnouncedSet() {
+		final long now = System.currentTimeMillis();
+		if (now - lastAnnounceFlush > ANNOUNCE_INTERVAL) {
+			lastAnnounceFlush = now;
+			announced.clear();
+		}
+	}
+
 	private void announcePeer(Contact c, BencodeString token) throws IOException {
+		cleanAnnouncedSet();
 		if (token==null) return;
-		BencodeMap m = new BencodeMap();
-		m.put(new BencodeString("t"), new BencodeString("announce"));
-		m.put(new BencodeString("y"), new BencodeString("q"));
-		m.put(new BencodeString("q"), new BencodeString("announce_peer"));
-		BencodeMap a = new BencodeMap();
-		a.put(new BencodeString("id"), id);
-		a.put(new BencodeString("info_hash"), searchID);
-		a.put(new BencodeString("port"), new BencodeInt(dSock.getLocalPort()));
-		a.put(new BencodeString("token"), token);
-		m.put(new BencodeString("a"), a);
-		//System.out.println("get_peers: "+c);
-		sendPacket(c.getAddr(), m);
+
+		if (!announced.contains(c)) {
+			announced.add(c);
+			BencodeMap m = new BencodeMap();
+			m.put(new BencodeString("t"), new BencodeString("announce"));
+			m.put(new BencodeString("y"), new BencodeString("q"));
+			m.put(new BencodeString("q"), new BencodeString("announce_peer"));
+			BencodeMap a = new BencodeMap();
+			a.put(new BencodeString("id"), id);
+			a.put(new BencodeString("info_hash"), searchID);
+			a.put(new BencodeString("port"), new BencodeInt(dSock.getLocalPort()));
+			a.put(new BencodeString("token"), token);
+			m.put(new BencodeString("a"), a);
+			//System.out.println("get_peers: "+c);
+			sendPacket(c.getAddr(), m);
+		}
 	}
 
 	private void cleanQueue() {
@@ -203,7 +226,7 @@ public class DHT {
 					ping(new InetSocketAddress("router.bittorrent.com", 6881));
 					//ping(new InetSocketAddress("dht.wifi.pps.jussieu.fr",6881));
 				} else {
-					Vector<Contact> best = new Vector<Contact>();
+					List<Contact> best = new LinkedList<Contact>();
 					{
 						Contact c;
 						while (best.size()<ASK_PEER_COUNT && null!=(c=peerQueue.poll())) {
@@ -305,8 +328,7 @@ public class DHT {
 							InetSocketAddress addr = Contact.parseSocketAddress(bs, 0, bs.length);
 							if (connectionManager!=null) {
 								connectionManager.getConnector().addIP(
-										addr.getAddress(),
-										addr.getPort(),
+										addr,
 										null,
 										"DHT",
 										"",

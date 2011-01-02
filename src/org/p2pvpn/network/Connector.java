@@ -22,11 +22,11 @@ package org.p2pvpn.network;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,13 +40,13 @@ import org.p2pvpn.tools.SocketAddrStr;
  */
 public class Connector {
     
-	private final static long RETRY_S = 5*60;
+	private final static long RETRY_S = 1*60;
 	private final static long REMOVE_MS = 60*60*1000;
 	
-    ConnectionManager connectionManager;
-    Map<Endpoint, EndpointInfo> ips;
+    private final ConnectionManager connectionManager;
+    private final Map<Endpoint, EndpointInfo> ips = new HashMap<Endpoint, EndpointInfo>();
 	
-	Vector<ConnectorListener> listeners;
+	private final List<ConnectorListener> listeners = new ArrayList<ConnectorListener>();
 
 	/**
 	 * Create a new Connector
@@ -54,8 +54,6 @@ public class Connector {
 	 */
     public Connector(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-		listeners = new Vector<ConnectorListener>();
-        ips = new HashMap<Endpoint, EndpointInfo>();
     }    
 
 	/**
@@ -152,15 +150,14 @@ public class Connector {
 
 	/**
 	 * Add an IP to the known hosts.
-	 * @param ip the IP
-	 * @param port the port
+	 * @param addr the host and port
 	 * @param peerID the PeerID ot null when it's unknown
 	 * @param source the source of this information
 	 * @param status the last known status if this host
 	 * @param keep kepp the ip in the list for ever?
 	 */
-	public void addIP(InetAddress ip, int port, PeerID peerID, String source, String status, boolean keep) {
-		addIP(ip.getAddress(), port, peerID, source, status, keep);
+	public void addIP(InetSocketAddress addr, PeerID peerID, String source, String status, boolean keep) {
+		addIP(addr.getAddress().getAddress(), addr.getPort(), peerID, source, status, keep);
 	}
     
 	/**
@@ -173,7 +170,7 @@ public class Connector {
         while(p.containsKey("network.bootstrap.connectTo."+i)) {
             try {
 				InetSocketAddress a = SocketAddrStr.parseSocketAddr(p.getProperty("network.bootstrap.connectTo." + i));
-                addIP(a.getAddress(), a.getPort(), null, "bootstrap", "", true);
+                addIP(a, null, "bootstrap", "", true);
             } catch (Throwable t) {
 				Logger.getLogger("").log(Level.WARNING, "", t);
             }

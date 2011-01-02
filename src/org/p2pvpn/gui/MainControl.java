@@ -23,6 +23,7 @@ import java.awt.HeadlessException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -42,6 +43,7 @@ import org.p2pvpn.tools.AdvProperties;
 import org.p2pvpn.tools.CryptoUtils;
 import org.p2pvpn.tuntap.TunTap;
 import org.p2pvpn.tools.ProfileManager;
+import org.p2pvpn.tools.SocketAddrStr;
 
 /**
  * This class controls everything regarded to the GUI or storing the settings
@@ -228,11 +230,9 @@ public class MainControl implements ConnectorListener {
 
 		while (ips.hasMoreTokens()) {
 			try {
-				StringTokenizer st = new StringTokenizer(ips.nextToken(), ":");
-				String ip = st.nextToken();
-				int port = Integer.parseInt(st.nextToken());
-				connectionManager.getConnector().addIP(ip, port, null, "stored", "", false);
-			} catch (NumberFormatException numberFormatException) {
+				final InetSocketAddress host = SocketAddrStr.parseSocketAddr(ips.nextToken());
+				connectionManager.getConnector().addIP(host, null, "stored", "", false);
+			} catch (IllegalArgumentException ex) {
 			}
 		}
 	}
