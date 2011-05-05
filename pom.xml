@@ -77,9 +77,9 @@
                <mainClass>org.p2pvpn.Main</mainClass>
             </manifest>
           </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
+          <descriptors>
+            <descriptor>src/assemblies/bin.xml</descriptor>
+          </descriptors>
         </configuration>
       </plugin>
     </plugins>
